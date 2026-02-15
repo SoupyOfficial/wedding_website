@@ -1,6 +1,22 @@
+import "dotenv/config";
 import { PrismaClient } from "@prisma/client";
+import { PrismaLibSQL } from "@prisma/adapter-libsql";
 
-const prisma = new PrismaClient();
+function createClient(): PrismaClient {
+  const tursoUrl = process.env.TURSO_DATABASE_URL;
+  const tursoToken = process.env.TURSO_AUTH_TOKEN;
+
+  if (tursoUrl && tursoToken) {
+    console.log("🔗 Connecting to Turso...");
+    const adapter = new PrismaLibSQL({ url: tursoUrl, authToken: tursoToken });
+    return new PrismaClient({ adapter });
+  }
+
+  console.log("📁 Connecting to local SQLite...");
+  return new PrismaClient();
+}
+
+const prisma = createClient();
 
 async function main() {
   console.log("🌟 Seeding database...");
