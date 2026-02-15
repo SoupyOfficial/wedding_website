@@ -11,6 +11,7 @@ const navItems = [
   { href: "/admin/content", label: "Content", icon: "📝" },
   { href: "/admin/wedding-party", label: "Wedding Party", icon: "💐" },
   { href: "/admin/photos", label: "Photos", icon: "📸" },
+  { href: "/admin/registry", label: "Registry", icon: "🎁" },
   { href: "/admin/music", label: "Music & DJ", icon: "🎵" },
   { href: "/admin/meals", label: "Meals", icon: "🍽️" },
   { href: "/admin/guest-book", label: "Guest Book", icon: "📖" },

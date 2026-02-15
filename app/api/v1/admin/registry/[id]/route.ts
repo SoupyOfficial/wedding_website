@@ -8,20 +8,21 @@ export async function PUT(
   try {
     const { id } = await params;
     const body = await req.json();
-    const { question, answer, sortOrder } = body;
+    const { name, url, iconUrl, sortOrder } = body;
 
-    const faq = await prisma.fAQ.update({
+    const registry = await prisma.registryItem.update({
       where: { id },
       data: {
-        ...(question !== undefined && { question: question.trim() }),
-        ...(answer !== undefined && { answer: answer.trim() }),
+        ...(name !== undefined && { name: name.trim() }),
+        ...(url !== undefined && { url: url.trim() }),
+        ...(iconUrl !== undefined && { iconUrl: iconUrl || null }),
         ...(sortOrder !== undefined && { sortOrder }),
       },
     });
 
-    return NextResponse.json({ success: true, data: faq });
+    return NextResponse.json({ success: true, data: registry });
   } catch {
-    return NextResponse.json({ error: "FAQ not found." }, { status: 404 });
+    return NextResponse.json({ error: "Registry item not found." }, { status: 404 });
   }
 }
 
@@ -31,9 +32,9 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
-    await prisma.fAQ.delete({ where: { id } });
+    await prisma.registryItem.delete({ where: { id } });
     return NextResponse.json({ success: true });
   } catch {
-    return NextResponse.json({ error: "FAQ not found." }, { status: 404 });
+    return NextResponse.json({ error: "Registry item not found." }, { status: 404 });
   }
 }
