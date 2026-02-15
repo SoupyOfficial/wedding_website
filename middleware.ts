@@ -1,0 +1,47 @@
+import { auth } from "@/lib/auth";
+import { NextResponse } from "next/server";
+
+export default auth((req) => {
+  const { pathname } = req.nextUrl;
+
+  // --- Admin API routes: require authentication, return 401 JSON ---
+  if (pathname.startsWith("/api/v1/admin")) {
+    if (!req.auth?.user) {
+      return NextResponse.json(
+        { success: false, error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+    return NextResponse.next();
+  }
+
+  // --- Admin pages: handled by NextAuth authorized callback in lib/auth.ts ---
+
+  // --- Site password gate for public pages ---
+  if (!pathname.startsWith("/admin")) {
+    const sitePasswordEnabled =
+      req.cookies.get("site-password-enabled")?.value === "true";
+
+    if (sitePasswordEnabled) {
+      const hasAccess =
+        req.cookies.get("site-access")?.value === "granted";
+
+      if (!hasAccess && pathname !== "/site-password") {
+        return NextResponse.redirect(
+          new URL("/site-password", req.url)
+        );
+      }
+    }
+  }
+
+  return NextResponse.next();
+});
+
+export const config = {
+  matcher: [
+    // Admin API routes — must be authenticated
+    "/api/v1/admin/:path*",
+    // All non-static, non-API pages (site password gate + admin page redirects)
+    "/((?!api|_next/static|_next/image|favicon.ico).*)",
+  ],
+};

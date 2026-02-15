@@ -1,0 +1,331 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────────
+// Site Settings (singleton)
+// ─────────────────────────────────────────────
+model SiteSettings {
+  id                     String    @id @default("singleton")
+  coupleName             String    @default("Jacob & Ashley")
+  weddingDate            DateTime?
+  weddingTime            String?
+  rsvpDeadline           DateTime?
+  rsvpEnabled            Boolean   @default(true)
+  venueName              String    @default("The Highland Manor")
+  venueAddress           String    @default("Apopka, Florida")
+  ceremonyType           String    @default("Outdoor Ceremony & Indoor Reception")
+  dressCode              String    @default("Formal / Semi-Formal attire")
+  contactEmailJoint      String    @default("")
+  contactEmailBride      String    @default("")
+  contactEmailGroom      String    @default("")
+  photoShareLink         String    @default("")
+  heroTagline            String    @default("We're getting married!")
+  heroTaglinePostWedding String    @default("We did it!")
+  ourStoryContent        String    @default("")
+  travelContent          String    @default("")
+  faqContent             String    @default("")
+  preWeddingContent      String    @default("")
+  postWeddingContent     String    @default("")
+  childrenPolicy         String    @default("Children are welcome! Details to come.")
+  parkingInfo            String    @default("Yes, free parking is available on-site at The Highland Manor.")
+  weatherInfo            String    @default("Central Florida can be warm and humid. The ceremony is outdoors, so we recommend light, breathable fabrics. The reception is indoors and air-conditioned.")
+  sitePasswordEnabled    Boolean   @default(false)
+  sitePassword           String    @default("")
+  notifyOnRsvp           Boolean   @default(true)
+  notificationEmail      String    @default("")
+  ogImage                String    @default("")
+  ogDescription          String    @default("We're getting married! Join us for our celebration under the stars.")
+  weddingHashtag         String    @default("#ForeverCampbells")
+  bannerText             String    @default("")
+  bannerUrl              String    @default("")
+  bannerActive           Boolean   @default(false)
+  bannerColor            String    @default("gold")
+  socialInstagram        String    @default("")
+  socialFacebook         String    @default("")
+  socialTikTok           String    @default("")
+  updatedAt              DateTime  @updatedAt
+}
+
+// ─────────────────────────────────────────────
+// Guest
+// ─────────────────────────────────────────────
+model Guest {
+  id              String    @id @default(cuid())
+  firstName       String
+  lastName        String
+  email           String?
+  phone           String?
+  group           String?
+  rsvpStatus      String    @default("pending")
+  plusOneAllowed   Boolean   @default(false)
+  plusOneName      String?
+  plusOneAttending Boolean   @default(false)
+  mealPreference  String?
+  dietaryNeeds    String?
+  songRequest     String?
+  childrenCount   Int       @default(0)
+  childrenNames   String?
+  tableNumber     Int?
+  notes           String?
+  rsvpRespondedAt DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+// ─────────────────────────────────────────────
+// Wedding Party
+// ─────────────────────────────────────────────
+model WeddingPartyMember {
+  id                     String   @id @default(cuid())
+  name                   String
+  role                   String
+  side                   String
+  relationToBrideOrGroom String   @default("")
+  spouseOrPartner        String   @default("")
+  bio                    String   @default("")
+  photoUrl               String?
+  sortOrder              Int      @default(0)
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+}
+
+// ─────────────────────────────────────────────
+// Timeline Events
+// ─────────────────────────────────────────────
+model TimelineEvent {
+  id          String   @id @default(cuid())
+  title       String
+  time        String
+  description String   @default("")
+  icon        String?
+  sortOrder   Int      @default(0)
+  eventType   String   @default("wedding-day")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// ─────────────────────────────────────────────
+// Hotels
+// ─────────────────────────────────────────────
+model Hotel {
+  id            String    @id @default(cuid())
+  name          String
+  address       String    @default("")
+  phone         String    @default("")
+  website       String    @default("")
+  bookingLink   String    @default("")
+  blockCode     String    @default("")
+  blockDeadline DateTime?
+  notes         String    @default("")
+  sortOrder     Int       @default(0)
+}
+
+// ─────────────────────────────────────────────
+// Registry Items
+// ─────────────────────────────────────────────
+model RegistryItem {
+  id        String @id @default(cuid())
+  name      String
+  url       String
+  iconUrl   String?
+  sortOrder Int    @default(0)
+}
+
+// ─────────────────────────────────────────────
+// FAQs
+// ─────────────────────────────────────────────
+model FAQ {
+  id        String @id @default(cuid())
+  question  String
+  answer    String
+  sortOrder Int    @default(0)
+}
+
+// ─────────────────────────────────────────────
+// Photos
+// ─────────────────────────────────────────────
+model Photo {
+  id         String   @id @default(cuid())
+  url        String
+  caption    String   @default("")
+  category   String   @default("gallery")
+  sortOrder  Int      @default(0)
+  approved   Boolean  @default(false)
+  uploadedBy String?  
+  createdAt  DateTime @default(now())
+}
+
+// ─────────────────────────────────────────────
+// Entertainment
+// ─────────────────────────────────────────────
+model Entertainment {
+  id          String @id @default(cuid())
+  name        String
+  description String @default("")
+  icon        String?
+  sortOrder   Int    @default(0)
+}
+
+// ─────────────────────────────────────────────
+// Guest Book
+// ─────────────────────────────────────────────
+model GuestBookEntry {
+  id        String   @id @default(cuid())
+  name      String
+  message   String
+  isVisible Boolean  @default(true)
+  createdAt DateTime @default(now())
+}
+
+// ─────────────────────────────────────────────
+// Meal Options
+// ─────────────────────────────────────────────
+model MealOption {
+  id           String  @id @default(cuid())
+  name         String
+  description  String  @default("")
+  isVegetarian Boolean @default(false)
+  isVegan      Boolean @default(false)
+  isGlutenFree Boolean @default(false)
+  isAvailable  Boolean @default(true)
+  sortOrder    Int     @default(0)
+}
+
+// ─────────────────────────────────────────────
+// Song Requests & DJ Lists
+// ─────────────────────────────────────────────
+model SongRequest {
+  id        String   @id @default(cuid())
+  guestName String
+  songTitle String
+  artist    String   @default("")
+  approved  Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model DJList {
+  id       String @id @default(cuid())
+  songName String
+  artist   String @default("")
+  listType String
+}
+
+// ─────────────────────────────────────────────
+// Feature Flags
+// ─────────────────────────────────────────────
+model FeatureFlag {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  enabled     Boolean  @default(false)
+  description String   @default("")
+  updatedAt   DateTime @updatedAt
+}
+
+// ─────────────────────────────────────────────
+// Webhooks & Integrations
+// ─────────────────────────────────────────────
+model WebhookLog {
+  id          String    @id @default(cuid())
+  provider    String
+  eventType   String
+  payload     String
+  status      String    @default("received")
+  error       String?
+  receivedAt  DateTime  @default(now())
+  processedAt DateTime?
+}
+
+model IntegrationConfig {
+  id         String    @id @default(cuid())
+  moduleId   String    @unique
+  enabled    Boolean   @default(false)
+  config     String    @default("{}")
+  lastSyncAt DateTime?
+  syncStatus String    @default("idle")
+  syncError  String?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+}
+
+// ─────────────────────────────────────────────
+// Admin Activity Log
+// ─────────────────────────────────────────────
+model AdminActivityLog {
+  id          String   @id @default(cuid())
+  action      String
+  description String
+  entityType  String?
+  entityId    String?
+  metadata    String   @default("{}")
+  adminEmail  String   @default("")
+  createdAt   DateTime @default(now())
+}
+
+// ─────────────────────────────────────────────
+// Contact Messages
+// ─────────────────────────────────────────────
+model ContactMessage {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  subject   String   @default("")
+  message   String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+// ─────────────────────────────────────────────
+// Email Templates & Campaigns
+// ─────────────────────────────────────────────
+model EmailTemplate {
+  id        String   @id @default(cuid())
+  slug      String   @unique
+  name      String
+  subject   String
+  body      String
+  category  String   @default("custom")
+  variables String   @default("[]")
+  isDefault Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model EmailCampaign {
+  id             String    @id @default(cuid())
+  name           String
+  templateId     String?
+  subject        String
+  body           String
+  audienceFilter String    @default("{}")
+  recipientCount Int       @default(0)
+  status         String    @default("draft")
+  scheduledAt    DateTime?
+  sentAt         DateTime?
+  completedAt    DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  logs           EmailLog[]
+}
+
+model EmailLog {
+  id          String        @id @default(cuid())
+  campaignId  String
+  campaign    EmailCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  guestId     String
+  email       String
+  status      String        @default("pending")
+  error       String?
+  sentAt      DateTime?
+  deliveredAt DateTime?
+  openedAt    DateTime?
+  createdAt   DateTime      @default(now())
+}

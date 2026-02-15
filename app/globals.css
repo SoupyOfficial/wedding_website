@@ -1,0 +1,147 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,700&family=Inter:wght@300;400;500;600;700&display=swap");
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-midnight text-ivory font-sans antialiased;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-serif;
+  }
+
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-midnight-500;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-gold/40 rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-gold/60;
+  }
+}
+
+@layer components {
+  .btn-gold {
+    @apply bg-gold text-midnight font-semibold px-6 py-3 rounded-lg
+      hover:bg-gold-light hover:shadow-glow transition-all duration-300
+      focus:outline-none focus:ring-2 focus:ring-gold/50 focus:ring-offset-2 focus:ring-offset-midnight;
+  }
+
+  .btn-outline {
+    @apply border-2 border-gold text-gold px-6 py-3 rounded-lg
+      hover:bg-gold/10 hover:shadow-glow transition-all duration-300
+      focus:outline-none focus:ring-2 focus:ring-gold/50 focus:ring-offset-2 focus:ring-offset-midnight;
+  }
+
+  .btn-secondary {
+    @apply bg-royal text-ivory px-6 py-3 rounded-lg
+      hover:bg-royal-light transition-all duration-300
+      focus:outline-none focus:ring-2 focus:ring-royal/50;
+  }
+
+  .card-celestial {
+    @apply bg-midnight-300/50 border border-gold/20 rounded-xl p-6
+      backdrop-blur-sm hover:border-gold/40 transition-all duration-300;
+  }
+
+  .input-celestial {
+    @apply bg-midnight-300 border border-gold/30 rounded-lg px-4 py-3
+      text-ivory placeholder:text-ivory/40
+      focus:outline-none focus:ring-2 focus:ring-gold/50 focus:border-gold
+      transition-all duration-200;
+  }
+
+  .section-padding {
+    @apply px-4 py-16 sm:px-6 lg:px-8 max-w-7xl mx-auto;
+  }
+
+  .heading-gold {
+    @apply text-gold font-serif font-bold;
+  }
+
+  .gold-divider {
+    @apply w-24 h-0.5 bg-gradient-gold mx-auto my-8;
+  }
+
+  .text-shadow-glow {
+    text-shadow: 0 0 20px rgba(212, 168, 67, 0.3);
+  }
+}
+
+@layer utilities {
+  .bg-stars {
+    background-image: radial-gradient(
+        2px 2px at 20px 30px,
+        rgba(255, 255, 255, 0.4),
+        transparent
+      ),
+      radial-gradient(
+        2px 2px at 40px 70px,
+        rgba(255, 255, 255, 0.3),
+        transparent
+      ),
+      radial-gradient(
+        1px 1px at 90px 40px,
+        rgba(255, 255, 255, 0.5),
+        transparent
+      ),
+      radial-gradient(
+        1px 1px at 130px 80px,
+        rgba(255, 255, 255, 0.4),
+        transparent
+      ),
+      radial-gradient(
+        2px 2px at 160px 30px,
+        rgba(255, 255, 255, 0.3),
+        transparent
+      );
+    background-size: 200px 100px;
+  }
+}
+
+@media print {
+  body {
+    background: white !important;
+    color: black !important;
+  }
+
+  nav,
+  footer,
+  .no-print {
+    display: none !important;
+  }
+
+  .card-celestial {
+    border: 1px solid #ccc !important;
+    background: white !important;
+  }
+
+  a {
+    color: black !important;
+    text-decoration: underline !important;
+  }
+
+  a::after {
+    content: " (" attr(href) ")";
+    font-size: 0.8em;
+  }
+}
