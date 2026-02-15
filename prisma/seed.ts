@@ -8,10 +8,13 @@ async function main() {
   // ─── Site Settings ───
   await prisma.siteSettings.upsert({
     where: { id: "singleton" },
-    update: {},
+    update: {
+      weddingDate: new Date("2026-11-13T00:00:00.000Z"),
+    },
     create: {
       id: "singleton",
       coupleName: "Jacob & Ashley",
+      weddingDate: new Date("2026-11-13T00:00:00.000Z"),
       venueName: "The Highland Manor",
       venueAddress: "Apopka, Florida",
       ceremonyType: "Outdoor Ceremony & Indoor Reception",

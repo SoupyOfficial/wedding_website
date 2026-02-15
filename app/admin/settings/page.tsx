@@ -6,7 +6,7 @@ interface Settings {
   id: string;
   coupleName: string;
   weddingDate: string | null;
-  weddingTime: string;
+  weddingTime: string | null;
   venueName: string;
   venueAddress: string;
   ceremonyType: string;
@@ -20,12 +20,18 @@ interface Settings {
   rsvpDeadline: string | null;
   rsvpEnabled: boolean;
   heroTagline: string;
+  heroTaglinePostWedding: string;
   ourStoryContent: string;
   travelContent: string;
+  preWeddingContent: string;
+  postWeddingContent: string;
   weatherInfo: string;
   parkingInfo: string;
   childrenPolicy: string;
   faqContent: string;
+  photoShareLink: string;
+  ogImage: string;
+  ogDescription: string;
   socialInstagram: string;
   socialFacebook: string;
   socialTikTok: string;
@@ -187,6 +193,16 @@ export default function AdminSettingsPage() {
                 placeholder="We're getting married!"
               />
             </div>
+            <div>
+              <label className="block text-ivory/70 text-sm mb-1">Hero Tagline (Post-Wedding)</label>
+              <input
+                type="text"
+                value={settings.heroTaglinePostWedding}
+                onChange={(e) => updateField("heroTaglinePostWedding", e.target.value)}
+                className="input-celestial w-full"
+                placeholder="We did it!"
+              />
+            </div>
           </div>
         </section>
 
@@ -207,7 +223,7 @@ export default function AdminSettingsPage() {
               <label className="block text-ivory/70 text-sm mb-1">Wedding Time</label>
               <input
                 type="text"
-                value={settings.weddingTime}
+                value={settings.weddingTime ?? ""}
                 onChange={(e) => updateField("weddingTime", e.target.value)}
                 className="input-celestial w-full"
                 placeholder="4:30 PM"
@@ -433,6 +449,61 @@ export default function AdminSettingsPage() {
                 onChange={(e) => updateField("faqContent", e.target.value)}
                 className="input-celestial w-full h-24 resize-none"
                 placeholder="Frequently asked questions..."
+              />
+            </div>
+            <div>
+              <label className="block text-ivory/70 text-sm mb-1">Pre-Wedding Content</label>
+              <textarea
+                value={settings.preWeddingContent}
+                onChange={(e) => updateField("preWeddingContent", e.target.value)}
+                className="input-celestial w-full h-24 resize-none"
+                placeholder="Content to show before the wedding..."
+              />
+            </div>
+            <div>
+              <label className="block text-ivory/70 text-sm mb-1">Post-Wedding Content</label>
+              <textarea
+                value={settings.postWeddingContent}
+                onChange={(e) => updateField("postWeddingContent", e.target.value)}
+                className="input-celestial w-full h-24 resize-none"
+                placeholder="Content to show after the wedding..."
+              />
+            </div>
+          </div>
+        </section>
+
+        {/* SEO & Sharing */}
+        <section className="bg-royal/20 border border-gold/10 rounded-lg p-6">
+          <h2 className="text-gold font-serif text-xl mb-4">SEO & Sharing</h2>
+          <div className="grid md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-ivory/70 text-sm mb-1">OG Image URL</label>
+              <input
+                type="text"
+                value={settings.ogImage}
+                onChange={(e) => updateField("ogImage", e.target.value)}
+                className="input-celestial w-full"
+                placeholder="URL for social share image"
+              />
+            </div>
+            <div>
+              <label className="block text-ivory/70 text-sm mb-1">Photo Share Link</label>
+              <input
+                type="text"
+                value={settings.photoShareLink}
+                onChange={(e) => updateField("photoShareLink", e.target.value)}
+                className="input-celestial w-full"
+                placeholder="Link for guests to share photos"
+              />
+            </div>
+            <div className="md:col-span-2">
+              <label className="block text-ivory/70 text-sm mb-1">OG Description</label>
+              <input
+                type="text"
+                value={settings.ogDescription}
+                onChange={(e) => updateField("ogDescription", e.target.value)}
+                className="input-celestial w-full"
+                placeholder="Description for social media sharing"
               />
             </div>
           </div>

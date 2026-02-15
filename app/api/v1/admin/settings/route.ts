@@ -25,12 +25,18 @@ export async function PUT(req: NextRequest) {
   try {
     const body = await req.json();
 
+    // Don't overwrite the password if the masked placeholder is sent back
+    const passwordUpdate =
+      body.sitePassword && body.sitePassword !== "••••••••"
+        ? { sitePassword: body.sitePassword }
+        : {};
+
     const settings = await prisma.siteSettings.update({
       where: { id: "singleton" },
       data: {
         coupleName: body.coupleName,
         weddingDate: body.weddingDate ? new Date(body.weddingDate) : undefined,
-        weddingTime: body.weddingTime,
+        weddingTime: body.weddingTime ?? null,
         venueName: body.venueName,
         venueAddress: body.venueAddress,
         ceremonyType: body.ceremonyType,
@@ -39,17 +45,23 @@ export async function PUT(req: NextRequest) {
         contactEmailBride: body.contactEmailBride ?? "",
         contactEmailGroom: body.contactEmailGroom ?? "",
         weddingHashtag: body.weddingHashtag ?? "",
-        sitePassword: body.sitePassword ?? "",
+        ...passwordUpdate,
         sitePasswordEnabled: body.sitePasswordEnabled ?? false,
         rsvpDeadline: body.rsvpDeadline ? new Date(body.rsvpDeadline) : null,
         rsvpEnabled: body.rsvpEnabled ?? true,
         heroTagline: body.heroTagline ?? "",
+        heroTaglinePostWedding: body.heroTaglinePostWedding ?? "",
         ourStoryContent: body.ourStoryContent ?? "",
         travelContent: body.travelContent ?? "",
+        preWeddingContent: body.preWeddingContent ?? "",
+        postWeddingContent: body.postWeddingContent ?? "",
         weatherInfo: body.weatherInfo ?? "",
         parkingInfo: body.parkingInfo ?? "",
         childrenPolicy: body.childrenPolicy ?? "",
         faqContent: body.faqContent ?? "",
+        photoShareLink: body.photoShareLink ?? "",
+        ogImage: body.ogImage ?? "",
+        ogDescription: body.ogDescription ?? "",
         socialInstagram: body.socialInstagram ?? "",
         socialFacebook: body.socialFacebook ?? "",
         socialTikTok: body.socialTikTok ?? "",
