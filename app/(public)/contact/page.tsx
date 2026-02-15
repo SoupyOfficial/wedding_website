@@ -152,10 +152,10 @@ export default function ContactPage() {
                   <div>
                     <p className="text-ivory/70 text-sm font-medium">Email</p>
                     <a
-                      href="mailto:forevercampbells@gmail.com"
+                      href="mailto:forevercampbells@hotmail.com"
                       className="text-gold hover:text-gold/80 text-sm"
                     >
-                      forevercampbells@gmail.com
+                      forevercampbells@hotmail.com
                     </a>
                   </div>
                 </div>

@@ -81,8 +81,8 @@ export default function SitePasswordPage() {
 
         <p className="text-center text-ivory/30 text-xs mt-6">
           Can&apos;t find your password? Contact us at{" "}
-          <a href="mailto:forevercampbells@gmail.com" className="text-gold/50 hover:text-gold">
-            forevercampbells@gmail.com
+          <a href="mailto:forevercampbells@hotmail.com" className="text-gold/50 hover:text-gold">
+            forevercampbells@hotmail.com
           </a>
         </p>
       </div>
