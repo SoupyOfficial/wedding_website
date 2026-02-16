@@ -12,6 +12,12 @@ export default async function HomePage() {
     ? new Date(weddingDate) < new Date()
     : false;
 
+  // Split couple name (e.g. "Jacob & Ashley") into two parts
+  const coupleName = settings?.coupleName || "Jacob & Ashley";
+  const nameParts = coupleName.split(/\s*&\s*/);
+  const name1 = nameParts[0]?.trim() || "Jacob";
+  const name2 = nameParts[1]?.trim() || "Ashley";
+
   return (
     <div className="relative">
       {/* Hero Section */}
@@ -37,11 +43,11 @@ export default async function HomePage() {
 
           {/* Couple Names */}
           <h1 className="text-gold font-serif text-5xl md:text-7xl lg:text-8xl font-bold text-shadow-glow leading-tight">
-            Jacob
+            {name1}
             <span className="block text-3xl md:text-4xl lg:text-5xl text-ivory/80 font-normal my-2">
               &
             </span>
-            Ashley
+            {name2}
           </h1>
 
           {/* Venue */}

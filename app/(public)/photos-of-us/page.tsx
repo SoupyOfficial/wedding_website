@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 
 export default function PhotosOfUsPage() {
   const [uploading, setUploading] = useState(false);
@@ -9,7 +9,19 @@ export default function PhotosOfUsPage() {
   const [preview, setPreview] = useState<string | null>(null);
   const [caption, setCaption] = useState("");
   const [uploaderName, setUploaderName] = useState("");
+  const [hashtag, setHashtag] = useState("#ForeverCampbells");
   const fileRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    fetch("/api/v1/settings/public")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.data.weddingHashtag) {
+          setHashtag(data.data.weddingHashtag);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -195,7 +207,7 @@ export default function PhotosOfUsPage() {
               Don&apos;t forget to tag your posts with
             </p>
             <p className="text-gold font-serif text-xl mt-1">
-              #ForeverCampbells
+              {hashtag}
             </p>
           </div>
         </div>

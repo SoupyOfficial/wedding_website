@@ -2,13 +2,17 @@ import prisma from "@/lib/db";
 import SectionDivider from "@/components/SectionDivider";
 
 export const metadata = {
-  title: "Registry | Jacob & Ashley",
+  title: "Registry",
   description: "Our wedding gift registry. Your presence is our greatest gift!",
 };
 
 export default async function RegistryPage() {
   const registries = await prisma.registryItem.findMany({
     orderBy: { sortOrder: "asc" },
+  });
+
+  const settings = await prisma.siteSettings.findUnique({
+    where: { id: "singleton" },
   });
 
   const iconMap: Record<string, string> = {
@@ -81,9 +85,8 @@ export default async function RegistryPage() {
               A Note from Us
             </h3>
             <p className="text-ivory/70 leading-relaxed">
-              Truly, your love and support mean the most to us. We are just
-              grateful to have you celebrate this special day with us. If you do
-              choose to give a gift, please know that it is cherished deeply.
+              {settings?.registryNote ||
+                "Truly, your love and support mean the most to us. We are just grateful to have you celebrate this special day with us. If you do choose to give a gift, please know that it is cherished deeply."}
             </p>
           </div>
         </div>

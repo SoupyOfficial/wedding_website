@@ -2,7 +2,7 @@ import prisma from "@/lib/db";
 import GalleryClient from "./GalleryClient";
 
 export const metadata = {
-  title: "Gallery | Jacob & Ashley",
+  title: "Gallery",
   description: "Photos from our journey together and wedding celebrations.",
 };
 

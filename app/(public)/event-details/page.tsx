@@ -2,9 +2,9 @@ import prisma from "@/lib/db";
 import SectionDivider from "@/components/SectionDivider";
 
 export const metadata = {
-  title: "Event Details | Jacob & Ashley",
+  title: "Event Details",
   description:
-    "Wedding ceremony and reception details at The Highland Manor.",
+    "Wedding ceremony and reception details.",
 };
 
 export default async function EventDetailsPage() {
@@ -34,7 +34,11 @@ export default async function EventDetailsPage() {
           <div className="card-celestial text-center">
             <div className="text-4xl mb-4">💒</div>
             <h2 className="heading-gold text-2xl mb-3">The Ceremony</h2>
-            <p className="text-ivory/80 text-lg mb-2">Outdoor Ceremony</p>
+            <p className="text-ivory/80 text-lg mb-2">
+              {settings?.ceremonyType
+                ? settings.ceremonyType.split("&")[0]?.trim() || "Ceremony"
+                : "Outdoor Ceremony"}
+            </p>
             <p className="text-ivory/60">
               {settings?.venueName || "The Highland Manor"}
             </p>
@@ -63,7 +67,11 @@ export default async function EventDetailsPage() {
           <div className="card-celestial text-center">
             <div className="text-4xl mb-4">🎉</div>
             <h2 className="heading-gold text-2xl mb-3">The Reception</h2>
-            <p className="text-ivory/80 text-lg mb-2">Indoor Reception</p>
+            <p className="text-ivory/80 text-lg mb-2">
+              {settings?.ceremonyType && settings.ceremonyType.includes("&")
+                ? settings.ceremonyType.split("&")[1]?.trim() || "Reception"
+                : "Indoor Reception"}
+            </p>
             <p className="text-ivory/60">
               {settings?.venueName || "The Highland Manor"}
             </p>

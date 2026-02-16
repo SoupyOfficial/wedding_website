@@ -13,7 +13,7 @@ type WPMember = {
 };
 
 export const metadata = {
-  title: "Wedding Party | Jacob & Ashley",
+  title: "Wedding Party",
   description: "Meet the bridesmaids, groomsmen, and special members of our wedding party.",
 };
 

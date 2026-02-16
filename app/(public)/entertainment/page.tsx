@@ -2,13 +2,17 @@ import prisma from "@/lib/db";
 import SectionDivider from "@/components/SectionDivider";
 
 export const metadata = {
-  title: "Entertainment | Jacob & Ashley",
+  title: "Entertainment",
   description: "Reception entertainment, activities, and fun for all guests.",
 };
 
 export default async function EntertainmentPage() {
   const entertainment = await prisma.entertainment.findMany({
     orderBy: { sortOrder: "asc" },
+  });
+
+  const settings = await prisma.siteSettings.findUnique({
+    where: { id: "singleton" },
   });
 
   const iconMap: Record<string, string> = {
@@ -69,8 +73,8 @@ export default async function EntertainmentPage() {
             A Night Under the Stars
           </h2>
           <p className="text-ivory/70 mb-4">
-            Our reception will be a celebration filled with music, dancing, games,
-            and memories! We want everyone to have an incredible time.
+            {settings?.entertainmentNote ||
+              "Our reception will be a celebration filled with music, dancing, games, and memories! We want everyone to have an incredible time."}
           </p>
           <p className="text-ivory/60 text-sm italic">
             More surprises may be in store — stay tuned!

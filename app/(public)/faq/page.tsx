@@ -1,7 +1,7 @@
 import prisma from "@/lib/db";
 
 export const metadata = {
-  title: "FAQ | Jacob & Ashley",
+  title: "FAQ",
   description: "Frequently asked questions about our wedding day.",
 };
 

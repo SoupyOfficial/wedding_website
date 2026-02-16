@@ -2,8 +2,8 @@ import prisma from "@/lib/db";
 import SectionDivider from "@/components/SectionDivider";
 
 export const metadata = {
-  title: "Our Story | Jacob & Ashley",
-  description: "The story of how Jacob & Ashley found each other.",
+  title: "Our Story",
+  description: "The story of how we found each other.",
 };
 
 export default async function OurStoryPage() {

@@ -52,6 +52,8 @@ model SiteSettings {
   socialInstagram        String    @default("")
   socialFacebook         String    @default("")
   socialTikTok           String    @default("")
+  registryNote           String    @default("Truly, your love and support mean the most to us. We are just grateful to have you celebrate this special day with us. If you do choose to give a gift, please know that it is cherished deeply.")
+  entertainmentNote      String    @default("Our reception will be a celebration filled with music, dancing, games, and memories! We want everyone to have an incredible time.")
   updatedAt              DateTime  @updatedAt
 }
 

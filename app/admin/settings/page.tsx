@@ -35,6 +35,8 @@ interface Settings {
   socialInstagram: string;
   socialFacebook: string;
   socialTikTok: string;
+  registryNote: string;
+  entertainmentNote: string;
   notifyOnRsvp: boolean;
   notificationEmail: string;
   bannerText: string;
@@ -467,6 +469,24 @@ export default function AdminSettingsPage() {
                 onChange={(e) => updateField("postWeddingContent", e.target.value)}
                 className="input-celestial w-full h-24 resize-none"
                 placeholder="Content to show after the wedding..."
+              />
+            </div>
+            <div>
+              <label className="block text-ivory/70 text-sm mb-1">Registry Note</label>
+              <textarea
+                value={settings.registryNote}
+                onChange={(e) => updateField("registryNote", e.target.value)}
+                className="input-celestial w-full h-24 resize-none"
+                placeholder="A personal note shown on the registry page..."
+              />
+            </div>
+            <div>
+              <label className="block text-ivory/70 text-sm mb-1">Entertainment Note</label>
+              <textarea
+                value={settings.entertainmentNote}
+                onChange={(e) => updateField("entertainmentNote", e.target.value)}
+                className="input-celestial w-full h-24 resize-none"
+                placeholder="Description for the entertainment section..."
               />
             </div>
           </div>

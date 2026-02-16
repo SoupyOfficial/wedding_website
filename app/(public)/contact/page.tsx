@@ -1,6 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+
+interface SiteSettings {
+  coupleName: string;
+  contactEmailJoint: string;
+  weddingHashtag: string;
+  socialInstagram: string;
+  socialFacebook: string;
+  socialTikTok: string;
+}
 
 export default function ContactPage() {
   const [name, setName] = useState("");
@@ -10,6 +19,20 @@ export default function ContactPage() {
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
+  const [settings, setSettings] = useState<SiteSettings | null>(null);
+
+  useEffect(() => {
+    fetch("/api/v1/settings/public")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success) setSettings(data.data);
+      })
+      .catch(() => {});
+  }, []);
+
+  const coupleNames = settings?.coupleName || "Jacob & Ashley";
+  const contactEmail = settings?.contactEmailJoint || "";
+  const hashtag = settings?.weddingHashtag || "#ForeverCampbells";
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -147,25 +170,87 @@ export default function ContactPage() {
                 Get in Touch
               </h3>
               <div className="space-y-4">
-                <div className="flex items-start gap-3">
-                  <span className="text-xl">💌</span>
-                  <div>
-                    <p className="text-ivory/70 text-sm font-medium">Email</p>
-                    <a
-                      href="mailto:forevercampbells@hotmail.com"
-                      className="text-gold hover:text-gold/80 text-sm"
-                    >
-                      forevercampbells@hotmail.com
-                    </a>
+                {contactEmail && (
+                  <div className="flex items-start gap-3">
+                    <span className="text-xl">💌</span>
+                    <div>
+                      <p className="text-ivory/70 text-sm font-medium">
+                        Email
+                      </p>
+                      <a
+                        href={`mailto:${contactEmail}`}
+                        className="text-gold hover:text-gold/80 text-sm"
+                      >
+                        {contactEmail}
+                      </a>
+                    </div>
                   </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <span className="text-xl">📱</span>
-                  <div>
-                    <p className="text-ivory/70 text-sm font-medium">Social</p>
-                    <p className="text-gold text-sm">#ForeverCampbells</p>
+                )}
+                {hashtag && (
+                  <div className="flex items-start gap-3">
+                    <span className="text-xl">📱</span>
+                    <div>
+                      <p className="text-ivory/70 text-sm font-medium">
+                        Social
+                      </p>
+                      <p className="text-gold text-sm">{hashtag}</p>
+                    </div>
                   </div>
-                </div>
+                )}
+                {settings?.socialInstagram && (
+                  <div className="flex items-start gap-3">
+                    <span className="text-xl">📷</span>
+                    <div>
+                      <p className="text-ivory/70 text-sm font-medium">
+                        Instagram
+                      </p>
+                      <a
+                        href={`https://instagram.com/${settings.socialInstagram.replace(/^@/, "")}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-gold hover:text-gold/80 text-sm"
+                      >
+                        {settings.socialInstagram}
+                      </a>
+                    </div>
+                  </div>
+                )}
+                {settings?.socialFacebook && (
+                  <div className="flex items-start gap-3">
+                    <span className="text-xl">👥</span>
+                    <div>
+                      <p className="text-ivory/70 text-sm font-medium">
+                        Facebook
+                      </p>
+                      <a
+                        href={settings.socialFacebook}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-gold hover:text-gold/80 text-sm"
+                      >
+                        Facebook Page
+                      </a>
+                    </div>
+                  </div>
+                )}
+                {settings?.socialTikTok && (
+                  <div className="flex items-start gap-3">
+                    <span className="text-xl">🎵</span>
+                    <div>
+                      <p className="text-ivory/70 text-sm font-medium">
+                        TikTok
+                      </p>
+                      <a
+                        href={`https://tiktok.com/@${settings.socialTikTok.replace(/^@/, "")}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-gold hover:text-gold/80 text-sm"
+                      >
+                        {settings.socialTikTok}
+                      </a>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -204,10 +289,11 @@ export default function ContactPage() {
             <div className="card-celestial text-center">
               <div className="text-3xl mb-3">🌙</div>
               <p className="text-ivory/50 text-sm italic">
-                &ldquo;We can&apos;t wait to celebrate with you under the stars!&rdquo;
+                &ldquo;We can&apos;t wait to celebrate with you under the
+                stars!&rdquo;
               </p>
               <p className="text-gold/70 font-serif mt-2">
-                — Jacob & Ashley
+                — {coupleNames}
               </p>
             </div>
           </div>

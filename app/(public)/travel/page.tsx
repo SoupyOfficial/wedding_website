@@ -2,7 +2,7 @@ import prisma from "@/lib/db";
 import SectionDivider from "@/components/SectionDivider";
 
 export const metadata = {
-  title: "Travel & Stay | Jacob & Ashley",
+  title: "Travel & Stay",
   description: "Hotels, travel information, and things to do near the wedding venue.",
 };
 
