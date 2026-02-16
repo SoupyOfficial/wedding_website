@@ -1,5 +1,6 @@
 import prisma from "@/lib/db";
 import SectionDivider from "@/components/SectionDivider";
+import { PageHeader } from "@/components/ui";
 
 export const metadata = {
   title: "Our Story",
@@ -19,16 +20,11 @@ export default async function OurStoryPage() {
   return (
     <div className="pt-24 pb-16">
       <div className="section-padding">
-        {/* Page Header */}
-        <div className="text-center mb-16 animate-fade-in">
-          <h1 className="heading-gold text-4xl md:text-5xl mb-4">
-            Our Story
-          </h1>
-          <div className="gold-divider" />
-          <p className="text-ivory/70 text-lg max-w-2xl mx-auto">
-            How we found each other under the stars
-          </p>
-        </div>
+        <PageHeader
+          title="Our Story"
+          subtitle="How we found each other under the stars"
+          className="mb-16"
+        />
 
         {/* Story Content */}
         {settings?.ourStoryContent ? (

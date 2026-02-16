@@ -1,5 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import prisma from "@/lib/db";
+import { successResponse, errorResponse } from "@/lib/api";
 
 export async function PUT(
   req: NextRequest,
@@ -18,9 +19,13 @@ export async function PUT(
       },
     });
 
-    return NextResponse.json({ success: true, data: entry });
-  } catch {
-    return NextResponse.json({ error: "Entry not found." }, { status: 404 });
+    return successResponse(entry);
+  } catch (error: unknown) {
+    if (error && typeof error === "object" && "code" in error && error.code === "P2025") {
+      return errorResponse("Entry not found.", 404);
+    }
+    console.error("Failed to update guest book entry:", error);
+    return errorResponse("Internal server error.", 500);
   }
 }
 
@@ -31,8 +36,12 @@ export async function DELETE(
   try {
     const { id } = await params;
     await prisma.guestBookEntry.delete({ where: { id } });
-    return NextResponse.json({ success: true });
-  } catch {
-    return NextResponse.json({ error: "Internal server error." }, { status: 500 });
+    return successResponse({ deleted: true });
+  } catch (error: unknown) {
+    if (error && typeof error === "object" && "code" in error && error.code === "P2025") {
+      return errorResponse("Entry not found.", 404);
+    }
+    console.error("Failed to delete guest book entry:", error);
+    return errorResponse("Internal server error.", 500);
   }
 }

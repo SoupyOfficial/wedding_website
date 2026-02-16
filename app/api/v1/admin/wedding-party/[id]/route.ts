@@ -1,16 +1,18 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import prisma from "@/lib/db";
+import { successResponse, errorResponse } from "@/lib/api";
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const body = await req.json();
     const { name, role, side, bio, photoUrl, sortOrder } = body;
 
     const member = await prisma.weddingPartyMember.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         ...(name !== undefined && { name: name.trim() }),
         ...(role !== undefined && { role: role.trim() }),
@@ -21,20 +23,29 @@ export async function PUT(
       },
     });
 
-    return NextResponse.json({ success: true, data: member });
-  } catch {
-    return NextResponse.json({ error: "Member not found." }, { status: 404 });
+    return successResponse(member);
+  } catch (error: unknown) {
+    if (error && typeof error === "object" && "code" in error && error.code === "P2025") {
+      return errorResponse("Member not found.", 404);
+    }
+    console.error("Failed to update member:", error);
+    return errorResponse("Internal server error.", 500);
   }
 }
 
 export async function DELETE(
-  _req: NextRequest,
-  { params }: { params: { id: string } }
+  _req: Request,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    await prisma.weddingPartyMember.delete({ where: { id: params.id } });
-    return NextResponse.json({ success: true });
-  } catch {
-    return NextResponse.json({ error: "Member not found." }, { status: 404 });
+    const { id } = await params;
+    await prisma.weddingPartyMember.delete({ where: { id } });
+    return successResponse({ deleted: true });
+  } catch (error: unknown) {
+    if (error && typeof error === "object" && "code" in error && error.code === "P2025") {
+      return errorResponse("Member not found.", 404);
+    }
+    console.error("Failed to delete member:", error);
+    return errorResponse("Internal server error.", 500);
   }
 }

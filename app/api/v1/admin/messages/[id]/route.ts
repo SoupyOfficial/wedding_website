@@ -1,5 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import prisma from "@/lib/db";
+import { successResponse, errorResponse } from "@/lib/api";
 
 export async function PUT(
   req: NextRequest,
@@ -15,9 +16,13 @@ export async function PUT(
       data: { ...(isRead !== undefined && { isRead }) },
     });
 
-    return NextResponse.json({ success: true, data: message });
-  } catch {
-    return NextResponse.json({ error: "Message not found." }, { status: 404 });
+    return successResponse(message);
+  } catch (error: unknown) {
+    if (error && typeof error === "object" && "code" in error && error.code === "P2025") {
+      return errorResponse("Message not found.", 404);
+    }
+    console.error("Failed to update message:", error);
+    return errorResponse("Internal server error.", 500);
   }
 }
 
@@ -28,8 +33,12 @@ export async function DELETE(
   try {
     const { id } = await params;
     await prisma.contactMessage.delete({ where: { id } });
-    return NextResponse.json({ success: true });
-  } catch {
-    return NextResponse.json({ error: "Internal server error." }, { status: 500 });
+    return successResponse({ deleted: true });
+  } catch (error: unknown) {
+    if (error && typeof error === "object" && "code" in error && error.code === "P2025") {
+      return errorResponse("Message not found.", 404);
+    }
+    console.error("Failed to delete message:", error);
+    return errorResponse("Internal server error.", 500);
   }
 }

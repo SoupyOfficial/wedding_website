@@ -1,5 +1,6 @@
 import prisma from "@/lib/db";
 import GalleryClient from "./GalleryClient";
+import { PageHeader } from "@/components/ui";
 
 export const metadata = {
   title: "Gallery",
@@ -24,14 +25,10 @@ export default async function GalleryPage() {
   return (
     <div className="pt-24 pb-16">
       <div className="section-padding">
-        {/* Header */}
-        <div className="text-center mb-12 animate-fade-in">
-          <h1 className="heading-gold text-4xl md:text-5xl mb-4">Gallery</h1>
-          <div className="gold-divider" />
-          <p className="text-ivory/70 text-lg max-w-2xl mx-auto">
-            Moments captured, memories preserved forever
-          </p>
-        </div>
+        <PageHeader
+          title="Gallery"
+          subtitle="Moments captured, memories preserved forever"
+        />
 
         {/* Gallery with client-side filtering */}
         <GalleryClient

@@ -1,5 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import prisma from "@/lib/db";
+import { successResponse, errorResponse } from "@/lib/api";
 
 export async function PUT(
   req: NextRequest,
@@ -20,21 +21,29 @@ export async function PUT(
       },
     });
 
-    return NextResponse.json({ success: true, data: registry });
-  } catch {
-    return NextResponse.json({ error: "Registry item not found." }, { status: 404 });
+    return successResponse(registry);
+  } catch (error: unknown) {
+    if (error && typeof error === "object" && "code" in error && error.code === "P2025") {
+      return errorResponse("Registry item not found.", 404);
+    }
+    console.error("Failed to update registry item:", error);
+    return errorResponse("Internal server error.", 500);
   }
 }
 
 export async function DELETE(
-  _req: NextRequest,
+  _req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params;
     await prisma.registryItem.delete({ where: { id } });
-    return NextResponse.json({ success: true });
-  } catch {
-    return NextResponse.json({ error: "Registry item not found." }, { status: 404 });
+    return successResponse({ deleted: true });
+  } catch (error: unknown) {
+    if (error && typeof error === "object" && "code" in error && error.code === "P2025") {
+      return errorResponse("Registry item not found.", 404);
+    }
+    console.error("Failed to delete registry item:", error);
+    return errorResponse("Internal server error.", 500);
   }
 }

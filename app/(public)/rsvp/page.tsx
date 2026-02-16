@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { PageHeader, Alert } from "@/components/ui";
 
 type Step = "lookup" | "details" | "meal" | "songs" | "confirm" | "done";
 
@@ -123,13 +124,7 @@ export default function RSVPPage() {
   return (
     <div className="pt-24 pb-16">
       <div className="section-padding">
-        <div className="text-center mb-12 animate-fade-in">
-          <h1 className="heading-gold text-4xl md:text-5xl mb-4">RSVP</h1>
-          <div className="gold-divider" />
-          <p className="text-ivory/70 text-lg max-w-2xl mx-auto">
-            We can&apos;t wait to celebrate with you!
-          </p>
-        </div>
+        <PageHeader title="RSVP" subtitle="We can't wait to celebrate with you!" />
 
         {/* Progress Steps */}
         {step !== "done" && (
@@ -159,8 +154,8 @@ export default function RSVPPage() {
 
         {/* Error Display */}
         {error && (
-          <div className="max-w-md mx-auto mb-6 p-4 bg-red-900/30 border border-red-500/30 rounded-lg text-red-300 text-sm text-center">
-            {error}
+          <div className="max-w-md mx-auto mb-6">
+            <Alert type="error" message={error} className="text-center" />
           </div>
         )}
 

@@ -1,6 +1,7 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import prisma from "@/lib/db";
 import { rateLimit } from "@/lib/api/middleware";
+import { successResponse, errorResponse } from "@/lib/api";
 
 const limiter = rateLimit({ windowMs: 60_000, maxRequests: 5 });
 
@@ -12,10 +13,7 @@ export async function POST(req: NextRequest) {
     const { name, email, subject, message } = body;
 
     if (!name?.trim() || !email?.trim() || !subject?.trim() || !message?.trim()) {
-      return NextResponse.json(
-        { error: "All fields are required." },
-        { status: 400 }
-      );
+      return errorResponse("All fields are required.", 400);
     }
 
     const msg = await prisma.contactMessage.create({
@@ -27,11 +25,9 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    return NextResponse.json(
-      { success: true, message: "Message sent successfully." },
-      { status: 201 }
-    );
-  } catch {
-    return NextResponse.json({ error: "Internal server error." }, { status: 500 });
+    return successResponse({ message: "Message sent successfully." }, undefined, 201);
+  } catch (error) {
+    console.error("Failed to create contact message:", error);
+    return errorResponse("Internal server error.", 500);
   }
 }

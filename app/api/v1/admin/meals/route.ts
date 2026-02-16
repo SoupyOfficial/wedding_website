@@ -1,14 +1,16 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import prisma from "@/lib/db";
+import { successResponse, errorResponse } from "@/lib/api";
 
 export async function GET() {
   try {
     const meals = await prisma.mealOption.findMany({
       orderBy: { name: "asc" },
     });
-    return NextResponse.json({ success: true, data: meals });
-  } catch {
-    return NextResponse.json({ error: "Internal server error." }, { status: 500 });
+    return successResponse(meals);
+  } catch (error) {
+    console.error("Failed to fetch meals:", error);
+    return errorResponse("Internal server error.", 500);
   }
 }
 
@@ -18,7 +20,7 @@ export async function POST(req: NextRequest) {
     const { name, description, isVegetarian, isVegan, isGlutenFree } = body;
 
     if (!name?.trim()) {
-      return NextResponse.json({ error: "Name is required." }, { status: 400 });
+      return errorResponse("Name is required.", 400);
     }
 
     const meal = await prisma.mealOption.create({
@@ -31,8 +33,9 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    return NextResponse.json({ success: true, data: meal }, { status: 201 });
-  } catch {
-    return NextResponse.json({ error: "Internal server error." }, { status: 500 });
+    return successResponse(meal, undefined, 201);
+  } catch (error) {
+    console.error("Failed to create meal:", error);
+    return errorResponse("Internal server error.", 500);
   }
 }

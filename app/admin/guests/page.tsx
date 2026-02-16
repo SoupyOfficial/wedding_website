@@ -1,6 +1,8 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState } from "react";
+import { useAdminFetch } from "@/lib/hooks";
+import { AdminPageHeader, Modal, FilterBar, LoadingState } from "@/components/ui";
 
 interface Guest {
   id: string;
@@ -44,30 +46,13 @@ const EMPTY_GUEST: Omit<Guest, "id" | "createdAt" | "rsvpRespondedAt"> = {
 };
 
 export default function AdminGuestsPage() {
-  const [guests, setGuests] = useState<Guest[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: guests, loading, refetch } = useAdminFetch<Guest>("/api/v1/admin/guests");
   const [filter, setFilter] = useState<"all" | "attending" | "declined" | "pending">("all");
   const [search, setSearch] = useState("");
   const [editing, setEditing] = useState<Guest | null>(null);
   const [isNew, setIsNew] = useState(false);
   const [formError, setFormError] = useState("");
   const [saving, setSaving] = useState(false);
-
-  const fetchGuests = useCallback(async () => {
-    try {
-      const res = await fetch("/api/v1/admin/guests");
-      const data = await res.json();
-      if (data.data) setGuests(data.data);
-    } catch {
-      /* silently fail */
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchGuests();
-  }, [fetchGuests]);
 
   function openNew() {
     setEditing({ id: "", createdAt: "", rsvpRespondedAt: null, ...EMPTY_GUEST } as Guest);
@@ -130,7 +115,7 @@ export default function AdminGuestsPage() {
       }
 
       closeEditor();
-      fetchGuests();
+      refetch();
     } catch {
       setFormError("Something went wrong.");
     } finally {
@@ -143,7 +128,7 @@ export default function AdminGuestsPage() {
     try {
       await fetch(`/api/v1/admin/guests/${id}`, { method: "DELETE" });
       if (editing?.id === id) closeEditor();
-      fetchGuests();
+      refetch();
     } catch {
       /* silently fail */
     }
@@ -168,31 +153,31 @@ export default function AdminGuestsPage() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-gold font-serif text-3xl mb-1">Guest Manager</h1>
-          <p className="text-ivory/50 text-sm">
-            {guests.length} guests &bull; {attendingCount} attending &bull; {declinedCount} declined &bull; {pendingCount} pending
-          </p>
-        </div>
-        <button onClick={openNew} className="btn-gold px-4 py-2 text-sm">+ Add Guest</button>
-      </div>
+      <AdminPageHeader
+        title="Guest Manager"
+        subtitle={`${guests.length} guests \u2022 ${attendingCount} attending \u2022 ${declinedCount} declined \u2022 ${pendingCount} pending`}
+        actions={<button onClick={openNew} className="btn-gold px-4 py-2 text-sm">+ Add Guest</button>}
+      />
 
       {/* Filters */}
       <div className="flex flex-wrap gap-4 mb-6">
         <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} className="input-celestial flex-1 min-w-[200px]" placeholder="Search guests..." />
-        <div className="flex gap-2">
-          {(["all", "attending", "declined", "pending"] as const).map((f) => (
-            <button key={f} onClick={() => setFilter(f)} className={`px-3 py-2 rounded text-sm transition-colors ${filter === f ? "bg-gold/20 text-gold border border-gold" : "bg-royal/20 text-ivory/50 border border-gold/10 hover:border-gold/30"}`}>
-              {f.charAt(0).toUpperCase() + f.slice(1)}
-            </button>
-          ))}
-        </div>
+        <FilterBar
+          filters={[
+            { value: "all" as const, label: "All" },
+            { value: "attending" as const, label: "Attending" },
+            { value: "declined" as const, label: "Declined" },
+            { value: "pending" as const, label: "Pending" },
+          ]}
+          active={filter}
+          onChange={setFilter}
+          variant="button"
+        />
       </div>
 
       {/* Guest Table */}
       {loading ? (
-        <div className="text-center py-8 text-ivory/40">Loading guests...</div>
+        <LoadingState message="Loading guests..." />
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
@@ -232,11 +217,12 @@ export default function AdminGuestsPage() {
         </div>
       )}
 
-      {/* Edit / Add Modal */}
       {editing && (
-        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
-          <div className="bg-midnight border border-gold/20 rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            <h3 className="text-gold font-serif text-xl mb-4">{isNew ? "Add Guest" : `Edit: ${editing.firstName} ${editing.lastName}`}</h3>
+        <Modal
+          title={isNew ? "Add Guest" : `Edit: ${editing.firstName} ${editing.lastName}`}
+          onClose={closeEditor}
+          maxWidth="max-w-2xl"
+        >
             {formError && <div className="mb-3 p-2 bg-red-900/30 border border-red-500/30 rounded text-red-300 text-sm">{formError}</div>}
             <form onSubmit={handleSave} className="space-y-4">
               <div className="grid md:grid-cols-2 gap-4">
@@ -328,8 +314,7 @@ export default function AdminGuestsPage() {
                 <button type="submit" disabled={saving} className="btn-gold px-4 py-2 text-sm">{saving ? "Saving..." : isNew ? "Add Guest" : "Save Changes"}</button>
               </div>
             </form>
-          </div>
-        </div>
+        </Modal>
       )}
     </div>
   );

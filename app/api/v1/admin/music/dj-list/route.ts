@@ -1,12 +1,14 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import prisma from "@/lib/db";
+import { successResponse, errorResponse } from "@/lib/api";
 
 export async function GET() {
   try {
     const items = await prisma.dJList.findMany();
-    return NextResponse.json({ success: true, data: items });
-  } catch {
-    return NextResponse.json({ error: "Internal server error." }, { status: 500 });
+    return successResponse(items);
+  } catch (error) {
+    console.error("Failed to fetch DJ list:", error);
+    return errorResponse("Internal server error.", 500);
   }
 }
 
@@ -16,7 +18,7 @@ export async function POST(req: NextRequest) {
     const { songName, artist, listType, playTime } = body;
 
     if (!songName?.trim()) {
-      return NextResponse.json({ error: "Song name is required." }, { status: 400 });
+      return errorResponse("Song name is required.", 400);
     }
 
     const item = await prisma.dJList.create({
@@ -28,8 +30,9 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    return NextResponse.json({ success: true, data: item }, { status: 201 });
-  } catch {
-    return NextResponse.json({ error: "Internal server error." }, { status: 500 });
+    return successResponse(item, undefined, 201);
+  } catch (error) {
+    console.error("Failed to create DJ list item:", error);
+    return errorResponse("Internal server error.", 500);
   }
 }

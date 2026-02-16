@@ -1,5 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import prisma from "@/lib/db";
+import { successResponse, errorResponse } from "@/lib/api";
 
 export async function POST(
   req: NextRequest,
@@ -18,8 +19,9 @@ export async function POST(
       where: { id },
       data: { approved },
     });
-    return NextResponse.json({ success: true });
-  } catch {
-    return NextResponse.json({ error: "Internal server error." }, { status: 500 });
+    return successResponse({ approved });
+  } catch (error) {
+    console.error("Failed to approve song request:", error);
+    return errorResponse("Internal server error.", 500);
   }
 }

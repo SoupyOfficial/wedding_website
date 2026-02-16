@@ -1,10 +1,11 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import prisma from "@/lib/db";
 import {
   isAppleMusicConfigured,
   parsePlaylistUrl,
   fetchPlaylist,
 } from "@/lib/apple-music";
+import { successResponse, errorResponse } from "@/lib/api";
 
 /**
  * GET /api/v1/admin/music/apple-music/import?check=true
@@ -13,12 +14,9 @@ import {
 export async function GET(req: NextRequest) {
   const check = req.nextUrl.searchParams.get("check");
   if (check) {
-    return NextResponse.json({
-      success: true,
-      data: { configured: isAppleMusicConfigured() },
-    });
+    return successResponse({ configured: isAppleMusicConfigured() });
   }
-  return NextResponse.json({ success: false, error: "Invalid request" }, { status: 400 });
+  return errorResponse("Invalid request", 400);
 }
 
 /**
@@ -30,13 +28,9 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     if (!isAppleMusicConfigured()) {
-      return NextResponse.json(
-        {
-          success: false,
-          error:
-            "Apple Music API not configured. Set APPLE_MUSIC_TEAM_ID, APPLE_MUSIC_KEY_ID, and APPLE_MUSIC_PRIVATE_KEY environment variables.",
-        },
-        { status: 400 }
+      return errorResponse(
+        "Apple Music API not configured. Set APPLE_MUSIC_TEAM_ID, APPLE_MUSIC_KEY_ID, and APPLE_MUSIC_PRIVATE_KEY environment variables.",
+        400
       );
     }
 
@@ -44,22 +38,15 @@ export async function POST(req: NextRequest) {
     const { url, listType = "must-play", playTime = "", skipDuplicates = true } = body;
 
     if (!url?.trim()) {
-      return NextResponse.json(
-        { success: false, error: "Playlist URL is required." },
-        { status: 400 }
-      );
+      return errorResponse("Playlist URL is required.", 400);
     }
 
     // Parse the Apple Music playlist URL
     const parsed = parsePlaylistUrl(url.trim());
     if (!parsed) {
-      return NextResponse.json(
-        {
-          success: false,
-          error:
-            "Invalid Apple Music playlist URL. Expected format: https://music.apple.com/us/playlist/name/pl.xxxx",
-        },
-        { status: 400 }
+      return errorResponse(
+        "Invalid Apple Music playlist URL. Expected format: https://music.apple.com/us/playlist/name/pl.xxxx",
+        400
       );
     }
 
@@ -67,10 +54,7 @@ export async function POST(req: NextRequest) {
     const playlist = await fetchPlaylist(parsed.storefront, parsed.playlistId);
 
     if (playlist.tracks.length === 0) {
-      return NextResponse.json(
-        { success: false, error: "Playlist is empty." },
-        { status: 400 }
-      );
+      return errorResponse("Playlist is empty.", 400);
     }
 
     // Get existing DJ list items to detect duplicates
@@ -112,26 +96,20 @@ export async function POST(req: NextRequest) {
 
     const skippedCount = playlist.tracks.length - addedCount;
 
-    return NextResponse.json({
-      success: true,
-      data: {
-        playlistName: playlist.name,
-        totalTracks: playlist.tracks.length,
-        addedCount,
-        skippedCount,
-        tracks: tracksToAdd.map((t) => ({
-          songName: t.songName,
-          artist: t.artist,
-        })),
-      },
+    return successResponse({
+      playlistName: playlist.name,
+      totalTracks: playlist.tracks.length,
+      addedCount,
+      skippedCount,
+      tracks: tracksToAdd.map((t) => ({
+        songName: t.songName,
+        artist: t.artist,
+      })),
     });
   } catch (error: unknown) {
     const message =
       error instanceof Error ? error.message : "Failed to import playlist";
     console.error("Apple Music import error:", message);
-    return NextResponse.json(
-      { success: false, error: message },
-      { status: 500 }
-    );
+    return errorResponse(message, 500);
   }
 }

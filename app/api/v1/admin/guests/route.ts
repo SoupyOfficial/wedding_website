@@ -1,14 +1,16 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import prisma from "@/lib/db";
+import { successResponse, errorResponse } from "@/lib/api";
 
 export async function GET() {
   try {
     const guests = await prisma.guest.findMany({
       orderBy: { createdAt: "desc" },
     });
-    return NextResponse.json({ success: true, data: guests });
-  } catch {
-    return NextResponse.json({ error: "Internal server error." }, { status: 500 });
+    return successResponse(guests);
+  } catch (error) {
+    console.error("Failed to fetch guests:", error);
+    return errorResponse("Internal server error.", 500);
   }
 }
 
@@ -18,7 +20,7 @@ export async function POST(req: NextRequest) {
     const { firstName, lastName, email, group, plusOneAllowed } = body;
 
     if (!firstName?.trim() || !lastName?.trim()) {
-      return NextResponse.json({ error: "Name is required." }, { status: 400 });
+      return errorResponse("Name is required.", 400);
     }
 
     const guest = await prisma.guest.create({
@@ -31,8 +33,9 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    return NextResponse.json({ success: true, data: guest }, { status: 201 });
-  } catch {
-    return NextResponse.json({ error: "Internal server error." }, { status: 500 });
+    return successResponse(guest, undefined, 201);
+  } catch (error) {
+    console.error("Failed to create guest:", error);
+    return errorResponse("Internal server error.", 500);
   }
 }

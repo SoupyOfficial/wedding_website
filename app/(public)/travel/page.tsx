@@ -1,5 +1,6 @@
 import prisma from "@/lib/db";
 import SectionDivider from "@/components/SectionDivider";
+import { PageHeader } from "@/components/ui";
 
 export const metadata = {
   title: "Travel & Stay",
@@ -18,16 +19,11 @@ export default async function TravelPage() {
   return (
     <div className="pt-24 pb-16">
       <div className="section-padding">
-        {/* Page Header */}
-        <div className="text-center mb-16 animate-fade-in">
-          <h1 className="heading-gold text-4xl md:text-5xl mb-4">
-            Travel & Stay
-          </h1>
-          <div className="gold-divider" />
-          <p className="text-ivory/70 text-lg max-w-2xl mx-auto">
-            Everything you need to know about getting here and where to stay
-          </p>
-        </div>
+        <PageHeader
+          title="Travel & Stay"
+          subtitle="Everything you need to know about getting here and where to stay"
+          className="mb-16"
+        />
 
         {/* Hotels */}
         <div className="mb-16">

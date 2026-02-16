@@ -1,5 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import prisma from "@/lib/db";
+import { successResponse, errorResponse } from "@/lib/api";
 
 export async function GET() {
   try {
@@ -15,9 +16,10 @@ export async function GET() {
         }
       : null;
 
-    return NextResponse.json({ success: true, data: safeSettings });
-  } catch {
-    return NextResponse.json({ error: "Internal server error." }, { status: 500 });
+    return successResponse(safeSettings);
+  } catch (error) {
+    console.error("Failed to fetch settings:", error);
+    return errorResponse("Internal server error.", 500);
   }
 }
 
@@ -74,8 +76,9 @@ export async function PUT(req: NextRequest) {
       },
     });
 
-    return NextResponse.json({ success: true, data: settings });
-  } catch {
-    return NextResponse.json({ error: "Internal server error." }, { status: 500 });
+    return successResponse(settings);
+  } catch (error) {
+    console.error("Failed to update settings:", error);
+    return errorResponse("Internal server error.", 500);
   }
 }

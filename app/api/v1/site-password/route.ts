@@ -1,7 +1,8 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import prisma from "@/lib/db";
 import { cookies } from "next/headers";
 import { rateLimit } from "@/lib/api/middleware";
+import { successResponse, errorResponse } from "@/lib/api";
 
 const limiter = rateLimit({ windowMs: 60_000, maxRequests: 5 });
 
@@ -17,14 +18,11 @@ export async function POST(req: NextRequest) {
     });
 
     if (!settings?.sitePasswordEnabled || !settings.sitePassword) {
-      return NextResponse.json({ success: true });
+      return successResponse({ verified: true });
     }
 
     if (password !== settings.sitePassword) {
-      return NextResponse.json(
-        { error: "Incorrect password." },
-        { status: 401 }
-      );
+      return errorResponse("Incorrect password.", 401);
     }
 
     const cookieStore = await cookies();
@@ -35,8 +33,9 @@ export async function POST(req: NextRequest) {
       maxAge: 60 * 60 * 24 * 30, // 30 days
     });
 
-    return NextResponse.json({ success: true });
-  } catch {
-    return NextResponse.json({ error: "Internal server error." }, { status: 500 });
+    return successResponse({ verified: true });
+  } catch (error) {
+    console.error("Failed to verify site password:", error);
+    return errorResponse("Internal server error.", 500);
   }
 }

@@ -409,12 +409,12 @@ async function main() {
     },
     {
       key: "photoUploadEnabled",
-      enabled: false,
+      enabled: true,
       description: "Allow guests to upload photos",
     },
     {
       key: "registrySyncEnabled",
-      enabled: false,
+      enabled: true,
       description: "Enable live registry synchronization",
     },
     {
@@ -429,7 +429,7 @@ async function main() {
     },
     {
       key: "guestPhotoSharingEnabled",
-      enabled: false,
+      enabled: true,
       description: "Allow guest photo sharing via the website",
     },
     {

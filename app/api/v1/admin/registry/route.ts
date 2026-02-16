@@ -1,14 +1,16 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import prisma from "@/lib/db";
+import { successResponse, errorResponse } from "@/lib/api";
 
 export async function GET() {
   try {
     const registries = await prisma.registryItem.findMany({
       orderBy: { sortOrder: "asc" },
     });
-    return NextResponse.json({ success: true, data: registries });
-  } catch {
-    return NextResponse.json({ error: "Internal server error." }, { status: 500 });
+    return successResponse(registries);
+  } catch (error) {
+    console.error("Failed to fetch registry:", error);
+    return errorResponse("Internal server error.", 500);
   }
 }
 
@@ -18,7 +20,7 @@ export async function POST(req: NextRequest) {
     const { name, url, iconUrl, sortOrder } = body;
 
     if (!name?.trim()) {
-      return NextResponse.json({ error: "Name is required." }, { status: 400 });
+      return errorResponse("Name is required.", 400);
     }
 
     const registry = await prisma.registryItem.create({
@@ -30,8 +32,9 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    return NextResponse.json({ success: true, data: registry }, { status: 201 });
-  } catch {
-    return NextResponse.json({ error: "Internal server error." }, { status: 500 });
+    return successResponse(registry, undefined, 201);
+  } catch (error) {
+    console.error("Failed to create registry item:", error);
+    return errorResponse("Internal server error.", 500);
   }
 }

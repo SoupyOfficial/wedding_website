@@ -1,5 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import prisma from "@/lib/db";
+import { successResponse, errorResponse } from "@/lib/api";
 
 // GET all tags
 export async function GET() {
@@ -8,12 +9,10 @@ export async function GET() {
       orderBy: [{ type: "asc" }, { sortOrder: "asc" }, { name: "asc" }],
       include: { _count: { select: { photos: true } } },
     });
-    return NextResponse.json({ success: true, data: tags });
-  } catch {
-    return NextResponse.json(
-      { error: "Internal server error." },
-      { status: 500 }
-    );
+    return successResponse(tags);
+  } catch (error) {
+    console.error("Failed to fetch photo tags:", error);
+    return errorResponse("Internal server error.", 500);
   }
 }
 
@@ -24,10 +23,7 @@ export async function POST(req: NextRequest) {
     const { name, type, color } = body;
 
     if (!name || typeof name !== "string" || !name.trim()) {
-      return NextResponse.json(
-        { error: "Tag name is required." },
-        { status: 400 }
-      );
+      return errorResponse("Tag name is required.", 400);
     }
 
     const validTypes = ["event", "person", "date", "location", "custom"];
@@ -41,7 +37,7 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    return NextResponse.json({ success: true, data: tag }, { status: 201 });
+    return successResponse(tag, undefined, 201);
   } catch (err: unknown) {
     if (
       err &&
@@ -49,14 +45,9 @@ export async function POST(req: NextRequest) {
       "code" in err &&
       (err as { code: string }).code === "P2002"
     ) {
-      return NextResponse.json(
-        { error: "A tag with that name and type already exists." },
-        { status: 409 }
-      );
+      return errorResponse("A tag with that name and type already exists.", 409);
     }
-    return NextResponse.json(
-      { error: "Internal server error." },
-      { status: 500 }
-    );
+    console.error("Failed to create photo tag:", err);
+    return errorResponse("Internal server error.", 500);
   }
 }

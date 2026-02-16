@@ -1,6 +1,7 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import prisma from "@/lib/db";
 import { rateLimit } from "@/lib/api/middleware";
+import { successResponse, errorResponse } from "@/lib/api";
 
 const postLimiter = rateLimit({ windowMs: 60_000, maxRequests: 3 });
 
@@ -11,9 +12,10 @@ export async function GET() {
       orderBy: { createdAt: "desc" },
     });
 
-    return NextResponse.json({ success: true, data: entries });
-  } catch {
-    return NextResponse.json({ error: "Internal server error." }, { status: 500 });
+    return successResponse(entries);
+  } catch (error) {
+    console.error("Failed to fetch guest book entries:", error);
+    return errorResponse("Internal server error.", 500);
   }
 }
 
@@ -25,10 +27,7 @@ export async function POST(req: NextRequest) {
     const { name, message } = body;
 
     if (!name?.trim() || !message?.trim()) {
-      return NextResponse.json(
-        { error: "Name and message are required." },
-        { status: 400 }
-      );
+      return errorResponse("Name and message are required.", 400);
     }
 
     const entry = await prisma.guestBookEntry.create({
@@ -39,11 +38,9 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    return NextResponse.json(
-      { success: true, message: "Thank you for your message!" },
-      { status: 201 }
-    );
-  } catch {
-    return NextResponse.json({ error: "Internal server error." }, { status: 500 });
+    return successResponse({ message: "Thank you for your message!" }, undefined, 201);
+  } catch (error) {
+    console.error("Failed to create guest book entry:", error);
+    return errorResponse("Internal server error.", 500);
   }
 }

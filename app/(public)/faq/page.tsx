@@ -1,4 +1,5 @@
 import prisma from "@/lib/db";
+import { PageHeader } from "@/components/ui";
 
 export const metadata = {
   title: "FAQ",
@@ -13,16 +14,11 @@ export default async function FAQPage() {
   return (
     <div className="pt-24 pb-16">
       <div className="section-padding">
-        {/* Header */}
-        <div className="text-center mb-16 animate-fade-in">
-          <h1 className="heading-gold text-4xl md:text-5xl mb-4">
-            Frequently Asked Questions
-          </h1>
-          <div className="gold-divider" />
-          <p className="text-ivory/70 text-lg max-w-2xl mx-auto">
-            Have a question? We might have the answer right here.
-          </p>
-        </div>
+        <PageHeader
+          title="Frequently Asked Questions"
+          subtitle="Have a question? We might have the answer right here."
+          className="mb-16"
+        />
 
         {/* FAQ Accordion */}
         <div className="max-w-3xl mx-auto space-y-4">

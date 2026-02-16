@@ -1,13 +1,14 @@
-import { NextResponse } from "next/server";
 import prisma from "@/lib/db";
+import { successResponse, errorResponse } from "@/lib/api";
 
 export async function GET() {
   try {
     const entries = await prisma.guestBookEntry.findMany({
       orderBy: { createdAt: "desc" },
     });
-    return NextResponse.json({ success: true, data: entries });
-  } catch {
-    return NextResponse.json({ error: "Internal server error." }, { status: 500 });
+    return successResponse(entries);
+  } catch (error) {
+    console.error("Failed to fetch guest book:", error);
+    return errorResponse("Internal server error.", 500);
   }
 }

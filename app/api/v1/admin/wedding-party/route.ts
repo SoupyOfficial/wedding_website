@@ -1,14 +1,16 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import prisma from "@/lib/db";
+import { successResponse, errorResponse } from "@/lib/api";
 
 export async function GET() {
   try {
     const members = await prisma.weddingPartyMember.findMany({
       orderBy: [{ side: "asc" }, { sortOrder: "asc" }],
     });
-    return NextResponse.json({ success: true, data: members });
-  } catch {
-    return NextResponse.json({ error: "Internal server error." }, { status: 500 });
+    return successResponse(members);
+  } catch (error) {
+    console.error("Failed to fetch wedding party:", error);
+    return errorResponse("Internal server error.", 500);
   }
 }
 
@@ -18,10 +20,7 @@ export async function POST(req: NextRequest) {
     const { name, role, side, bio, photoUrl, sortOrder } = body;
 
     if (!name?.trim() || !role?.trim() || !side?.trim()) {
-      return NextResponse.json(
-        { error: "Name, role, and side are required." },
-        { status: 400 }
-      );
+      return errorResponse("Name, role, and side are required.", 400);
     }
 
     const member = await prisma.weddingPartyMember.create({
@@ -35,8 +34,9 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    return NextResponse.json({ success: true, data: member }, { status: 201 });
-  } catch {
-    return NextResponse.json({ error: "Internal server error." }, { status: 500 });
+    return successResponse(member, undefined, 201);
+  } catch (error) {
+    console.error("Failed to create wedding party member:", error);
+    return errorResponse("Internal server error.", 500);
   }
 }

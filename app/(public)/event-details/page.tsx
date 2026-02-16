@@ -1,5 +1,6 @@
 import prisma from "@/lib/db";
 import SectionDivider from "@/components/SectionDivider";
+import { PageHeader } from "@/components/ui";
 
 export const metadata = {
   title: "Event Details",
@@ -20,13 +21,7 @@ export default async function EventDetailsPage() {
   return (
     <div className="pt-24 pb-16">
       <div className="section-padding">
-        {/* Page Header */}
-        <div className="text-center mb-16 animate-fade-in">
-          <h1 className="heading-gold text-4xl md:text-5xl mb-4">
-            Event Details
-          </h1>
-          <div className="gold-divider" />
-        </div>
+        <PageHeader title="Event Details" className="mb-16" />
 
         {/* Venue Info */}
         <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto mb-16">

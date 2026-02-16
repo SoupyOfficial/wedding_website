@@ -1,6 +1,8 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useRef } from "react";
+import { useAdminMultiFetch } from "@/lib/hooks";
+import { AdminPageHeader, FilterBar, Modal, LoadingState, EmptyState } from "@/components/ui";
 
 interface PhotoTag {
   id: string;
@@ -36,9 +38,17 @@ const TAG_COLORS = [
 const CATEGORIES = ["ceremony", "reception", "preparation", "portrait", "detail", "other"];
 
 export default function AdminPhotosPage() {
-  const [photos, setPhotos] = useState<Photo[]>([]);
-  const [allTags, setAllTags] = useState<PhotoTag[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data, loading, refetch } = useAdminMultiFetch<{
+    photos: Photo[];
+    tags: PhotoTag[];
+  }>({
+    photos: "/api/v1/admin/photos",
+    tags: "/api/v1/admin/photos/tags",
+  });
+
+  const photos = data.photos;
+  const allTags = data.tags;
+
   const [filter, setFilter] = useState<"all" | "pending" | "approved">("all");
   const [tagFilter, setTagFilter] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -58,28 +68,6 @@ export default function AdminPhotosPage() {
   const [editingPhoto, setEditingPhoto] = useState<Photo | null>(null);
   const [editForm, setEditForm] = useState({ caption: "", category: "" });
 
-  const fetchPhotos = useCallback(async () => {
-    try {
-      const res = await fetch("/api/v1/admin/photos");
-      const data = await res.json();
-      if (data.data) setPhotos(data.data);
-    } catch { /* silently fail */ }
-    finally { setLoading(false); }
-  }, []);
-
-  const fetchTags = useCallback(async () => {
-    try {
-      const res = await fetch("/api/v1/admin/photos/tags");
-      const data = await res.json();
-      if (data.data) setAllTags(data.data);
-    } catch { /* silently fail */ }
-  }, []);
-
-  useEffect(() => {
-    fetchPhotos();
-    fetchTags();
-  }, [fetchPhotos, fetchTags]);
-
   // ── Approval Toggle ───────────────────────────
   async function toggleApproval(photo: Photo) {
     try {
@@ -89,11 +77,7 @@ export default function AdminPhotosPage() {
         body: JSON.stringify({ approved: !photo.approved }),
       });
       const data = await res.json();
-      if (data.success) {
-        setPhotos((prev) =>
-          prev.map((p) => (p.id === photo.id ? { ...p, approved: !photo.approved } : p))
-        );
-      }
+      if (data.success) refetch();
     } catch { /* silently fail */ }
   }
 
@@ -113,9 +97,7 @@ export default function AdminPhotosPage() {
       });
       const data = await res.json();
       if (data.success) {
-        setPhotos((prev) =>
-          prev.map((p) => (p.id === editingPhoto.id ? { ...p, ...editForm } : p))
-        );
+        refetch();
         setEditingPhoto(null);
       }
     } catch { /* silently fail */ }
@@ -126,7 +108,7 @@ export default function AdminPhotosPage() {
     if (!confirm("Delete this photo?")) return;
     try {
       await fetch(`/api/v1/admin/photos/${id}`, { method: "DELETE" });
-      setPhotos((prev) => prev.filter((p) => p.id !== id));
+      refetch();
     } catch { /* silently fail */ }
   }
 
@@ -142,7 +124,7 @@ export default function AdminPhotosPage() {
         formData.append("guestName", "Admin");
         await fetch("/api/v1/photos/upload", { method: "POST", body: formData });
       }
-      fetchPhotos();
+      refetch();
     } catch {
       console.error("Upload failed");
     } finally {
@@ -164,7 +146,7 @@ export default function AdminPhotosPage() {
       if (res.ok) {
         setNewTagName("");
         setShowTagForm(false);
-        fetchTags();
+        refetch();
       }
     } catch { /* silently fail */ }
   }
@@ -173,8 +155,7 @@ export default function AdminPhotosPage() {
     if (!confirm("Delete this tag? It will be removed from all photos.")) return;
     try {
       await fetch(`/api/v1/admin/photos/tags/${tagId}`, { method: "DELETE" });
-      fetchTags();
-      fetchPhotos();
+      refetch();
     } catch { /* silently fail */ }
   }
 
@@ -198,7 +179,7 @@ export default function AdminPhotosPage() {
         body: JSON.stringify({ tagIds: selectedTagIds }),
       });
       setTaggingPhotoId(null);
-      fetchPhotos();
+      refetch();
     } catch { /* silently fail */ }
   }
 
@@ -214,37 +195,28 @@ export default function AdminPhotosPage() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
-        <div>
-          <h1 className="text-gold font-serif text-3xl mb-1">Photo Manager</h1>
-          <p className="text-ivory/50 text-sm">
-            {photos.length} photos · {pendingCount} pending · {allTags.length} tags
-          </p>
-        </div>
-        <div className="flex gap-2 flex-wrap">
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            multiple
-            className="hidden"
-            onChange={handleUpload}
-          />
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            disabled={uploading}
-            className="btn-gold text-sm px-4 py-2"
-          >
-            {uploading ? "Uploading..." : "Upload Photos"}
-          </button>
-          <button
-            onClick={() => setShowTagForm(!showTagForm)}
-            className="btn-outline text-sm px-4 py-2"
-          >
-            {showTagForm ? "Cancel" : "+ New Tag"}
-          </button>
-        </div>
-      </div>
+      <AdminPageHeader
+        title="Photo Manager"
+        subtitle={`${photos.length} photos · ${pendingCount} pending · ${allTags.length} tags`}
+        actions={
+          <div className="flex gap-2 flex-wrap">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              multiple
+              className="hidden"
+              onChange={handleUpload}
+            />
+            <button onClick={() => fileInputRef.current?.click()} disabled={uploading} className="btn-gold text-sm px-4 py-2">
+              {uploading ? "Uploading..." : "Upload Photos"}
+            </button>
+            <button onClick={() => setShowTagForm(!showTagForm)} className="btn-outline text-sm px-4 py-2">
+              {showTagForm ? "Cancel" : "+ New Tag"}
+            </button>
+          </div>
+        }
+      />
 
       {/* Tag Creation Form */}
       {showTagForm && (
@@ -344,7 +316,7 @@ export default function AdminPhotosPage() {
 
       {/* Photo Grid */}
       {loading ? (
-        <div className="text-center py-8 text-ivory/40">Loading photos...</div>
+        <LoadingState message="Loading photos..." />
       ) : filtered.length > 0 ? (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {filtered.map((photo) => (
@@ -409,14 +381,12 @@ export default function AdminPhotosPage() {
           ))}
         </div>
       ) : (
-        <div className="text-center py-12 text-ivory/40">No photos found.</div>
+        <EmptyState title="No photos found" />
       )}
 
       {/* ─── Edit Photo Modal ─────────────────────── */}
       {editingPhoto && (
-        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
-          <div className="bg-midnight border border-gold/20 rounded-xl p-6 w-full max-w-md space-y-4">
-            <h3 className="text-gold font-serif text-xl">Edit Photo</h3>
+        <Modal title="Edit Photo" onClose={() => setEditingPhoto(null)}>
 
             <div className="flex justify-center">
               <img src={editingPhoto.url} alt="" className="h-40 rounded-lg object-cover" />
@@ -453,15 +423,12 @@ export default function AdminPhotosPage() {
               <button onClick={saveEdit} className="btn-gold flex-1 py-2">Save Changes</button>
               <button onClick={() => setEditingPhoto(null)} className="btn-outline flex-1 py-2">Cancel</button>
             </div>
-          </div>
-        </div>
+        </Modal>
       )}
 
       {/* ─── Tag Assignment Modal ─────────────────── */}
       {taggingPhotoId && (
-        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
-          <div className="bg-midnight border border-gold/20 rounded-xl p-6 w-full max-w-md max-h-[80vh] overflow-y-auto">
-            <h3 className="text-gold font-serif text-xl mb-4">Manage Tags</h3>
+        <Modal title="Manage Tags" onClose={() => setTaggingPhotoId(null)}>
 
             {allTags.length > 0 ? (
               <div className="space-y-2 mb-6">
@@ -496,8 +463,7 @@ export default function AdminPhotosPage() {
               <button onClick={() => setTaggingPhotoId(null)} className="btn-outline text-sm px-4 py-2">Cancel</button>
               <button onClick={handleSaveTags} className="btn-gold text-sm px-4 py-2">Save Tags</button>
             </div>
-          </div>
-        </div>
+        </Modal>
       )}
     </div>
   );

@@ -1,5 +1,5 @@
-import { NextResponse } from "next/server";
 import prisma from "@/lib/db";
+import { successResponse, errorResponse } from "@/lib/api";
 
 /**
  * GET /api/v1/settings/public
@@ -12,35 +12,27 @@ export async function GET() {
     });
 
     if (!settings) {
-      return NextResponse.json(
-        { success: false, error: "Settings not found" },
-        { status: 404 }
-      );
+      return errorResponse("Settings not found", 404);
     }
 
     // Only expose non-sensitive fields
-    return NextResponse.json({
-      success: true,
-      data: {
-        coupleName: settings.coupleName,
-        weddingDate: settings.weddingDate,
-        weddingHashtag: settings.weddingHashtag,
-        venueName: settings.venueName,
-        venueAddress: settings.venueAddress,
-        contactEmailJoint: settings.contactEmailJoint,
-        contactEmailBride: settings.contactEmailBride,
-        contactEmailGroom: settings.contactEmailGroom,
-        socialInstagram: settings.socialInstagram,
-        socialFacebook: settings.socialFacebook,
-        socialTikTok: settings.socialTikTok,
-        heroTagline: settings.heroTagline,
-        ceremonyType: settings.ceremonyType,
-      },
+    return successResponse({
+      coupleName: settings.coupleName,
+      weddingDate: settings.weddingDate,
+      weddingHashtag: settings.weddingHashtag,
+      venueName: settings.venueName,
+      venueAddress: settings.venueAddress,
+      contactEmailJoint: settings.contactEmailJoint,
+      contactEmailBride: settings.contactEmailBride,
+      contactEmailGroom: settings.contactEmailGroom,
+      socialInstagram: settings.socialInstagram,
+      socialFacebook: settings.socialFacebook,
+      socialTikTok: settings.socialTikTok,
+      heroTagline: settings.heroTagline,
+      ceremonyType: settings.ceremonyType,
     });
-  } catch {
-    return NextResponse.json(
-      { success: false, error: "Internal server error" },
-      { status: 500 }
-    );
+  } catch (error) {
+    console.error("Failed to fetch public settings:", error);
+    return errorResponse("Internal server error", 500);
   }
 }

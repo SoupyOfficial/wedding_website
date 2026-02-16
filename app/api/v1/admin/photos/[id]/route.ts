@@ -1,6 +1,7 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import prisma from "@/lib/db";
 import { getProvider } from "@/lib/providers";
+import { successResponse, errorResponse } from "@/lib/api";
 
 export async function PUT(
   req: NextRequest,
@@ -21,9 +22,13 @@ export async function PUT(
       include: { tags: true },
     });
 
-    return NextResponse.json({ success: true, data: photo });
-  } catch {
-    return NextResponse.json({ error: "Photo not found." }, { status: 404 });
+    return successResponse(photo);
+  } catch (error: unknown) {
+    if (error && typeof error === "object" && "code" in error && error.code === "P2025") {
+      return errorResponse("Photo not found.", 404);
+    }
+    console.error("Failed to update photo:", error);
+    return errorResponse("Internal server error.", 500);
   }
 }
 
@@ -37,7 +42,7 @@ export async function DELETE(
     // Fetch photo to get storage key before deleting
     const photo = await prisma.photo.findUnique({ where: { id } });
     if (!photo) {
-      return NextResponse.json({ error: "Photo not found." }, { status: 404 });
+      return errorResponse("Photo not found.", 404);
     }
 
     // Delete from storage provider if we have a key
@@ -52,8 +57,9 @@ export async function DELETE(
     }
 
     await prisma.photo.delete({ where: { id } });
-    return NextResponse.json({ success: true });
-  } catch {
-    return NextResponse.json({ error: "Internal server error." }, { status: 500 });
+    return successResponse({ deleted: true });
+  } catch (error) {
+    console.error("Failed to delete photo:", error);
+    return errorResponse("Internal server error.", 500);
   }
 }

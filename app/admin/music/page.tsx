@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
+import { AdminPageHeader, FilterBar, Modal, LoadingState, EmptyState } from "@/components/ui";
+import { PLAY_TIME_OPTIONS, DJ_LIST_TYPES } from "@/lib/constants";
 
 type SongRequest = {
   id: string;
@@ -309,36 +311,34 @@ export default function AdminMusicPage() {
   ];
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <div className="text-ivory/60 text-lg">Loading music data...</div>
-      </div>
-    );
+    return <LoadingState message="Loading music data..." />;
   }
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <h1 className="font-display text-3xl text-gold">Music Management</h1>
-        {activeTab === "dj" && (
-          <div className="flex gap-2">
-            <button
-              onClick={() => {
-                setImportUrl("");
-                setImportResult(null);
-                setImportError("");
-                setShowImportModal(true);
-              }}
-              className="btn-outline text-sm px-4 py-2 flex items-center gap-2"
-            >
-              <span>🍎</span> Import from Apple Music
-            </button>
-            <button onClick={() => openDJModal()} className="btn-gold text-sm px-4 py-2">
-              + Add Song
-            </button>
-          </div>
-        )}
-      </div>
+      <AdminPageHeader
+        title="Music Management"
+        actions={
+          activeTab === "dj" ? (
+            <div className="flex gap-2">
+              <button
+                onClick={() => {
+                  setImportUrl("");
+                  setImportResult(null);
+                  setImportError("");
+                  setShowImportModal(true);
+                }}
+                className="btn-outline text-sm px-4 py-2 flex items-center gap-2"
+              >
+                <span>🍎</span> Import from Apple Music
+              </button>
+              <button onClick={() => openDJModal()} className="btn-gold text-sm px-4 py-2">
+                + Add Song
+              </button>
+            </div>
+          ) : undefined
+        }
+      />
 
       {/* Tabs */}
       <div className="flex gap-1 border-b border-gold/10">
@@ -380,7 +380,7 @@ export default function AdminMusicPage() {
           </div>
 
           {filteredRequests.length === 0 ? (
-            <div className="text-center py-12 text-ivory/40">No song requests yet.</div>
+            <EmptyState title="No song requests yet" />
           ) : (
             <div className="overflow-x-auto rounded-lg border border-gold/10">
               <table className="w-full text-sm">
@@ -441,9 +441,7 @@ export default function AdminMusicPage() {
       {activeTab === "playlist" && (
         <div className="space-y-4">
           {approvedRequests.length === 0 ? (
-            <div className="text-center py-12 text-ivory/40">
-              No approved songs yet. Approve requests from the Song Requests tab.
-            </div>
+            <EmptyState title="No approved songs yet" subtitle="Approve requests from the Song Requests tab." />
           ) : (
             <div className="grid gap-3">
               {approvedRequests.map((r, i) => (
@@ -493,9 +491,7 @@ export default function AdminMusicPage() {
           </div>
 
           {filteredDJ.length === 0 ? (
-            <div className="text-center py-12 text-ivory/40">
-              No DJ list items. Add songs or import from Apple Music.
-            </div>
+            <EmptyState title="No DJ list items" subtitle="Add songs or import from Apple Music." />
           ) : (
             <div className="overflow-x-auto rounded-lg border border-gold/10">
               <table className="w-full text-sm">
@@ -558,11 +554,16 @@ export default function AdminMusicPage() {
 
       {/* ─── DJ ITEM MODAL (with iTunes Search) ─── */}
       {showDJModal && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-          <div className="bg-midnight border border-gold/20 rounded-xl p-6 w-full max-w-md space-y-4">
-            <h2 className="font-display text-xl text-gold">
-              {editingDJ ? "Edit DJ List Item" : "Add Song to DJ List"}
-            </h2>
+        <Modal
+          title={editingDJ ? "Edit DJ List Item" : "Add Song to DJ List"}
+          onClose={() => {
+            setShowDJModal(false);
+            if (audioRef.current) {
+              audioRef.current.pause();
+              setPlayingPreview(null);
+            }
+          }}
+        >
 
             {/* iTunes Search */}
             {!editingDJ && (
@@ -667,8 +668,9 @@ export default function AdminMusicPage() {
                   onChange={(e) => setDJForm({ ...djForm, listType: e.target.value })}
                   className="input-celestial w-full"
                 >
-                  <option value="must-play">Must Play</option>
-                  <option value="do-not-play">Do Not Play</option>
+                  {DJ_LIST_TYPES.map((t) => (
+                    <option key={t.value} value={t.value}>{t.label}</option>
+                  ))}
                 </select>
               </div>
 
@@ -679,19 +681,9 @@ export default function AdminMusicPage() {
                   onChange={(e) => setDJForm({ ...djForm, playTime: e.target.value })}
                   className="input-celestial w-full"
                 >
-                  <option value="">Anytime</option>
-                  <option value="Ceremony">Ceremony</option>
-                  <option value="Cocktail Hour">Cocktail Hour</option>
-                  <option value="Dinner">Dinner</option>
-                  <option value="First Dance">First Dance</option>
-                  <option value="Father-Daughter Dance">Father-Daughter Dance</option>
-                  <option value="Mother-Son Dance">Mother-Son Dance</option>
-                  <option value="Cake Cutting">Cake Cutting</option>
-                  <option value="Bouquet Toss">Bouquet Toss</option>
-                  <option value="Garter Toss">Garter Toss</option>
-                  <option value="Party">Party</option>
-                  <option value="Last Dance">Last Dance</option>
-                  <option value="Send Off">Send Off</option>
+                  {PLAY_TIME_OPTIONS.map((o) => (
+                    <option key={o.value} value={o.value}>{o.label}</option>
+                  ))}
                 </select>
               </div>
             </div>
@@ -713,25 +705,12 @@ export default function AdminMusicPage() {
                 Cancel
               </button>
             </div>
-          </div>
-        </div>
+        </Modal>
       )}
 
       {/* ─── APPLE MUSIC IMPORT MODAL ─────────────── */}
       {showImportModal && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-          <div className="bg-midnight border border-gold/20 rounded-xl p-6 w-full max-w-lg space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="font-display text-xl text-gold flex items-center gap-2">
-                <span>🍎</span> Import from Apple Music
-              </h2>
-              <button
-                onClick={() => setShowImportModal(false)}
-                className="text-ivory/40 hover:text-ivory text-xl"
-              >
-                ×
-              </button>
-            </div>
+        <Modal title="🍎 Import from Apple Music" onClose={() => setShowImportModal(false)} maxWidth="max-w-lg">
 
             {appleMusicConfigured === false ? (
               <div className="bg-amber-900/20 border border-amber-500/30 rounded-lg p-4">
@@ -790,8 +769,9 @@ export default function AdminMusicPage() {
                           onChange={(e) => setImportListType(e.target.value)}
                           className="input-celestial w-full"
                         >
-                          <option value="must-play">Must Play</option>
-                          <option value="do-not-play">Do Not Play</option>
+                          {DJ_LIST_TYPES.map((t) => (
+                            <option key={t.value} value={t.value}>{t.label}</option>
+                          ))}
                         </select>
                       </div>
                       <div>
@@ -803,19 +783,9 @@ export default function AdminMusicPage() {
                           onChange={(e) => setImportPlayTime(e.target.value)}
                           className="input-celestial w-full"
                         >
-                          <option value="">Anytime</option>
-                          <option value="Ceremony">Ceremony</option>
-                          <option value="Cocktail Hour">Cocktail Hour</option>
-                          <option value="Dinner">Dinner</option>
-                          <option value="First Dance">First Dance</option>
-                          <option value="Father-Daughter Dance">Father-Daughter Dance</option>
-                          <option value="Mother-Son Dance">Mother-Son Dance</option>
-                          <option value="Cake Cutting">Cake Cutting</option>
-                          <option value="Bouquet Toss">Bouquet Toss</option>
-                          <option value="Garter Toss">Garter Toss</option>
-                          <option value="Party">Party</option>
-                          <option value="Last Dance">Last Dance</option>
-                          <option value="Send Off">Send Off</option>
+                          {PLAY_TIME_OPTIONS.map((o) => (
+                            <option key={o.value} value={o.value}>{o.label}</option>
+                          ))}
                         </select>
                       </div>
                     </div>
@@ -912,8 +882,7 @@ export default function AdminMusicPage() {
                 )}
               </>
             )}
-          </div>
-        </div>
+        </Modal>
       )}
     </div>
   );

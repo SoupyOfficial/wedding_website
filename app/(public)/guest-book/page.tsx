@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { PageHeader, Alert } from "@/components/ui";
 
 interface GuestBookEntry {
   id: string;
@@ -72,16 +73,7 @@ export default function GuestBookPage() {
   return (
     <div className="pt-24 pb-16">
       <div className="section-padding">
-        {/* Header */}
-        <div className="text-center mb-12 animate-fade-in">
-          <h1 className="heading-gold text-4xl md:text-5xl mb-4">
-            Sign a Star
-          </h1>
-          <div className="gold-divider" />
-          <p className="text-ivory/70 text-lg max-w-2xl mx-auto">
-            Leave us a message and add your star to our constellation of love
-          </p>
-        </div>
+        <PageHeader title="Sign a Star" subtitle="Leave us a message and add your star to our constellation of love" />
 
         <div className="grid lg:grid-cols-2 gap-12 max-w-6xl mx-auto">
           {/* Sign Form */}
@@ -92,15 +84,11 @@ export default function GuestBookPage() {
               </h2>
 
               {success && (
-                <div className="mb-4 p-3 bg-green-900/30 border border-green-500/30 rounded-lg text-green-300 text-sm">
-                  ✨ Your star has been added! It will appear once approved.
-                </div>
+                <Alert type="success" message="✨ Your star has been added! It will appear once approved." className="mb-4" />
               )}
 
               {error && (
-                <div className="mb-4 p-3 bg-red-900/30 border border-red-500/30 rounded-lg text-red-300 text-sm">
-                  {error}
-                </div>
+                <Alert type="error" message={error} className="mb-4" />
               )}
 
               <form onSubmit={handleSubmit} className="space-y-4">

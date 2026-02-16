@@ -1,27 +1,20 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
+import { usePublicSettings } from "@/lib/hooks";
+import { PageHeader, Alert } from "@/components/ui";
 
 export default function PhotosOfUsPage() {
+  const { settings } = usePublicSettings();
   const [uploading, setUploading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
   const [preview, setPreview] = useState<string | null>(null);
   const [caption, setCaption] = useState("");
   const [uploaderName, setUploaderName] = useState("");
-  const [hashtag, setHashtag] = useState("#ForeverCampbells");
   const fileRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    fetch("/api/v1/settings/public")
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.success && data.data.weddingHashtag) {
-          setHashtag(data.data.weddingHashtag);
-        }
-      })
-      .catch(() => {});
-  }, []);
+  const hashtag = settings?.weddingHashtag || "#ForeverCampbells";
 
   function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -89,16 +82,7 @@ export default function PhotosOfUsPage() {
   return (
     <div className="pt-24 pb-16">
       <div className="section-padding">
-        {/* Header */}
-        <div className="text-center mb-12 animate-fade-in">
-          <h1 className="heading-gold text-4xl md:text-5xl mb-4">
-            Photos of Us
-          </h1>
-          <div className="gold-divider" />
-          <p className="text-ivory/70 text-lg max-w-2xl mx-auto">
-            Share your favorite moments from our celebration!
-          </p>
-        </div>
+        <PageHeader title="Photos of Us" subtitle="Share your favorite moments from our celebration!" />
 
         <div className="max-w-lg mx-auto">
           <div className="card-celestial">
@@ -107,16 +91,11 @@ export default function PhotosOfUsPage() {
             </h2>
 
             {success && (
-              <div className="mb-4 p-3 bg-green-900/30 border border-green-500/30 rounded-lg text-green-300 text-sm text-center">
-                ✨ Photo uploaded successfully! It will appear in the gallery
-                once approved.
-              </div>
+              <Alert type="success" message="✨ Photo uploaded successfully! It will appear in the gallery once approved." className="mb-4 text-center" />
             )}
 
             {error && (
-              <div className="mb-4 p-3 bg-red-900/30 border border-red-500/30 rounded-lg text-red-300 text-sm text-center">
-                {error}
-              </div>
+              <Alert type="error" message={error} className="mb-4 text-center" />
             )}
 
             <form onSubmit={handleUpload} className="space-y-4">

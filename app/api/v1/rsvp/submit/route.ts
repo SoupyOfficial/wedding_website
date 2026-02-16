@@ -1,7 +1,8 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import prisma from "@/lib/db";
 import { eventBus } from "@/lib/events/event-bus";
 import { rateLimit } from "@/lib/api/middleware";
+import { successResponse, errorResponse } from "@/lib/api";
 
 const limiter = rateLimit({ windowMs: 60_000, maxRequests: 5 });
 
@@ -23,10 +24,7 @@ export async function POST(req: NextRequest) {
     } = body;
 
     if (!guestId || typeof attending !== "boolean") {
-      return NextResponse.json(
-        { error: "Missing required fields." },
-        { status: 400 }
-      );
+      return errorResponse("Missing required fields.", 400);
     }
 
     const rsvpStatus = attending ? "attending" : "declined";
@@ -64,21 +62,16 @@ export async function POST(req: NextRequest) {
     });
 
     // Only return confirmation data — strip PII
-    return NextResponse.json({
-      success: true,
-      data: {
-        guest: {
-          id: guest.id,
-          firstName: guest.firstName,
-          lastName: guest.lastName,
-          rsvpStatus: guest.rsvpStatus,
-        },
+    return successResponse({
+      guest: {
+        id: guest.id,
+        firstName: guest.firstName,
+        lastName: guest.lastName,
+        rsvpStatus: guest.rsvpStatus,
       },
     });
-  } catch {
-    return NextResponse.json(
-      { error: "Internal server error." },
-      { status: 500 }
-    );
+  } catch (error) {
+    console.error("Failed to submit RSVP:", error);
+    return errorResponse("Internal server error.", 500);
   }
 }

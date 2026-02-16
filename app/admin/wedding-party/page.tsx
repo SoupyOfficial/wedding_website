@@ -1,6 +1,8 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState } from "react";
+import { useAdminFetch } from "@/lib/hooks";
+import { AdminPageHeader, Modal, LoadingState, EmptyState } from "@/components/ui";
 
 interface WeddingPartyMember {
   id: string;
@@ -26,23 +28,10 @@ const EMPTY_MEMBER: Omit<WeddingPartyMember, "id"> = {
 };
 
 export default function AdminWeddingPartyPage() {
-  const [members, setMembers] = useState<WeddingPartyMember[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: members, loading, refetch } = useAdminFetch<WeddingPartyMember>("/api/v1/admin/wedding-party");
   const [editing, setEditing] = useState<WeddingPartyMember | null>(null);
   const [isNew, setIsNew] = useState(false);
   const [saving, setSaving] = useState(false);
-
-  const fetchMembers = useCallback(async () => {
-    try {
-      const res = await fetch("/api/v1/admin/wedding-party");
-      const data = await res.json();
-      if (data.data) setMembers(data.data);
-    } catch { /* silently fail */ } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => { fetchMembers(); }, [fetchMembers]);
 
   function openNew() {
     setEditing({ id: "", ...EMPTY_MEMBER, sortOrder: members.length } as WeddingPartyMember);
@@ -81,7 +70,7 @@ export default function AdminWeddingPartyPage() {
         }),
       });
       closeEditor();
-      fetchMembers();
+      refetch();
     } catch { /* silently fail */ } finally {
       setSaving(false);
     }
@@ -92,7 +81,7 @@ export default function AdminWeddingPartyPage() {
     try {
       await fetch(`/api/v1/admin/wedding-party/${id}`, { method: "DELETE" });
       if (editing?.id === id) closeEditor();
-      fetchMembers();
+      refetch();
     } catch { /* silently fail */ }
   }
 
@@ -102,16 +91,14 @@ export default function AdminWeddingPartyPage() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-gold font-serif text-3xl mb-1">Wedding Party</h1>
-          <p className="text-ivory/50 text-sm">{members.length} members</p>
-        </div>
-        <button onClick={openNew} className="btn-gold px-4 py-2 text-sm">+ Add Member</button>
-      </div>
+      <AdminPageHeader
+        title="Wedding Party"
+        subtitle={`${members.length} members`}
+        actions={<button onClick={openNew} className="btn-gold px-4 py-2 text-sm">+ Add Member</button>}
+      />
 
       {loading ? (
-        <div className="text-center py-8 text-ivory/40">Loading...</div>
+        <LoadingState />
       ) : (
         <div className="space-y-8">
           {[
@@ -151,15 +138,13 @@ export default function AdminWeddingPartyPage() {
               </div>
             ) : null
           )}
-          {members.length === 0 && <div className="text-center py-8 text-ivory/40">No wedding party members yet.</div>}
+          {members.length === 0 && <EmptyState title="No wedding party members yet" />}
         </div>
       )}
 
       {/* Edit / Add Modal */}
       {editing && (
-        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
-          <div className="bg-midnight border border-gold/20 rounded-xl p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto">
-            <h3 className="text-gold font-serif text-xl mb-4">{isNew ? "Add Member" : `Edit: ${editing.name}`}</h3>
+        <Modal title={isNew ? "Add Member" : `Edit: ${editing.name}`} onClose={closeEditor} maxWidth="max-w-lg">
             <form onSubmit={handleSave} className="space-y-4">
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
@@ -204,8 +189,7 @@ export default function AdminWeddingPartyPage() {
                 <button type="submit" disabled={saving} className="btn-gold px-4 py-2 text-sm">{saving ? "Saving..." : isNew ? "Add Member" : "Save Changes"}</button>
               </div>
             </form>
-          </div>
-        </div>
+        </Modal>
       )}
     </div>
   );

@@ -1,6 +1,8 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState } from "react";
+import { useAdminMultiFetch } from "@/lib/hooks";
+import { AdminPageHeader, Modal, LoadingState, EmptyState } from "@/components/ui";
 
 interface TimelineEvent {
   id: string;
@@ -36,32 +38,23 @@ const EMPTY_FAQ: Omit<FAQ, "id"> = {
 
 export default function AdminContentPage() {
   const [tab, setTab] = useState<"timeline" | "faqs">("timeline");
-  const [timeline, setTimeline] = useState<TimelineEvent[]>([]);
-  const [faqs, setFaqs] = useState<FAQ[]>([]);
-  const [loading, setLoading] = useState(true);
+
+  const { data, loading, refetch } = useAdminMultiFetch<{
+    timeline: TimelineEvent[];
+    faqs: FAQ[];
+  }>({
+    timeline: "/api/v1/admin/content/timeline",
+    faqs: "/api/v1/admin/content/faqs",
+  });
+
+  const timeline = data.timeline;
+  const faqs = data.faqs;
 
   // Editing state
   const [editingTimeline, setEditingTimeline] = useState<TimelineEvent | null>(null);
   const [editingFAQ, setEditingFAQ] = useState<FAQ | null>(null);
   const [isNew, setIsNew] = useState(false);
   const [saving, setSaving] = useState(false);
-
-  const fetchData = useCallback(async () => {
-    try {
-      const [timelineRes, faqRes] = await Promise.all([
-        fetch("/api/v1/admin/content/timeline"),
-        fetch("/api/v1/admin/content/faqs"),
-      ]);
-      const timelineData = await timelineRes.json();
-      const faqData = await faqRes.json();
-      if (timelineData.data) setTimeline(timelineData.data);
-      if (faqData.data) setFaqs(faqData.data);
-    } catch { /* silently fail */ } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => { fetchData(); }, [fetchData]);
 
   // ----- Timeline CRUD -----
   function openNewTimeline() {
@@ -95,7 +88,7 @@ export default function AdminContentPage() {
       });
       setEditingTimeline(null);
       setIsNew(false);
-      fetchData();
+      refetch();
     } catch { /* silently fail */ } finally {
       setSaving(false);
     }
@@ -106,7 +99,7 @@ export default function AdminContentPage() {
     try {
       await fetch(`/api/v1/admin/content/timeline/${id}`, { method: "DELETE" });
       if (editingTimeline?.id === id) setEditingTimeline(null);
-      fetchData();
+      refetch();
     } catch { /* silently fail */ }
   }
 
@@ -139,7 +132,7 @@ export default function AdminContentPage() {
       });
       setEditingFAQ(null);
       setIsNew(false);
-      fetchData();
+      refetch();
     } catch { /* silently fail */ } finally {
       setSaving(false);
     }
@@ -150,16 +143,13 @@ export default function AdminContentPage() {
     try {
       await fetch(`/api/v1/admin/content/faqs/${id}`, { method: "DELETE" });
       if (editingFAQ?.id === id) setEditingFAQ(null);
-      fetchData();
+      refetch();
     } catch { /* silently fail */ }
   }
 
   return (
     <div>
-      <div className="mb-6">
-        <h1 className="text-gold font-serif text-3xl mb-1">Content Manager</h1>
-        <p className="text-ivory/50 text-sm">Manage timeline events and FAQs</p>
-      </div>
+      <AdminPageHeader title="Content Manager" subtitle="Manage timeline events and FAQs" />
 
       <div className="flex items-center justify-between mb-6 border-b border-gold/10 pb-4">
         <div className="flex gap-2">
@@ -175,7 +165,7 @@ export default function AdminContentPage() {
       </div>
 
       {loading ? (
-        <div className="text-center py-8 text-ivory/40">Loading...</div>
+        <LoadingState />
       ) : (
         <>
           {/* Timeline Tab */}
@@ -199,7 +189,7 @@ export default function AdminContentPage() {
                   </div>
                 </div>
               )) : (
-                <div className="text-center py-8 text-ivory/40">No timeline events yet.</div>
+                <EmptyState title="No timeline events yet" />
               )}
             </div>
           )}
@@ -221,7 +211,7 @@ export default function AdminContentPage() {
                   </div>
                 </div>
               )) : (
-                <div className="text-center py-8 text-ivory/40">No FAQs yet.</div>
+                <EmptyState title="No FAQs yet" />
               )}
             </div>
           )}
@@ -230,9 +220,7 @@ export default function AdminContentPage() {
 
       {/* Timeline Edit Modal */}
       {editingTimeline && (
-        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
-          <div className="bg-midnight border border-gold/20 rounded-xl p-6 w-full max-w-lg">
-            <h3 className="text-gold font-serif text-xl mb-4">{isNew ? "Add Timeline Event" : `Edit: ${editingTimeline.title}`}</h3>
+        <Modal title={isNew ? "Add Timeline Event" : `Edit: ${editingTimeline.title}`} onClose={() => { setEditingTimeline(null); setIsNew(false); }}>
             <form onSubmit={handleSaveTimeline} className="space-y-4">
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="md:col-span-2">
@@ -269,15 +257,12 @@ export default function AdminContentPage() {
                 <button type="submit" disabled={saving} className="btn-gold px-4 py-2 text-sm">{saving ? "Saving..." : isNew ? "Add Event" : "Save Changes"}</button>
               </div>
             </form>
-          </div>
-        </div>
+        </Modal>
       )}
 
       {/* FAQ Edit Modal */}
       {editingFAQ && (
-        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
-          <div className="bg-midnight border border-gold/20 rounded-xl p-6 w-full max-w-lg">
-            <h3 className="text-gold font-serif text-xl mb-4">{isNew ? "Add FAQ" : "Edit FAQ"}</h3>
+        <Modal title={isNew ? "Add FAQ" : "Edit FAQ"} onClose={() => { setEditingFAQ(null); setIsNew(false); }}>
             <form onSubmit={handleSaveFAQ} className="space-y-4">
               <div>
                 <label className="block text-ivory/70 text-xs mb-1">Question *</label>
@@ -296,8 +281,7 @@ export default function AdminContentPage() {
                 <button type="submit" disabled={saving} className="btn-gold px-4 py-2 text-sm">{saving ? "Saving..." : isNew ? "Add FAQ" : "Save Changes"}</button>
               </div>
             </form>
-          </div>
-        </div>
+        </Modal>
       )}
     </div>
   );

@@ -1,5 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import prisma from "@/lib/db";
+import { successResponse, errorResponse } from "@/lib/api";
 
 export async function PUT(
   req: NextRequest,
@@ -19,9 +20,13 @@ export async function PUT(
       },
     });
 
-    return NextResponse.json({ success: true, data: faq });
-  } catch {
-    return NextResponse.json({ error: "FAQ not found." }, { status: 404 });
+    return successResponse(faq);
+  } catch (error: unknown) {
+    if (error && typeof error === "object" && "code" in error && error.code === "P2025") {
+      return errorResponse("FAQ not found.", 404);
+    }
+    console.error("Failed to update FAQ:", error);
+    return errorResponse("Internal server error.", 500);
   }
 }
 
@@ -32,8 +37,12 @@ export async function DELETE(
   try {
     const { id } = await params;
     await prisma.fAQ.delete({ where: { id } });
-    return NextResponse.json({ success: true });
-  } catch {
-    return NextResponse.json({ error: "FAQ not found." }, { status: 404 });
+    return successResponse({ deleted: true });
+  } catch (error: unknown) {
+    if (error && typeof error === "object" && "code" in error && error.code === "P2025") {
+      return errorResponse("FAQ not found.", 404);
+    }
+    console.error("Failed to delete FAQ:", error);
+    return errorResponse("Internal server error.", 500);
   }
 }

@@ -1,7 +1,8 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import prisma from "@/lib/db";
 import { getProvider } from "@/lib/providers";
 import { rateLimit } from "@/lib/api/middleware";
+import { successResponse, errorResponse } from "@/lib/api";
 
 const ALLOWED_EXTENSIONS = new Set(["jpg", "jpeg", "png", "gif", "webp"]);
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
@@ -19,24 +20,21 @@ export async function POST(req: NextRequest) {
     const category = formData.get("category") as string | null;
 
     if (!file) {
-      return NextResponse.json({ error: "No file provided." }, { status: 400 });
+      return errorResponse("No file provided.", 400);
     }
 
     if (!file.type.startsWith("image/")) {
-      return NextResponse.json({ error: "File must be an image." }, { status: 400 });
+      return errorResponse("File must be an image.", 400);
     }
 
     if (file.size > MAX_FILE_SIZE) {
-      return NextResponse.json({ error: "File must be under 10MB." }, { status: 400 });
+      return errorResponse("File must be under 10MB.", 400);
     }
 
     // Whitelist safe file extensions
     const ext = (file.name.split(".").pop() || "").toLowerCase();
     if (!ALLOWED_EXTENSIONS.has(ext)) {
-      return NextResponse.json(
-        { error: "Only JPG, PNG, GIF, and WebP files are allowed." },
-        { status: 400 }
-      );
+      return errorResponse("Only JPG, PNG, GIF, and WebP files are allowed.", 400);
     }
 
     const bytes = await file.arrayBuffer();
@@ -67,11 +65,9 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    return NextResponse.json(
-      { success: true, data: { id: photo.id, url: photo.url } },
-      { status: 201 }
-    );
-  } catch {
-    return NextResponse.json({ error: "Internal server error." }, { status: 500 });
+    return successResponse({ id: photo.id, url: photo.url }, undefined, 201);
+  } catch (error) {
+    console.error("Failed to upload photo:", error);
+    return errorResponse("Internal server error.", 500);
   }
 }

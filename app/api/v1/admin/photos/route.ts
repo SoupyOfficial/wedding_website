@@ -1,5 +1,5 @@
-import { NextResponse } from "next/server";
 import prisma from "@/lib/db";
+import { successResponse, errorResponse } from "@/lib/api";
 
 export async function GET() {
   try {
@@ -7,8 +7,9 @@ export async function GET() {
       orderBy: { createdAt: "desc" },
       include: { tags: true },
     });
-    return NextResponse.json({ success: true, data: photos });
-  } catch {
-    return NextResponse.json({ error: "Internal server error." }, { status: 500 });
+    return successResponse(photos);
+  } catch (error) {
+    console.error("Failed to fetch photos:", error);
+    return errorResponse("Internal server error.", 500);
   }
 }

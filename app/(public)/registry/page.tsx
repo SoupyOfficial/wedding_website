@@ -1,5 +1,6 @@
 import prisma from "@/lib/db";
 import SectionDivider from "@/components/SectionDivider";
+import { PageHeader } from "@/components/ui";
 
 export const metadata = {
   title: "Registry",
@@ -28,17 +29,11 @@ export default async function RegistryPage() {
   return (
     <div className="pt-24 pb-16">
       <div className="section-padding">
-        {/* Header */}
-        <div className="text-center mb-16 animate-fade-in">
-          <h1 className="heading-gold text-4xl md:text-5xl mb-4">
-            Registry
-          </h1>
-          <div className="gold-divider" />
-          <p className="text-ivory/70 text-lg max-w-2xl mx-auto">
-            Your presence is the greatest gift of all, but if you wish to
-            celebrate with a gift, here are some ideas.
-          </p>
-        </div>
+        <PageHeader
+          title="Registry"
+          subtitle="Your presence is the greatest gift of all, but if you wish to celebrate with a gift, here are some ideas."
+          className="mb-16"
+        />
 
         {/* Registry Cards */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-4xl mx-auto mb-16">

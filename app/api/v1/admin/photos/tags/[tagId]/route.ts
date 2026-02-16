@@ -1,5 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import prisma from "@/lib/db";
+import { successResponse, errorResponse } from "@/lib/api";
 
 // PATCH update a tag
 export async function PATCH(
@@ -21,12 +22,13 @@ export async function PATCH(
       data: updateData,
     });
 
-    return NextResponse.json({ success: true, data: tag });
-  } catch {
-    return NextResponse.json(
-      { error: "Internal server error." },
-      { status: 500 }
-    );
+    return successResponse(tag);
+  } catch (error: unknown) {
+    if (error && typeof error === "object" && "code" in error && error.code === "P2025") {
+      return errorResponse("Tag not found.", 404);
+    }
+    console.error("Failed to update photo tag:", error);
+    return errorResponse("Internal server error.", 500);
   }
 }
 
@@ -38,11 +40,12 @@ export async function DELETE(
   try {
     const { tagId } = await params;
     await prisma.photoTag.delete({ where: { id: tagId } });
-    return NextResponse.json({ success: true });
-  } catch {
-    return NextResponse.json(
-      { error: "Internal server error." },
-      { status: 500 }
-    );
+    return successResponse({ deleted: true });
+  } catch (error: unknown) {
+    if (error && typeof error === "object" && "code" in error && error.code === "P2025") {
+      return errorResponse("Tag not found.", 404);
+    }
+    console.error("Failed to delete photo tag:", error);
+    return errorResponse("Internal server error.", 500);
   }
 }

@@ -1,5 +1,6 @@
 import prisma from "@/lib/db";
 import SectionDivider from "@/components/SectionDivider";
+import { PageHeader } from "@/components/ui";
 
 type WPMember = {
   id: string;
@@ -36,16 +37,11 @@ export default async function WeddingPartyPage() {
   return (
     <div className="pt-24 pb-16">
       <div className="section-padding">
-        {/* Header */}
-        <div className="text-center mb-16 animate-fade-in">
-          <h1 className="heading-gold text-4xl md:text-5xl mb-4">
-            Wedding Party
-          </h1>
-          <div className="gold-divider" />
-          <p className="text-ivory/70 text-lg max-w-2xl mx-auto">
-            The amazing people standing by our side on our special day
-          </p>
-        </div>
+        <PageHeader
+          title="Wedding Party"
+          subtitle="The amazing people standing by our side on our special day"
+          className="mb-16"
+        />
 
         {/* Bridesmaids */}
         <div className="mb-16">

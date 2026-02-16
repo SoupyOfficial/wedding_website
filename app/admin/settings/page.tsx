@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { AdminPageHeader, Alert, LoadingState } from "@/components/ui";
 
 interface Settings {
   id: string;
@@ -103,7 +104,7 @@ export default function AdminSettingsPage() {
   }
 
   if (loading) {
-    return <div className="text-center py-8 text-ivory/40">Loading...</div>;
+    return <LoadingState />;
   }
 
   if (!settings) {
@@ -112,26 +113,10 @@ export default function AdminSettingsPage() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-gold font-serif text-3xl mb-1">Settings</h1>
-          <p className="text-ivory/50 text-sm">
-            Manage your wedding website settings
-          </p>
-        </div>
-      </div>
+      <AdminPageHeader title="Settings" subtitle="Manage your wedding website settings" />
 
-      {success && (
-        <div className="mb-4 p-3 bg-green-900/30 border border-green-500/30 rounded-lg text-green-300 text-sm">
-          Settings saved successfully!
-        </div>
-      )}
-
-      {error && (
-        <div className="mb-4 p-3 bg-red-900/30 border border-red-500/30 rounded-lg text-red-300 text-sm">
-          {error}
-        </div>
-      )}
+      {success && <Alert type="success" message="Settings saved successfully!" />}
+      {error && <Alert type="error" message={error} />}
 
       <form onSubmit={handleSave} className="space-y-8">
         {/* Couple Info */}

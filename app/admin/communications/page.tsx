@@ -1,6 +1,8 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState } from "react";
+import { useAdminFetch } from "@/lib/hooks";
+import { AdminPageHeader, FilterBar, LoadingState, EmptyState } from "@/components/ui";
 
 interface ContactMessage {
   id: string;
@@ -14,24 +16,16 @@ interface ContactMessage {
 
 type Filter = "all" | "unread" | "read";
 
+const FILTERS = [
+  { value: "all" as const, label: "All" },
+  { value: "unread" as const, label: "Unread" },
+  { value: "read" as const, label: "Read" },
+];
+
 export default function AdminCommunicationsPage() {
-  const [messages, setMessages] = useState<ContactMessage[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: messages, loading, setData: setMessages } = useAdminFetch<ContactMessage>("/api/v1/admin/messages");
   const [selected, setSelected] = useState<ContactMessage | null>(null);
   const [filter, setFilter] = useState<Filter>("all");
-
-  const fetchMessages = useCallback(async () => {
-    try {
-      const res = await fetch("/api/v1/admin/messages");
-      const data = await res.json();
-      if (data.data) setMessages(data.data);
-    } catch { /* silently fail */ }
-    finally { setLoading(false); }
-  }, []);
-
-  useEffect(() => {
-    fetchMessages();
-  }, [fetchMessages]);
 
   // ── Toggle Read/Unread ────────────────────────
   async function toggleRead(msg: ContactMessage) {
@@ -93,37 +87,18 @@ export default function AdminCommunicationsPage() {
 
   return (
     <div>
-      <div className="mb-6">
-        <h1 className="text-gold font-serif text-3xl mb-1">Communications</h1>
-        <p className="text-ivory/50 text-sm">
-          {messages.length} messages · {unreadCount} unread
-        </p>
-      </div>
+      <AdminPageHeader
+        title="Communications"
+        subtitle={`${messages.length} messages · ${unreadCount} unread`}
+      />
 
       {/* Filters */}
-      <div className="flex gap-2 mb-6">
-        {(["all", "unread", "read"] as const).map((f) => (
-          <button
-            key={f}
-            onClick={() => setFilter(f)}
-            className={`px-3 py-1.5 rounded text-sm transition-colors ${
-              filter === f
-                ? "bg-gold/20 text-gold border border-gold"
-                : "bg-royal/20 text-ivory/50 border border-gold/10 hover:border-gold/30"
-            }`}
-          >
-            {f.charAt(0).toUpperCase() + f.slice(1)}
-            {f === "unread" && unreadCount > 0 && (
-              <span className="ml-1 bg-gold text-midnight px-1.5 py-0.5 rounded-full text-xs">
-                {unreadCount}
-              </span>
-            )}
-          </button>
-        ))}
+      <div className="mb-6">
+        <FilterBar filters={FILTERS} active={filter} onChange={setFilter} variant="button" />
       </div>
 
       {loading ? (
-        <div className="text-center py-8 text-ivory/40">Loading...</div>
+        <LoadingState />
       ) : (
         <div className="grid lg:grid-cols-3 gap-6">
           {/* Message List */}
@@ -156,7 +131,7 @@ export default function AdminCommunicationsPage() {
                 </button>
               ))
             ) : (
-              <div className="text-center py-8 text-ivory/40">No messages.</div>
+              <EmptyState title="No messages" />
             )}
           </div>
 

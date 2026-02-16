@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
+import { successResponse, errorResponse } from "@/lib/api";
 
 /**
  * GET /api/v1/admin/music/apple-music/search?q=...&limit=10
@@ -10,7 +11,7 @@ export async function GET(req: NextRequest) {
   const limit = req.nextUrl.searchParams.get("limit") || "10";
 
   if (!q || q.trim().length < 2) {
-    return NextResponse.json({ success: true, data: [] });
+    return successResponse([]);
   }
 
   try {
@@ -27,10 +28,7 @@ export async function GET(req: NextRequest) {
     );
 
     if (!res.ok) {
-      return NextResponse.json(
-        { success: false, error: "iTunes API error" },
-        { status: 502 }
-      );
+      return errorResponse("iTunes API error", 502);
     }
 
     const data = await res.json();
@@ -55,11 +53,9 @@ export async function GET(req: NextRequest) {
       })
     );
 
-    return NextResponse.json({ success: true, data: results });
-  } catch {
-    return NextResponse.json(
-      { success: false, error: "Failed to search iTunes" },
-      { status: 500 }
-    );
+    return successResponse(results);
+  } catch (error) {
+    console.error("Failed to search iTunes:", error);
+    return errorResponse("Failed to search iTunes", 500);
   }
 }

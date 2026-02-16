@@ -1,6 +1,7 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import prisma from "@/lib/db";
 import { rateLimit } from "@/lib/api/middleware";
+import { successResponse, errorResponse } from "@/lib/api";
 
 const limiter = rateLimit({ windowMs: 60_000, maxRequests: 10 });
 
@@ -10,10 +11,7 @@ export async function GET(req: NextRequest) {
   const name = req.nextUrl.searchParams.get("name");
 
   if (!name || name.trim().length < 2) {
-    return NextResponse.json(
-      { error: "Please provide a valid name." },
-      { status: 400 }
-    );
+    return errorResponse("Please provide a valid name.", 400);
   }
 
   const parts = name.trim().split(/\s+/);
@@ -36,10 +34,7 @@ export async function GET(req: NextRequest) {
     });
 
     if (!guest) {
-      return NextResponse.json(
-        { error: "Guest not found. Please check the name on your invitation." },
-        { status: 404 }
-      );
+      return errorResponse("Guest not found. Please check the name on your invitation.", 404);
     }
 
     const mealOptions = await prisma.mealOption.findMany({
@@ -59,14 +54,9 @@ export async function GET(req: NextRequest) {
       songRequest: guest.songRequest,
     };
 
-    return NextResponse.json({
-      success: true,
-      data: { guest: safeGuest, mealOptions },
-    });
-  } catch {
-    return NextResponse.json(
-      { error: "Internal server error." },
-      { status: 500 }
-    );
+    return successResponse({ guest: safeGuest, mealOptions });
+  } catch (error) {
+    console.error("Failed to lookup RSVP:", error);
+    return errorResponse("Internal server error.", 500);
   }
 }

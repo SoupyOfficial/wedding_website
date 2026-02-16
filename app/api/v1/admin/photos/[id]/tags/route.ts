@@ -1,5 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import prisma from "@/lib/db";
+import { successResponse, errorResponse } from "@/lib/api";
 
 // PUT — set all tags for a photo (replaces existing)
 export async function PUT(
@@ -12,10 +13,7 @@ export async function PUT(
     const { tagIds } = body;
 
     if (!Array.isArray(tagIds)) {
-      return NextResponse.json(
-        { error: "tagIds must be an array." },
-        { status: 400 }
-      );
+      return errorResponse("tagIds must be an array.", 400);
     }
 
     const photo = await prisma.photo.update({
@@ -28,11 +26,9 @@ export async function PUT(
       include: { tags: true },
     });
 
-    return NextResponse.json({ success: true, data: photo });
-  } catch {
-    return NextResponse.json(
-      { error: "Internal server error." },
-      { status: 500 }
-    );
+    return successResponse(photo);
+  } catch (error) {
+    console.error("Failed to update photo tags:", error);
+    return errorResponse("Internal server error.", 500);
   }
 }

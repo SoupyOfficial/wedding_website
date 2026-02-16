@@ -1,17 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
-
-interface SiteSettings {
-  coupleName: string;
-  contactEmailJoint: string;
-  weddingHashtag: string;
-  socialInstagram: string;
-  socialFacebook: string;
-  socialTikTok: string;
-}
+import { useState } from "react";
+import { usePublicSettings } from "@/lib/hooks";
+import { PageHeader, Alert } from "@/components/ui";
 
 export default function ContactPage() {
+  const { settings } = usePublicSettings();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [subject, setSubject] = useState("");
@@ -19,16 +13,6 @@ export default function ContactPage() {
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
-  const [settings, setSettings] = useState<SiteSettings | null>(null);
-
-  useEffect(() => {
-    fetch("/api/v1/settings/public")
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.success) setSettings(data.data);
-      })
-      .catch(() => {});
-  }, []);
 
   const coupleNames = settings?.coupleName || "Jacob & Ashley";
   const contactEmail = settings?.contactEmailJoint || "";
@@ -69,16 +53,7 @@ export default function ContactPage() {
   return (
     <div className="pt-24 pb-16">
       <div className="section-padding">
-        {/* Header */}
-        <div className="text-center mb-12 animate-fade-in">
-          <h1 className="heading-gold text-4xl md:text-5xl mb-4">
-            Contact Us
-          </h1>
-          <div className="gold-divider" />
-          <p className="text-ivory/70 text-lg max-w-2xl mx-auto">
-            Have a question? We&apos;d love to hear from you.
-          </p>
-        </div>
+        <PageHeader title="Contact Us" subtitle="Have a question? We'd love to hear from you." />
 
         <div className="grid lg:grid-cols-2 gap-12 max-w-5xl mx-auto">
           {/* Contact Form */}
@@ -89,15 +64,11 @@ export default function ContactPage() {
               </h2>
 
               {success && (
-                <div className="mb-4 p-3 bg-green-900/30 border border-green-500/30 rounded-lg text-green-300 text-sm">
-                  Your message has been sent! We&apos;ll get back to you soon.
-                </div>
+                <Alert type="success" message="Your message has been sent! We'll get back to you soon." className="mb-4" />
               )}
 
               {error && (
-                <div className="mb-4 p-3 bg-red-900/30 border border-red-500/30 rounded-lg text-red-300 text-sm">
-                  {error}
-                </div>
+                <Alert type="error" message={error} className="mb-4" />
               )}
 
               <form onSubmit={handleSubmit} className="space-y-4">
