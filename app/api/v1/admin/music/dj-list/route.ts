@@ -13,7 +13,7 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { songName, artist, listType } = body;
+    const { songName, artist, listType, playTime } = body;
 
     if (!songName?.trim()) {
       return NextResponse.json({ error: "Song name is required." }, { status: 400 });
@@ -24,6 +24,7 @@ export async function POST(req: NextRequest) {
         songName: songName.trim(),
         artist: artist || "",
         listType: listType || "must-play",
+        playTime: playTime || "",
       },
     });
 

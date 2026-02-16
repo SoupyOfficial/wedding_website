@@ -8,7 +8,7 @@ export async function PUT(
   try {
     const { id } = await params;
     const body = await req.json();
-    const { songName, artist, listType } = body;
+    const { songName, artist, listType, playTime } = body;
 
     const item = await prisma.dJList.update({
       where: { id },
@@ -16,6 +16,7 @@ export async function PUT(
         ...(songName !== undefined && { songName: songName.trim() }),
         ...(artist !== undefined && { artist: artist || "" }),
         ...(listType !== undefined && { listType }),
+        ...(playTime !== undefined && { playTime: playTime || "" }),
       },
     });
 

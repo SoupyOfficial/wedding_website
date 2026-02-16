@@ -234,6 +234,7 @@ model DJList {
   songName String
   artist   String @default("")
   listType String
+  playTime String @default("")
 }
 
 // ─────────────────────────────────────────────
