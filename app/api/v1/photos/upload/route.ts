@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/db";
-import { writeFile, mkdir } from "fs/promises";
-import { join } from "path";
+import { getProvider } from "@/lib/providers";
 import { rateLimit } from "@/lib/api/middleware";
 
 const ALLOWED_EXTENSIONS = new Set(["jpg", "jpeg", "png", "gif", "webp"]);
@@ -40,29 +39,30 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Save file with safe filename (timestamp + random, no user input)
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
+    const safeCategory = category ? category.trim().slice(0, 50) : "guest-uploads";
     const filename = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-    const uploadDir = join(process.cwd(), "public", "uploads", "photos");
 
-    await mkdir(uploadDir, { recursive: true });
-    await writeFile(join(uploadDir, filename), buffer);
-
-    const url = `/uploads/photos/${filename}`;
+    // Upload via the configured storage provider (local or Cloudinary)
+    const storage = getProvider("storage");
+    const result = await storage.upload(buffer, filename, {
+      contentType: file.type,
+      category: safeCategory,
+    });
 
     // Sanitize text inputs
     const safeCaption = caption ? caption.trim().slice(0, 200) : "";
     const safeUploader = uploaderName ? uploaderName.trim().slice(0, 100) : null;
-    const safeCategory = category ? category.trim().slice(0, 50) : "guest-uploads";
 
     const photo = await prisma.photo.create({
       data: {
-        url,
+        url: result.url,
         caption: safeCaption,
         uploadedBy: safeUploader,
         category: safeCategory,
+        storageKey: result.key,
         approved: false,
       },
     });

@@ -160,7 +160,8 @@ model Photo {
   category   String   @default("gallery")
   sortOrder  Int      @default(0)
   approved   Boolean  @default(false)
-  uploadedBy String?  
+  uploadedBy String?
+  storageKey String?
   createdAt  DateTime @default(now())
 }
 

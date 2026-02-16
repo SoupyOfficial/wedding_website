@@ -1,7 +1,18 @@
 import type { IStorageProvider } from "./storage/storage.provider";
 import type { IEmailProvider } from "./email/email.provider";
 import { LocalStorageProvider } from "./storage/local.storage";
+import { CloudinaryStorageProvider } from "./storage/cloudinary.storage";
 import { NoOpEmailProvider } from "./email/noop.email";
+
+function createStorageProvider(): IStorageProvider {
+  const provider = process.env.STORAGE_PROVIDER || "local";
+  switch (provider) {
+    case "cloudinary":
+      return new CloudinaryStorageProvider();
+    default:
+      return new LocalStorageProvider();
+  }
+}
 
 interface ProviderRegistry {
   storage: IStorageProvider;
@@ -9,7 +20,7 @@ interface ProviderRegistry {
 }
 
 const providers: ProviderRegistry = {
-  storage: new LocalStorageProvider(),
+  storage: createStorageProvider(),
   email: new NoOpEmailProvider(),
 };
 
