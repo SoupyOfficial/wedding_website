@@ -1,6 +1,31 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/db";
 import { getProvider } from "@/lib/providers";
+
+export async function PUT(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+    const body = await req.json();
+    const { caption, category, approved } = body;
+
+    const photo = await prisma.photo.update({
+      where: { id },
+      data: {
+        ...(caption !== undefined && { caption }),
+        ...(category !== undefined && { category }),
+        ...(approved !== undefined && { approved }),
+      },
+      include: { tags: true },
+    });
+
+    return NextResponse.json({ success: true, data: photo });
+  } catch {
+    return NextResponse.json({ error: "Photo not found." }, { status: 404 });
+  }
+}
 
 export async function DELETE(
   _req: Request,

@@ -560,6 +560,36 @@ async function main() {
     });
   }
 
+  // ─── Photo Tags ───
+  const photoTags = [
+    { name: "Ceremony", type: "event", color: "#C9A84C", sortOrder: 1 },
+    { name: "Cocktail Hour", type: "event", color: "#F59E0B", sortOrder: 2 },
+    { name: "Reception", type: "event", color: "#3B82F6", sortOrder: 3 },
+    { name: "First Dance", type: "event", color: "#EC4899", sortOrder: 4 },
+    { name: "Cake Cutting", type: "event", color: "#8B5CF6", sortOrder: 5 },
+    { name: "Send-Off", type: "event", color: "#10B981", sortOrder: 6 },
+    { name: "Getting Ready", type: "event", color: "#06B6D4", sortOrder: 7 },
+    { name: "Rehearsal Dinner", type: "event", color: "#F97316", sortOrder: 8 },
+    { name: "Jacob", type: "person", color: "#3B82F6", sortOrder: 1 },
+    { name: "Ashley", type: "person", color: "#EC4899", sortOrder: 2 },
+    { name: "Wedding Party", type: "person", color: "#8B5CF6", sortOrder: 3 },
+    { name: "Family", type: "person", color: "#10B981", sortOrder: 4 },
+    { name: "Guests", type: "person", color: "#F59E0B", sortOrder: 5 },
+    { name: "The Highland Manor", type: "location", color: "#06B6D4", sortOrder: 1 },
+    { name: "Engagement", type: "custom", color: "#EC4899", sortOrder: 1 },
+    { name: "Details & Décor", type: "custom", color: "#C9A84C", sortOrder: 2 },
+    { name: "Photo Booth", type: "custom", color: "#8B5CF6", sortOrder: 3 },
+  ];
+
+  for (const tag of photoTags) {
+    const existing = await prisma.photoTag.findFirst({
+      where: { name: tag.name, type: tag.type },
+    });
+    if (!existing) {
+      await prisma.photoTag.create({ data: tag });
+    }
+  }
+
   console.log("✅ Database seeded successfully!");
 }
 

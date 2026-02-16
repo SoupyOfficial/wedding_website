@@ -15,41 +15,73 @@ export default function AdminGuestBookPage() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<"all" | "pending" | "approved">("all");
 
+  // Edit modal
+  const [editingEntry, setEditingEntry] = useState<GuestBookEntry | null>(null);
+  const [editForm, setEditForm] = useState({ name: "", message: "" });
+
   const fetchEntries = useCallback(async () => {
     try {
       const res = await fetch("/api/v1/admin/guest-book");
       const data = await res.json();
       if (data.data) setEntries(data.data);
-    } catch {
-      // silently fail
-    } finally {
-      setLoading(false);
-    }
+    } catch { /* silently fail */ }
+    finally { setLoading(false); }
   }, []);
 
   useEffect(() => {
     fetchEntries();
   }, [fetchEntries]);
 
-  async function handleApprove(id: string) {
+  // ── Toggle Visibility ─────────────────────────
+  async function toggleVisibility(entry: GuestBookEntry) {
     try {
-      await fetch(`/api/v1/admin/guest-book/${id}/approve`, { method: "POST" });
-      fetchEntries();
-    } catch {
-      // silently fail
-    }
+      const res = await fetch(`/api/v1/admin/guest-book/${entry.id}/approve`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isVisible: !entry.isVisible }),
+      });
+      if (res.ok) {
+        setEntries((prev) =>
+          prev.map((e) => (e.id === entry.id ? { ...e, isVisible: !entry.isVisible } : e))
+        );
+      }
+    } catch { /* silently fail */ }
   }
 
+  // ── Edit Entry ────────────────────────────────
+  function openEditModal(entry: GuestBookEntry) {
+    setEditingEntry(entry);
+    setEditForm({ name: entry.name, message: entry.message });
+  }
+
+  async function saveEdit() {
+    if (!editingEntry || !editForm.name.trim() || !editForm.message.trim()) return;
+    try {
+      const res = await fetch(`/api/v1/admin/guest-book/${editingEntry.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(editForm),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setEntries((prev) =>
+          prev.map((e) => (e.id === editingEntry.id ? { ...e, ...editForm } : e))
+        );
+        setEditingEntry(null);
+      }
+    } catch { /* silently fail */ }
+  }
+
+  // ── Delete Entry ──────────────────────────────
   async function handleDelete(id: string) {
     if (!confirm("Delete this entry?")) return;
     try {
       await fetch(`/api/v1/admin/guest-book/${id}`, { method: "DELETE" });
-      fetchEntries();
-    } catch {
-      // silently fail
-    }
+      setEntries((prev) => prev.filter((e) => e.id !== id));
+    } catch { /* silently fail */ }
   }
 
+  // ── Filtering ─────────────────────────────────
   const filtered = entries.filter((e) => {
     if (filter === "pending") return !e.isVisible;
     if (filter === "approved") return e.isVisible;
@@ -63,7 +95,7 @@ export default function AdminGuestBookPage() {
       <div className="mb-6">
         <h1 className="text-gold font-serif text-3xl mb-1">Guest Book</h1>
         <p className="text-ivory/50 text-sm">
-          {entries.length} entries • {pendingCount} pending approval
+          {entries.length} entries · {pendingCount} pending approval
         </p>
       </div>
 
@@ -101,33 +133,45 @@ export default function AdminGuestBookPage() {
               }`}
             >
               <div className="flex items-start justify-between gap-4">
-                <div className="flex-1">
+                <div className="flex-1 min-w-0">
                   <p className="text-ivory/80 text-sm mb-2">
                     &ldquo;{entry.message}&rdquo;
                   </p>
-                  <div className="flex items-center gap-2 text-xs text-ivory/40">
+                  <div className="flex items-center gap-2 text-xs text-ivory/40 flex-wrap">
                     <span className="text-gold/70">— {entry.name}</span>
-                    <span>•</span>
+                    <span>·</span>
                     <span>{new Date(entry.createdAt).toLocaleDateString()}</span>
-                    {!entry.isVisible && (
-                      <span className="bg-yellow-500/20 text-yellow-400 px-2 py-0.5 rounded">
-                        Pending
-                      </span>
-                    )}
+                    <span
+                      className={`px-2 py-0.5 rounded-full text-xs ${
+                        entry.isVisible
+                          ? "bg-green-500/20 text-green-300"
+                          : "bg-yellow-500/20 text-yellow-400"
+                      }`}
+                    >
+                      {entry.isVisible ? "Visible" : "Hidden"}
+                    </span>
                   </div>
                 </div>
                 <div className="flex gap-2 flex-shrink-0">
-                  {!entry.isVisible && (
-                    <button
-                      onClick={() => handleApprove(entry.id)}
-                      className="text-green-400 hover:text-green-300 text-xs bg-green-900/30 px-3 py-1 rounded"
-                    >
-                      Approve
-                    </button>
-                  )}
+                  <button
+                    onClick={() => openEditModal(entry)}
+                    className="text-xs px-3 py-1 rounded bg-gold/20 text-gold hover:bg-gold/30 transition-colors"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => toggleVisibility(entry)}
+                    className={`text-xs px-3 py-1 rounded transition-colors ${
+                      entry.isVisible
+                        ? "bg-amber-500/20 text-amber-300 hover:bg-amber-500/30"
+                        : "bg-green-500/20 text-green-300 hover:bg-green-500/30"
+                    }`}
+                  >
+                    {entry.isVisible ? "Hide" : "Show"}
+                  </button>
                   <button
                     onClick={() => handleDelete(entry.id)}
-                    className="text-red-400 hover:text-red-300 text-xs bg-red-900/30 px-3 py-1 rounded"
+                    className="text-xs px-3 py-1 rounded bg-red-500/20 text-red-300 hover:bg-red-500/30 transition-colors"
                   >
                     Delete
                   </button>
@@ -137,8 +181,39 @@ export default function AdminGuestBookPage() {
           ))}
         </div>
       ) : (
-        <div className="text-center py-8 text-ivory/40">
-          No entries found.
+        <div className="text-center py-8 text-ivory/40">No entries found.</div>
+      )}
+
+      {/* ─── Edit Modal ───────────────────────────── */}
+      {editingEntry && (
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
+          <div className="bg-midnight border border-gold/20 rounded-xl p-6 w-full max-w-md space-y-4">
+            <h2 className="font-display text-xl text-gold">Edit Entry</h2>
+
+            <div>
+              <label className="block text-ivory/70 text-sm mb-1">Name</label>
+              <input
+                type="text"
+                value={editForm.name}
+                onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                className="input-celestial w-full"
+              />
+            </div>
+
+            <div>
+              <label className="block text-ivory/70 text-sm mb-1">Message</label>
+              <textarea
+                value={editForm.message}
+                onChange={(e) => setEditForm({ ...editForm, message: e.target.value })}
+                className="input-celestial w-full h-32 resize-none"
+              />
+            </div>
+
+            <div className="flex gap-3 pt-2">
+              <button onClick={saveEdit} className="btn-gold flex-1 py-2">Save Changes</button>
+              <button onClick={() => setEditingEntry(null)} className="btn-outline flex-1 py-2">Cancel</button>
+            </div>
+          </div>
         </div>
       )}
     </div>

@@ -154,15 +154,29 @@ model FAQ {
 // Photos
 // ─────────────────────────────────────────────
 model Photo {
-  id         String   @id @default(cuid())
+  id         String     @id @default(cuid())
   url        String
-  caption    String   @default("")
-  category   String   @default("gallery")
-  sortOrder  Int      @default(0)
-  approved   Boolean  @default(false)
+  caption    String     @default("")
+  category   String     @default("gallery")
+  sortOrder  Int        @default(0)
+  approved   Boolean    @default(false)
   uploadedBy String?
   storageKey String?
-  createdAt  DateTime @default(now())
+  takenAt    DateTime?
+  createdAt  DateTime   @default(now())
+  tags       PhotoTag[] @relation("PhotoToPhotoTag")
+}
+
+model PhotoTag {
+  id        String   @id @default(cuid())
+  name      String
+  type      String   @default("custom") // event, person, date, location, custom
+  color     String   @default("#C9A84C") // hex color for UI badge
+  sortOrder Int      @default(0)
+  photos    Photo[]  @relation("PhotoToPhotoTag")
+  createdAt DateTime @default(now())
+
+  @@unique([name, type])
 }
 
 // ─────────────────────────────────────────────

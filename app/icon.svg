@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+    <defs>
+        <radialGradient id="bg" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#1a1a3e"/>
+            <stop offset="100%" stop-color="#0a0a1f"/>
+        </radialGradient>
+        <linearGradient id="gold" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#f5d485"/>
+            <stop offset="50%" stop-color="#C9A84C"/>
+            <stop offset="100%" stop-color="#f5d485"/>
+        </linearGradient>
+    </defs>
+    <!-- Background circle -->
+    <circle cx="256" cy="256" r="256" fill="url(#bg)"/>
+    <!-- Small stars -->
+    <circle cx="80" cy="90" r="3" fill="#f5d485" opacity="0.7"/>
+    <circle cx="420" cy="70" r="2.5" fill="#f5d485" opacity="0.6"/>
+    <circle cx="130" cy="400" r="2" fill="#f5d485" opacity="0.5"/>
+    <circle cx="390" cy="420" r="3" fill="#f5d485" opacity="0.6"/>
+    <circle cx="60" cy="260" r="2" fill="#f5d485" opacity="0.4"/>
+    <circle cx="450" cy="240" r="2.5" fill="#f5d485" opacity="0.5"/>
+    <circle cx="200" cy="60" r="2" fill="#f5d485" opacity="0.5"/>
+    <circle cx="340" cy="450" r="2" fill="#f5d485" opacity="0.4"/>
+    <circle cx="460" cy="150" r="2" fill="#f5d485" opacity="0.6"/>
+    <circle cx="50" cy="380" r="2.5" fill="#f5d485" opacity="0.5"/>
+    <!-- Interlocking rings -->
+    <circle cx="220" cy="280" r="70" fill="none" stroke="url(#gold)" stroke-width="10" opacity="0.9"/>
+    <circle cx="292" cy="280" r="70" fill="none" stroke="url(#gold)" stroke-width="10" opacity="0.9"/>
+    <!-- Main star above rings -->
+    <polygon points="256,80 270,140 332,140 282,176 298,236 256,200 214,236 230,176 180,140 242,140" fill="url(#gold)"/>
+    <!-- Tiny sparkle stars -->
+    <polygon points="150,160 155,172 167,172 157,180 161,192 150,184 139,192 143,180 133,172 145,172" fill="#f5d485" opacity="0.6"/>
+    <polygon points="370,170 374,179 383,179 376,185 378,194 370,188 362,194 364,185 357,179 366,179" fill="#f5d485" opacity="0.5"/>
+    <!-- J & A initials -->
+    <text x="206" y="300" font-family="Georgia, 'Times New Roman', serif" font-size="48" font-weight="bold" fill="url(#gold)" text-anchor="middle">J</text>
+    <text x="306" y="300" font-family="Georgia, 'Times New Roman', serif" font-size="48" font-weight="bold" fill="url(#gold)" text-anchor="middle">A</text>
+</svg>
