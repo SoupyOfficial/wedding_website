@@ -16,12 +16,27 @@
  */
 
 import { execSync } from "child_process";
+import * as fs from "fs";
+import * as path from "path";
 
 const BOLD = "\x1b[1m";
 const RED = "\x1b[31m";
 const GREEN = "\x1b[32m";
 const YELLOW = "\x1b[33m";
 const RESET = "\x1b[0m";
+
+const SHADOW_DB = path.join(process.cwd(), "prisma", "shadow.db");
+
+function cleanShadowDb() {
+  try {
+    for (const suffix of ["", "-journal", "-wal", "-shm"]) {
+      const f = SHADOW_DB + suffix;
+      if (fs.existsSync(f)) fs.unlinkSync(f);
+    }
+  } catch {
+    // Ignore cleanup errors
+  }
+}
 
 function run(cmd: string): string {
   return execSync(cmd, {
@@ -34,6 +49,9 @@ function run(cmd: string): string {
 }
 
 console.log(`\n${BOLD}🔍 Checking for Prisma migration drift...${RESET}\n`);
+
+// Always start with a clean shadow database
+cleanShadowDb();
 
 try {
   // Compare the current schema against what the migrations would produce.
@@ -86,15 +104,5 @@ try {
   if (execError.stdout) console.error(execError.stdout);
   process.exit(1);
 } finally {
-  // Clean up shadow database if it was created
-  try {
-    const fs = require("fs");
-    const path = require("path");
-    const shadowDb = path.join(process.cwd(), "prisma", "shadow.db");
-    if (fs.existsSync(shadowDb)) {
-      fs.unlinkSync(shadowDb);
-    }
-  } catch {
-    // Ignore cleanup errors
-  }
+  cleanShadowDb();
 }
