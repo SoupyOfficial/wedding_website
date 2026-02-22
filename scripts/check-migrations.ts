@@ -41,10 +41,6 @@ function cleanShadowDb() {
 function run(cmd: string): string {
   return execSync(cmd, {
     encoding: "utf-8",
-    env: {
-      ...process.env,
-      DATABASE_URL: process.env.DATABASE_URL ?? "file:./prisma/dev.db",
-    },
   }).trim();
 }
 

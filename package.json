@@ -4,14 +4,15 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "prisma generate && TURSO_MIGRATION_RESET=1 npx tsx scripts/migrate-turso.ts && next build",
+    "build": "prisma generate && next build",
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "seed": "npx tsx prisma/seed.ts",
     "db:push": "npx prisma db push",
-    "db:migrate": "DATABASE_URL=\"file:./prisma/dev.db\" npx prisma migrate dev",
-    "db:check": "DATABASE_URL=\"file:./prisma/dev.db\" npx tsx scripts/check-migrations.ts",
+    "db:migrate": "npx prisma migrate dev",
+    "db:deploy": "npx tsx scripts/migrate-turso.ts",
+    "db:check": "npx tsx scripts/check-migrations.ts",
     "hooks:install": "cp scripts/git-hooks/pre-push .git/hooks/pre-push && chmod +x .git/hooks/pre-push",
     "postinstall": "prisma generate"
   },

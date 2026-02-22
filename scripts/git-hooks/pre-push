@@ -10,7 +10,7 @@ echo ""
 
 # 1. Migration drift check
 echo "→ Checking Prisma migration integrity..."
-DATABASE_URL="file:./prisma/dev.db" npx tsx scripts/check-migrations.ts
+npx tsx scripts/check-migrations.ts
 if [ $? -ne 0 ]; then
   echo ""
   echo "❌ Push blocked: fix migration drift before pushing."
