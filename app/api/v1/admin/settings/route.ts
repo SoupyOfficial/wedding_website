@@ -73,6 +73,7 @@ export async function PUT(req: NextRequest) {
         bannerUrl: body.bannerUrl ?? "",
         bannerActive: body.bannerActive ?? false,
         bannerColor: body.bannerColor ?? "gold",
+        raffleTicketCount: body.raffleTicketCount ?? 2,
       },
     });
 

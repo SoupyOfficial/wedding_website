@@ -54,6 +54,7 @@ model SiteSettings {
   socialTikTok           String    @default("")
   registryNote           String    @default("Truly, your love and support mean the most to us. We are just grateful to have you celebrate this special day with us. If you do choose to give a gift, please know that it is cherished deeply.")
   entertainmentNote      String    @default("Our reception will be a celebration filled with music, dancing, games, and memories! We want everyone to have an incredible time.")
+  raffleTicketCount      Int       @default(2)
   updatedAt              DateTime  @updatedAt
 }
 
@@ -119,16 +120,19 @@ model TimelineEvent {
 // Hotels
 // ─────────────────────────────────────────────
 model Hotel {
-  id            String    @id @default(cuid())
-  name          String
-  address       String    @default("")
-  phone         String    @default("")
-  website       String    @default("")
-  bookingLink   String    @default("")
-  blockCode     String    @default("")
-  blockDeadline DateTime?
-  notes         String    @default("")
-  sortOrder     Int       @default(0)
+  id                String    @id @default(cuid())
+  name              String
+  address           String    @default("")
+  phone             String    @default("")
+  website           String    @default("")
+  bookingLink       String    @default("")
+  blockCode         String    @default("")
+  blockDeadline     DateTime?
+  notes             String    @default("")
+  distanceFromVenue String    @default("")
+  priceRange        String    @default("")
+  amenities         String    @default("")
+  sortOrder         Int       @default(0)
 }
 
 // ─────────────────────────────────────────────

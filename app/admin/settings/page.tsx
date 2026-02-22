@@ -38,6 +38,7 @@ interface Settings {
   socialTikTok: string;
   registryNote: string;
   entertainmentNote: string;
+  raffleTicketCount: number;
   notifyOnRsvp: boolean;
   notificationEmail: string;
   bannerText: string;
@@ -98,7 +99,7 @@ export default function AdminSettingsPage() {
     }
   }
 
-  function updateField(field: keyof Settings, value: string | boolean) {
+  function updateField(field: keyof Settings, value: string | boolean | number) {
     if (!settings) return;
     setSettings({ ...settings, [field]: value });
   }
@@ -473,6 +474,32 @@ export default function AdminSettingsPage() {
                 className="input-celestial w-full h-24 resize-none"
                 placeholder="Description for the entertainment section..."
               />
+            </div>
+          </div>
+        </section>
+
+        {/* Travel & Raffle */}
+        <section className="bg-royal/20 border border-gold/10 rounded-lg p-6">
+          <h2 className="text-gold font-serif text-xl mb-4">Travel & Raffle</h2>
+          <div className="grid md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-ivory/70 text-sm mb-1">
+                Universal Ticket Raffle Count
+              </label>
+              <select
+                value={settings.raffleTicketCount}
+                onChange={(e) => updateField("raffleTicketCount", parseInt(e.target.value, 10))}
+                className="input-celestial w-full"
+              >
+                <option value={0}>Disabled (no raffle)</option>
+                <option value={1}>1 ticket</option>
+                <option value={2}>2 tickets</option>
+                <option value={3}>3 tickets</option>
+                <option value={4}>4 tickets</option>
+              </select>
+              <p className="text-ivory/40 text-xs mt-1">
+                Number of Universal theme park tickets to raffle at the reception. Set to 0 to hide the raffle callout.
+              </p>
             </div>
           </div>
         </section>
