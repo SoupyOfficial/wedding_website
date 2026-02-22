@@ -1,6 +1,7 @@
 import prisma from "@/lib/db";
 import SectionDivider from "@/components/SectionDivider";
 import { PageHeader } from "@/components/ui";
+import WeatherForecast from "@/components/WeatherForecast";
 
 export const metadata = {
   title: "Travel & Stay",
@@ -13,6 +14,11 @@ export default async function TravelPage() {
   });
 
   const hotels = await prisma.hotel.findMany({
+    orderBy: { sortOrder: "asc" },
+  });
+
+  const timelineEvents = await prisma.timelineEvent.findMany({
+    where: { eventType: "wedding-day" },
     orderBy: { sortOrder: "asc" },
   });
 
@@ -251,40 +257,17 @@ export default async function TravelPage() {
 
         <SectionDivider />
 
-        {/* Weather */}
-        <div className="max-w-3xl mx-auto mb-16">
-          <h2 className="heading-gold text-3xl text-center mb-4">
-            🌤️ Weather & What to Pack
-          </h2>
-          <div className="card-celestial">
-            <p className="text-ivory/70 text-sm mb-4">
-              {settings?.weatherInfo ||
-                "Central Florida can be warm and humid. The ceremony is outdoors, so we recommend light, breathable fabrics. The reception is indoors and air-conditioned."}
-            </p>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-              <div>
-                <div className="text-2xl mb-1">🌡️</div>
-                <p className="text-ivory/50 text-xs">Avg. High</p>
-                <p className="text-gold font-semibold">85–95°F</p>
-              </div>
-              <div>
-                <div className="text-2xl mb-1">💧</div>
-                <p className="text-ivory/50 text-xs">Humidity</p>
-                <p className="text-gold font-semibold">High</p>
-              </div>
-              <div>
-                <div className="text-2xl mb-1">🌧️</div>
-                <p className="text-ivory/50 text-xs">Rain</p>
-                <p className="text-gold font-semibold">Possible PM showers</p>
-              </div>
-              <div>
-                <div className="text-2xl mb-1">👗</div>
-                <p className="text-ivory/50 text-xs">Tip</p>
-                <p className="text-gold font-semibold">Light fabrics</p>
-              </div>
-            </div>
-          </div>
-        </div>
+        {/* Live Weather Forecast */}
+        <WeatherForecast
+          weddingDate={settings?.weddingDate?.toISOString() ?? null}
+          timelineEvents={timelineEvents.map((e) => ({
+            id: e.id,
+            title: e.title,
+            time: e.time,
+            icon: e.icon ?? undefined,
+            sortOrder: e.sortOrder,
+          }))}
+        />
 
         <SectionDivider />
 
