@@ -486,7 +486,7 @@ export default function WeatherForecast({
               </p>
               {selectedData.precipitation > 0 && (
                 <p className="text-ivory/40 text-xs">
-                  {selectedData.precipitation}" expected
+                  {selectedData.precipitation}&quot; expected
                 </p>
               )}
             </div>

@@ -413,6 +413,3 @@ function mostCommon(arr: number[]): number {
     Object.entries(freq).sort((a, b) => b[1] - a[1])[0]?.[0] ?? 0
   );
 }
-
-// Export for use by the component
-export { weatherCodeToDescription, weatherCodeToEmoji };
