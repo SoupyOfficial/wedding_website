@@ -28,8 +28,10 @@ export async function POST(req: NextRequest) {
         name: name.trim(),
         role: role.trim(),
         side: side.trim(),
-        bio: bio || null,
+        bio: bio || "",
         photoUrl: photoUrl || null,
+        relationToBrideOrGroom: body.relationToBrideOrGroom || "",
+        spouseOrPartner: body.spouseOrPartner || "",
         sortOrder: sortOrder ?? 0,
       },
     });

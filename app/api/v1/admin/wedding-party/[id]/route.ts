@@ -11,14 +11,18 @@ export async function PUT(
     const body = await req.json();
     const { name, role, side, bio, photoUrl, sortOrder } = body;
 
+    const { relationToBrideOrGroom, spouseOrPartner } = body;
+
     const member = await prisma.weddingPartyMember.update({
       where: { id },
       data: {
         ...(name !== undefined && { name: name.trim() }),
         ...(role !== undefined && { role: role.trim() }),
         ...(side !== undefined && { side: side.trim() }),
-        ...(bio !== undefined && { bio }),
-        ...(photoUrl !== undefined && { photoUrl }),
+        ...(bio !== undefined && { bio: bio || "" }),
+        ...(photoUrl !== undefined && { photoUrl: photoUrl || null }),
+        ...(relationToBrideOrGroom !== undefined && { relationToBrideOrGroom: relationToBrideOrGroom || "" }),
+        ...(spouseOrPartner !== undefined && { spouseOrPartner: spouseOrPartner || "" }),
         ...(sortOrder !== undefined && { sortOrder }),
       },
     });

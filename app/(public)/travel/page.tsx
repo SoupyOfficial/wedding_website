@@ -406,6 +406,86 @@ export default async function TravelPage() {
             </div>
           </div>
 
+          {/* Dining Near the Venue */}
+          <div className="mb-10">
+            <h3 className="text-gold font-serif text-xl text-center mb-2">🍽️ Dining Near the Venue</h3>
+            <p className="text-ivory/50 text-center text-sm mb-6">
+              Apopka and the surrounding area have a variety of great restaurants — perfect for pre-wedding dinners, day-after brunch, or a casual bite.
+            </p>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="card-celestial">
+                <h4 className="text-gold font-serif text-base mb-1">🥩 The Catfish Place</h4>
+                <p className="text-ivory/50 text-xs mb-1">~10 min · Casual · $$</p>
+                <p className="text-ivory/60 text-xs">A beloved local spot for Southern comfort food — catfish, gator bites, and hush puppies.</p>
+              </div>
+              <div className="card-celestial">
+                <h4 className="text-gold font-serif text-base mb-1">🍕 Ciao Italian Grill</h4>
+                <p className="text-ivory/50 text-xs mb-1">~15 min · Italian · $$</p>
+                <p className="text-ivory/60 text-xs">Cozy Italian restaurant with homemade pastas, wood-fired pizzas, and great wine selections.</p>
+              </div>
+              <div className="card-celestial">
+                <h4 className="text-gold font-serif text-base mb-1">🌮 Hunger Street Tacos</h4>
+                <p className="text-ivory/50 text-xs mb-1">~20 min · Mexican · $</p>
+                <p className="text-ivory/60 text-xs">Trendy taqueria with creative street tacos, fresh guac, and craft margaritas.</p>
+              </div>
+              <div className="card-celestial">
+                <h4 className="text-gold font-serif text-base mb-1">🍳 First Watch</h4>
+                <p className="text-ivory/50 text-xs mb-1">~15 min · Brunch · $$</p>
+                <p className="text-ivory/60 text-xs">Perfect for a morning-after brunch — fresh juices, avocado toast, and egg specialties.</p>
+              </div>
+              <div className="card-celestial">
+                <h4 className="text-gold font-serif text-base mb-1">🍔 4 Rivers Smokehouse</h4>
+                <p className="text-ivory/50 text-xs mb-1">~20 min · BBQ · $$</p>
+                <p className="text-ivory/60 text-xs">Award-winning Central Florida BBQ — brisket, burnt ends, and legendary sides.</p>
+              </div>
+              <div className="card-celestial">
+                <h4 className="text-gold font-serif text-base mb-1">🍣 Dragonfly Robata Grill</h4>
+                <p className="text-ivory/50 text-xs mb-1">~25 min · Sushi/Japanese · $$$</p>
+                <p className="text-ivory/60 text-xs">Upscale Japanese izakaya experience with inventive sushi rolls, small plates, and craft cocktails.</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Other Local Activities */}
+          <div className="mb-8">
+            <h3 className="text-gold font-serif text-xl text-center mb-2">🌴 More Local Activities</h3>
+            <p className="text-ivory/50 text-center text-sm mb-6">
+              Looking for something beyond the parks? Central Florida has plenty to offer.
+            </p>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="card-celestial text-center">
+                <div className="text-3xl mb-2">🚣</div>
+                <h4 className="text-gold font-serif text-base mb-1">Kayaking & Paddleboarding</h4>
+                <p className="text-ivory/50 text-xs">Explore the Wekiva River, Rock Springs Run, or King&apos;s Landing — all within 20 minutes of the venue.</p>
+              </div>
+              <div className="card-celestial text-center">
+                <div className="text-3xl mb-2">🏖️</div>
+                <h4 className="text-gold font-serif text-base mb-1">Beach Day Trips</h4>
+                <p className="text-ivory/50 text-xs">New Smyrna Beach and Cocoa Beach are about an hour away — perfect for a quick beach escape.</p>
+              </div>
+              <div className="card-celestial text-center">
+                <div className="text-3xl mb-2">🎨</div>
+                <h4 className="text-gold font-serif text-base mb-1">Orlando Museum of Art</h4>
+                <p className="text-ivory/50 text-xs">Beautiful galleries showcasing American art, plus rotating exhibitions in Loch Haven Park.</p>
+              </div>
+              <div className="card-celestial text-center">
+                <div className="text-3xl mb-2">🌺</div>
+                <h4 className="text-gold font-serif text-base mb-1">Harry P. Leu Gardens</h4>
+                <p className="text-ivory/50 text-xs">50 acres of stunning botanical gardens — a peaceful escape and great for photos.</p>
+              </div>
+              <div className="card-celestial text-center">
+                <div className="text-3xl mb-2">🍷</div>
+                <h4 className="text-gold font-serif text-base mb-1">Wine & Cocktail Bars</h4>
+                <p className="text-ivory/50 text-xs">Check out the bars on Park Avenue in Winter Park or downtown Orlando&apos;s cocktail scene.</p>
+              </div>
+              <div className="card-celestial text-center">
+                <div className="text-3xl mb-2">🏬</div>
+                <h4 className="text-gold font-serif text-base mb-1">Winter Park</h4>
+                <p className="text-ivory/50 text-xs">Charming town with boutique shopping on Park Ave, scenic boat tours, and excellent restaurants.</p>
+              </div>
+            </div>
+          </div>
+
           {raffleTicketCount > 0 && (
             <div className="text-center bg-royal/20 border border-gold/20 rounded-lg p-6 max-w-2xl mx-auto">
               <p className="text-gold font-serif text-xl mb-2">🎉 Don&apos;t Forget!</p>

@@ -89,6 +89,23 @@ export default function AdminWeddingPartyPage() {
   const groomsmen = members.filter((m) => m.side === "groom");
   const special = members.filter((m) => m.side === "special");
 
+  const ROLE_SUGGESTIONS = [
+    "Maid of Honor",
+    "Matron of Honor",
+    "Bridesmaid",
+    "Best Man",
+    "Groomsman",
+    "Man of Honor",
+    "Flower Girl",
+    "Ring Bearer",
+    "Junior Bridesmaid",
+    "Junior Groomsman",
+    "Officiant",
+    "Usher",
+    "Reader",
+    "Singer",
+  ];
+
   return (
     <div>
       <AdminPageHeader
@@ -113,7 +130,7 @@ export default function AdminWeddingPartyPage() {
                   {items.map((member) => (
                     <div key={member.id} className="flex items-center justify-between bg-royal/20 border border-gold/10 rounded-lg p-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-royal/50 border border-gold/20 flex items-center justify-center text-sm overflow-hidden">
+                        <div className="w-10 h-10 rounded-full bg-royal/50 border border-gold/20 flex items-center justify-center text-sm overflow-hidden flex-shrink-0">
                           {member.photoUrl ? (
                             <img src={member.photoUrl} alt={member.name} className="w-full h-full rounded-full object-cover" />
                           ) : (
@@ -125,6 +142,8 @@ export default function AdminWeddingPartyPage() {
                           <p className="text-ivory/40 text-xs">
                             {member.role}
                             {member.relationToBrideOrGroom && ` \u2022 ${member.relationToBrideOrGroom}`}
+                            {member.bio && " \u2022 Has bio"}
+                            {member.photoUrl && " \u2022 Has photo"}
                           </p>
                         </div>
                       </div>
@@ -146,6 +165,14 @@ export default function AdminWeddingPartyPage() {
       {editing && (
         <Modal title={isNew ? "Add Member" : `Edit: ${editing.name}`} onClose={closeEditor} maxWidth="max-w-lg">
             <form onSubmit={handleSave} className="space-y-4">
+              {/* Photo preview */}
+              {editing.photoUrl && (
+                <div className="flex justify-center">
+                  <div className="w-20 h-20 rounded-full border-2 border-gold/30 overflow-hidden">
+                    <img src={editing.photoUrl} alt="Preview" className="w-full h-full object-cover" />
+                  </div>
+                </div>
+              )}
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-ivory/70 text-xs mb-1">Name *</label>
@@ -153,7 +180,15 @@ export default function AdminWeddingPartyPage() {
                 </div>
                 <div>
                   <label className="block text-ivory/70 text-xs mb-1">Role *</label>
-                  <input type="text" value={editing.role} onChange={(e) => setEditing({ ...editing, role: e.target.value })} className="input-celestial w-full" placeholder="e.g., Bridesmaid" required />
+                  <input type="text" value={editing.role} onChange={(e) => setEditing({ ...editing, role: e.target.value })} className="input-celestial w-full" placeholder="e.g., Bridesmaid, Flower Girl" required list="role-suggestions" />
+                  <datalist id="role-suggestions">
+                    {ROLE_SUGGESTIONS.map((r) => (
+                      <option key={r} value={r} />
+                    ))}
+                  </datalist>
+                  <p className="text-ivory/30 text-[10px] mt-1">
+                    Tip: &quot;Flower Girl&quot; and &quot;Ring Bearer&quot; roles are automatically grouped into their own section.
+                  </p>
                 </div>
                 <div>
                   <label className="block text-ivory/70 text-xs mb-1">Side</label>
@@ -178,7 +213,8 @@ export default function AdminWeddingPartyPage() {
               </div>
               <div>
                 <label className="block text-ivory/70 text-xs mb-1">Bio</label>
-                <textarea value={editing.bio} onChange={(e) => setEditing({ ...editing, bio: e.target.value })} className="input-celestial w-full h-24 resize-none" placeholder="Tell us about this person..." />
+                <textarea value={editing.bio} onChange={(e) => setEditing({ ...editing, bio: e.target.value })} className="input-celestial w-full h-24 resize-none" placeholder="A brief bio about this person — their relationship to the couple, a fun fact, etc." />
+                <p className="text-ivory/30 text-[10px] mt-1">{editing.bio.length}/300 characters recommended</p>
               </div>
               <div>
                 <label className="block text-ivory/70 text-xs mb-1">Sort Order</label>
