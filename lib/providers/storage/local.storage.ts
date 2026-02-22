@@ -8,12 +8,23 @@ import type {
 
 export class LocalStorageProvider implements IStorageProvider {
   private uploadDir: string;
+  private writable: boolean;
 
   constructor(uploadDir?: string) {
     this.uploadDir =
       uploadDir || path.join(process.cwd(), "public", "uploads");
-    if (!fs.existsSync(this.uploadDir)) {
-      fs.mkdirSync(this.uploadDir, { recursive: true });
+    this.writable = true;
+    try {
+      if (!fs.existsSync(this.uploadDir)) {
+        fs.mkdirSync(this.uploadDir, { recursive: true });
+      }
+    } catch {
+      // Filesystem is likely read-only (e.g. Vercel serverless)
+      this.writable = false;
+      console.warn(
+        "[Storage] Local filesystem is read-only. File uploads will fail. " +
+        "Set STORAGE_PROVIDER=cloudinary with valid Cloudinary credentials for production."
+      );
     }
   }
 
@@ -22,6 +33,13 @@ export class LocalStorageProvider implements IStorageProvider {
     filename: string,
     options?: UploadOptions
   ): Promise<StorageResult> {
+    if (!this.writable) {
+      throw new Error(
+        "Local filesystem is read-only. Configure a cloud storage provider " +
+        "(set STORAGE_PROVIDER=cloudinary) for production deployments."
+      );
+    }
+
     const category = options?.category || "general";
     const categoryDir = path.join(this.uploadDir, category);
     if (!fs.existsSync(categoryDir)) {

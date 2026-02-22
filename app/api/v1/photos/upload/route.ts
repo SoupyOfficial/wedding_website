@@ -67,7 +67,22 @@ export async function POST(req: NextRequest) {
 
     return successResponse({ id: photo.id, url: photo.url }, undefined, 201);
   } catch (error) {
-    console.error("Failed to upload photo:", error);
-    return errorResponse("Internal server error.", 500);
+    const message =
+      error instanceof Error ? error.message : String(error);
+    console.error("Failed to upload photo:", message);
+
+    // Surface storage configuration errors clearly
+    if (
+      message.includes("read-only") ||
+      message.includes("not configured") ||
+      message.includes("CLOUDINARY")
+    ) {
+      return errorResponse(
+        "Photo uploads are not available. Please contact the site administrators.",
+        503
+      );
+    }
+
+    return errorResponse("Failed to upload photo. Please try again.", 500);
   }
 }

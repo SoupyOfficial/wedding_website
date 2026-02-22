@@ -6,12 +6,26 @@ import type {
 } from "./storage.provider";
 
 export class CloudinaryStorageProvider implements IStorageProvider {
+  private configured: boolean;
+
   constructor() {
-    cloudinary.config({
-      cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-      api_key: process.env.CLOUDINARY_API_KEY,
-      api_secret: process.env.CLOUDINARY_API_SECRET,
-    });
+    const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
+    const apiKey = process.env.CLOUDINARY_API_KEY;
+    const apiSecret = process.env.CLOUDINARY_API_SECRET;
+
+    this.configured = !!(cloudName && apiKey && apiSecret);
+
+    if (this.configured) {
+      cloudinary.config({
+        cloud_name: cloudName,
+        api_key: apiKey,
+        api_secret: apiSecret,
+      });
+    } else {
+      console.warn(
+        "[Storage] Cloudinary credentials missing. Set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET."
+      );
+    }
   }
 
   async upload(
@@ -19,6 +33,11 @@ export class CloudinaryStorageProvider implements IStorageProvider {
     filename: string,
     options?: UploadOptions
   ): Promise<StorageResult> {
+    if (!this.configured) {
+      throw new Error(
+        "Cloudinary is not configured. Set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET environment variables."
+      );
+    }
     const folder = options?.category
       ? `wedding/${options.category}`
       : "wedding/general";
