@@ -225,12 +225,15 @@ model MealOption {
 // Song Requests & DJ Lists
 // ─────────────────────────────────────────────
 model SongRequest {
-  id        String   @id @default(cuid())
-  guestName String
-  songTitle String
-  artist    String   @default("")
-  approved  Boolean  @default(false)
-  createdAt DateTime @default(now())
+  id         String   @id @default(cuid())
+  guestName  String
+  songTitle  String
+  artist     String   @default("")
+  artworkUrl String?
+  previewUrl String?
+  approved   Boolean  @default(false)
+  isVisible  Boolean  @default(false)
+  createdAt  DateTime @default(now())
 }
 
 model DJList {

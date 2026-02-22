@@ -9,7 +9,9 @@ type SongRequest = {
   guestName: string;
   songTitle: string;
   artist: string;
+  artworkUrl: string | null;
   approved: boolean;
+  isVisible: boolean;
   createdAt: string;
 };
 
@@ -196,6 +198,23 @@ export default function AdminMusicPage() {
       if (res.ok) setRequests((prev) => prev.filter((r) => r.id !== id));
     } catch (err) {
       console.error("Failed to delete request", err);
+    }
+  };
+
+  const toggleVisibility = async (id: string, currentVisible: boolean) => {
+    try {
+      const res = await fetch(`/api/v1/admin/music/requests/${id}/visibility`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isVisible: !currentVisible }),
+      });
+      if (res.ok) {
+        setRequests((prev) =>
+          prev.map((r) => (r.id === id ? { ...r, isVisible: !currentVisible } : r))
+        );
+      }
+    } catch (err) {
+      console.error("Failed to toggle visibility", err);
     }
   };
 
@@ -390,13 +409,23 @@ export default function AdminMusicPage() {
                     <th className="px-4 py-3">Artist</th>
                     <th className="px-4 py-3">Requested By</th>
                     <th className="px-4 py-3">Status</th>
+                    <th className="px-4 py-3">Visible</th>
                     <th className="px-4 py-3 text-right">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gold/5">
                   {filteredRequests.map((r) => (
                     <tr key={r.id} className="hover:bg-royal/10 transition-colors">
-                      <td className="px-4 py-3 text-ivory font-medium">{r.songTitle}</td>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-2">
+                          {r.artworkUrl ? (
+                            <img src={r.artworkUrl} alt="" className="w-8 h-8 rounded object-cover shrink-0" />
+                          ) : (
+                            <div className="w-8 h-8 rounded bg-royal/40 flex items-center justify-center text-xs shrink-0">🎵</div>
+                          )}
+                          <span className="text-ivory font-medium">{r.songTitle}</span>
+                        </div>
+                      </td>
                       <td className="px-4 py-3 text-ivory/70">{r.artist || "—"}</td>
                       <td className="px-4 py-3 text-ivory/70">{r.guestName}</td>
                       <td className="px-4 py-3">
@@ -409,6 +438,19 @@ export default function AdminMusicPage() {
                         >
                           {r.approved ? "Approved" : "Pending"}
                         </span>
+                      </td>
+                      <td className="px-4 py-3">
+                        <button
+                          onClick={() => toggleVisibility(r.id, r.isVisible)}
+                          className={`text-xs px-2 py-1 rounded transition-colors ${
+                            r.isVisible
+                              ? "bg-blue-500/20 text-blue-300 hover:bg-blue-500/30"
+                              : "bg-royal/30 text-ivory/30 hover:text-ivory/50"
+                          }`}
+                          title={r.isVisible ? "Visible on public playlist" : "Hidden from public playlist"}
+                        >
+                          {r.isVisible ? "👁 Shown" : "👁‍🗨 Hidden"}
+                        </button>
                       </td>
                       <td className="px-4 py-3 text-right space-x-2">
                         <button

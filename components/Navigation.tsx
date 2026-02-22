@@ -19,6 +19,7 @@ const navLinks: NavLink[] = [
   { href: "/travel", label: "Travel & Stay" },
   { href: "/wedding-party", label: "Wedding Party" },
   { href: "/entertainment", label: "Entertainment" },
+  { href: "/music", label: "Song Requests" },
   { href: "/rsvp", label: "RSVP", hidePostWedding: true },
   { href: "/registry", label: "Registry" },
   { href: "/faq", label: "FAQ" },
