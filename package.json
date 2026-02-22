@@ -7,8 +7,12 @@
     "build": "prisma generate && prisma migrate deploy && next build",
     "start": "next start",
     "lint": "eslint",
+    "typecheck": "tsc --noEmit",
     "seed": "npx tsx prisma/seed.ts",
     "db:push": "npx prisma db push",
+    "db:migrate": "DATABASE_URL=\"file:./prisma/dev.db\" npx prisma migrate dev",
+    "db:check": "DATABASE_URL=\"file:./prisma/dev.db\" npx tsx scripts/check-migrations.ts",
+    "hooks:install": "cp scripts/git-hooks/pre-push .git/hooks/pre-push && chmod +x .git/hooks/pre-push",
     "postinstall": "prisma generate"
   },
   "dependencies": {

@@ -1,0 +1,69 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+env:
+  DATABASE_URL: "file:./prisma/dev.db"
+
+jobs:
+  lint-and-typecheck:
+    name: Lint & Type Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - name: Run ESLint
+        run: npm run lint
+
+      - name: Type check
+        run: npx tsc --noEmit
+
+  migration-integrity:
+    name: Migration Integrity
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - name: Check for migration drift
+        run: npm run db:check
+        # This runs `prisma migrate diff` comparing the schema against
+        # the migration history. If there is ANY drift (columns added
+        # via `db push` without a migration), this step fails the build.
+
+  build:
+    name: Build
+    needs: [lint-and-typecheck, migration-integrity]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - name: Create empty database from migrations
+        run: npx prisma migrate deploy
+
+      - name: Build Next.js
+        run: npx next build

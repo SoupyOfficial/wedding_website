@@ -1,0 +1,43 @@
+#!/bin/sh
+
+# Pre-push hook: catches migration drift before it reaches CI
+# Install: cp scripts/git-hooks/pre-push .git/hooks/pre-push && chmod +x .git/hooks/pre-push
+# Or run: npm run hooks:install
+
+echo ""
+echo "🔒 Pre-push checks..."
+echo ""
+
+# 1. Migration drift check
+echo "→ Checking Prisma migration integrity..."
+DATABASE_URL="file:./prisma/dev.db" npx tsx scripts/check-migrations.ts
+if [ $? -ne 0 ]; then
+  echo ""
+  echo "❌ Push blocked: fix migration drift before pushing."
+  echo ""
+  exit 1
+fi
+
+# 2. Lint check
+echo "→ Running lint..."
+npm run lint --silent
+if [ $? -ne 0 ]; then
+  echo ""
+  echo "❌ Push blocked: fix lint errors before pushing."
+  echo ""
+  exit 1
+fi
+
+# 3. Type check
+echo "→ Running type check..."
+npx tsc --noEmit
+if [ $? -ne 0 ]; then
+  echo ""
+  echo "❌ Push blocked: fix type errors before pushing."
+  echo ""
+  exit 1
+fi
+
+echo ""
+echo "✅ All pre-push checks passed!"
+echo ""
