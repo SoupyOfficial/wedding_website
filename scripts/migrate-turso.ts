@@ -39,6 +39,15 @@ async function main() {
   const applied = await client.execute("SELECT migration_name FROM _prisma_migrations");
   const appliedSet = new Set(applied.rows.map((r) => r.migration_name as string));
 
+  // One-time fix: clear stale records from a previous buggy run that
+  // recorded migrations as applied even though statements were skipped.
+  // Safe because the script tolerates "already exists" errors.
+  if (process.env.TURSO_MIGRATION_RESET === "1") {
+    await client.execute("DELETE FROM _prisma_migrations");
+    appliedSet.clear();
+    console.log("⟳  Reset migration tracking (TURSO_MIGRATION_RESET=1).");
+  }
+
   // Read migration directories (sorted chronologically by name)
   const dirs = readdirSync(MIGRATIONS_DIR, { withFileTypes: true })
     .filter((d) => d.isDirectory())
@@ -60,11 +69,17 @@ async function main() {
 
     const sql = readFileSync(sqlPath, "utf-8");
 
-    // Split on semicolons, filter empty, execute each statement
+    // Split on semicolons, strip comment-only lines, filter empty
     const statements = sql
       .split(";")
-      .map((s) => s.trim())
-      .filter((s) => s.length > 0 && !s.startsWith("--"));
+      .map((s) =>
+        s
+          .split("\n")
+          .filter((line) => !line.trim().startsWith("--"))
+          .join("\n")
+          .trim()
+      )
+      .filter((s) => s.length > 0);
 
     console.log(`▶  Applying migration: ${dir} (${statements.length} statements)`);
 
