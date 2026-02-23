@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
-import prisma from "@/lib/db";
+import { queryOne, execute } from "@/lib/db";
 import { successResponse, errorResponse } from "@/lib/api";
+import type { PhotoTag } from "@/lib/db-types";
 
 // PATCH update a tag
 export async function PATCH(
@@ -12,21 +13,30 @@ export async function PATCH(
     const body = await req.json();
     const { name, type, color } = body;
 
-    const updateData: Record<string, string> = {};
-    if (name && typeof name === "string") updateData.name = name.trim();
-    if (type) updateData.type = type;
-    if (color) updateData.color = color;
+    const sets: string[] = [];
+    const args: (string | number | null)[] = [];
 
-    const tag = await prisma.photoTag.update({
-      where: { id: tagId },
-      data: updateData,
-    });
+    if (name && typeof name === "string") { sets.push("name = ?"); args.push(name.trim()); }
+    if (type) { sets.push("type = ?"); args.push(type); }
+    if (color) { sets.push("color = ?"); args.push(color); }
 
-    return successResponse(tag);
-  } catch (error: unknown) {
-    if (error && typeof error === "object" && "code" in error && error.code === "P2025") {
+    if (sets.length === 0) {
+      return errorResponse("No fields to update.", 400);
+    }
+
+    args.push(tagId);
+    const { rowsAffected } = await execute(
+      `UPDATE PhotoTag SET ${sets.join(", ")} WHERE id = ?`,
+      args
+    );
+
+    if (rowsAffected === 0) {
       return errorResponse("Tag not found.", 404);
     }
+
+    const tag = await queryOne<PhotoTag>("SELECT * FROM PhotoTag WHERE id = ?", [tagId]);
+    return successResponse(tag);
+  } catch (error) {
     console.error("Failed to update photo tag:", error);
     return errorResponse("Internal server error.", 500);
   }
@@ -39,12 +49,16 @@ export async function DELETE(
 ) {
   try {
     const { tagId } = await params;
-    await prisma.photoTag.delete({ where: { id: tagId } });
-    return successResponse({ deleted: true });
-  } catch (error: unknown) {
-    if (error && typeof error === "object" && "code" in error && error.code === "P2025") {
+    // Remove join table entries first
+    await execute('DELETE FROM "_PhotoToPhotoTag" WHERE B = ?', [tagId]);
+    const { rowsAffected } = await execute("DELETE FROM PhotoTag WHERE id = ?", [tagId]);
+
+    if (rowsAffected === 0) {
       return errorResponse("Tag not found.", 404);
     }
+
+    return successResponse({ deleted: true });
+  } catch (error) {
     console.error("Failed to delete photo tag:", error);
     return errorResponse("Internal server error.", 500);
   }

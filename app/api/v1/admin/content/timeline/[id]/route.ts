@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
-import prisma from "@/lib/db";
+import { queryOne, execute, now } from "@/lib/db";
 import { successResponse, errorResponse } from "@/lib/api";
+import type { TimelineEvent } from "@/lib/db-types";
 
 export async function PUT(
   req: NextRequest,
@@ -11,23 +12,29 @@ export async function PUT(
     const body = await req.json();
     const { title, description, time, icon, sortOrder, eventType } = body;
 
-    const event = await prisma.timelineEvent.update({
-      where: { id },
-      data: {
-        ...(title !== undefined && { title: title.trim() }),
-        ...(description !== undefined && { description: description || "" }),
-        ...(time !== undefined && { time: time || "" }),
-        ...(icon !== undefined && { icon: icon || null }),
-        ...(sortOrder !== undefined && { sortOrder }),
-        ...(eventType !== undefined && { eventType }),
-      },
-    });
+    const sets: string[] = [];
+    const args: (string | number | null)[] = [];
 
+    if (title !== undefined) { sets.push("title = ?"); args.push(title.trim()); }
+    if (description !== undefined) { sets.push("description = ?"); args.push(description || ""); }
+    if (time !== undefined) { sets.push("time = ?"); args.push(time || ""); }
+    if (icon !== undefined) { sets.push("icon = ?"); args.push(icon || null); }
+    if (sortOrder !== undefined) { sets.push("sortOrder = ?"); args.push(sortOrder); }
+    if (eventType !== undefined) { sets.push("eventType = ?"); args.push(eventType); }
+
+    sets.push("updatedAt = ?");
+    args.push(now());
+    args.push(id);
+
+    const { rowsAffected } = await execute(
+      `UPDATE TimelineEvent SET ${sets.join(", ")} WHERE id = ?`,
+      args
+    );
+    if (rowsAffected === 0) return errorResponse("Event not found.", 404);
+
+    const event = await queryOne<TimelineEvent>("SELECT * FROM TimelineEvent WHERE id = ?", [id]);
     return successResponse(event);
-  } catch (error: unknown) {
-    if (error && typeof error === "object" && "code" in error && error.code === "P2025") {
-      return errorResponse("Event not found.", 404);
-    }
+  } catch (error) {
     console.error("Failed to update timeline event:", error);
     return errorResponse("Internal server error.", 500);
   }
@@ -39,12 +46,10 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
-    await prisma.timelineEvent.delete({ where: { id } });
+    const { rowsAffected } = await execute("DELETE FROM TimelineEvent WHERE id = ?", [id]);
+    if (rowsAffected === 0) return errorResponse("Event not found.", 404);
     return successResponse({ deleted: true });
-  } catch (error: unknown) {
-    if (error && typeof error === "object" && "code" in error && error.code === "P2025") {
-      return errorResponse("Event not found.", 404);
-    }
+  } catch (error) {
     console.error("Failed to delete timeline event:", error);
     return errorResponse("Internal server error.", 500);
   }

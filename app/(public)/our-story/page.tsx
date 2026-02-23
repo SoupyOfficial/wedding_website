@@ -1,4 +1,6 @@
-import prisma from "@/lib/db";
+import { query, queryOne, toBool } from "@/lib/db";
+import type { SiteSettings, Photo } from "@/lib/db-types";
+import { SETTINGS_BOOLS } from "@/lib/db-types";
 import SectionDivider from "@/components/SectionDivider";
 import { PageHeader } from "@/components/ui";
 
@@ -8,14 +10,13 @@ export const metadata = {
 };
 
 export default async function OurStoryPage() {
-  const settings = await prisma.siteSettings.findUnique({
-    where: { id: "singleton" },
-  });
+  const settings = await queryOne<SiteSettings>("SELECT * FROM SiteSettings WHERE id = ?", ["singleton"]);
+  if (settings) toBool(settings, ...SETTINGS_BOOLS);
 
-  const photos = await prisma.photo.findMany({
-    where: { category: "our-story" },
-    orderBy: { sortOrder: "asc" },
-  });
+  const photos = await query<Photo>(
+    "SELECT * FROM Photo WHERE category = ? ORDER BY sortOrder ASC",
+    ["our-story"]
+  );
 
   return (
     <div className="pt-24 pb-16">

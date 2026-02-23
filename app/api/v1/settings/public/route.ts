@@ -1,5 +1,6 @@
-import prisma from "@/lib/db";
+import { queryOne } from "@/lib/db";
 import { successResponse, errorResponse } from "@/lib/api";
+import type { SiteSettings } from "@/lib/db-types";
 
 /**
  * GET /api/v1/settings/public
@@ -7,9 +8,10 @@ import { successResponse, errorResponse } from "@/lib/api";
  */
 export async function GET() {
   try {
-    const settings = await prisma.siteSettings.findUnique({
-      where: { id: "singleton" },
-    });
+    const settings = await queryOne<SiteSettings>(
+      "SELECT * FROM SiteSettings WHERE id = ?",
+      ["singleton"]
+    );
 
     if (!settings) {
       return errorResponse("Settings not found", 404);

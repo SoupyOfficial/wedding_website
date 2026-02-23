@@ -1,4 +1,4 @@
-import prisma from "@/lib/db";
+import { execute } from "@/lib/db";
 import { successResponse, errorResponse } from "@/lib/api";
 
 export async function POST(
@@ -7,10 +7,7 @@ export async function POST(
 ) {
   try {
     const { id } = await params;
-    await prisma.contactMessage.update({
-      where: { id },
-      data: { isRead: true },
-    });
+    await execute("UPDATE ContactMessage SET isRead = 1 WHERE id = ?", [id]);
     return successResponse({ isRead: true });
   } catch (error) {
     console.error("Failed to mark message as read:", error);

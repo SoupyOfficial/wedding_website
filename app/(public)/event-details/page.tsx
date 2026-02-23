@@ -1,4 +1,6 @@
-import prisma from "@/lib/db";
+import { query, queryOne, toBool } from "@/lib/db";
+import type { SiteSettings, TimelineEvent } from "@/lib/db-types";
+import { SETTINGS_BOOLS } from "@/lib/db-types";
 import SectionDivider from "@/components/SectionDivider";
 import { PageHeader } from "@/components/ui";
 
@@ -9,14 +11,13 @@ export const metadata = {
 };
 
 export default async function EventDetailsPage() {
-  const settings = await prisma.siteSettings.findUnique({
-    where: { id: "singleton" },
-  });
+  const settings = await queryOne<SiteSettings>("SELECT * FROM SiteSettings WHERE id = ?", ["singleton"]);
+  if (settings) toBool(settings, ...SETTINGS_BOOLS);
 
-  const timelineEvents = await prisma.timelineEvent.findMany({
-    where: { eventType: "wedding-day" },
-    orderBy: { sortOrder: "asc" },
-  });
+  const timelineEvents = await query<TimelineEvent>(
+    "SELECT * FROM TimelineEvent WHERE eventType = ? ORDER BY sortOrder ASC",
+    ["wedding-day"]
+  );
 
   return (
     <div className="pt-24 pb-16">

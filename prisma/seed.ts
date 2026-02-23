@@ -1,53 +1,45 @@
 import "dotenv/config";
-import { PrismaClient } from "@prisma/client";
-import { PrismaLibSQL } from "@prisma/adapter-libsql";
+import { createClient } from "@libsql/client";
+import crypto from "crypto";
 
-function createClient(): PrismaClient {
-  const tursoUrl = process.env.TURSO_DATABASE_URL;
-  const tursoToken = process.env.TURSO_AUTH_TOKEN;
-
-  if (tursoUrl && tursoToken) {
-    console.log("🔗 Connecting to Turso...");
-    const adapter = new PrismaLibSQL({ url: tursoUrl, authToken: tursoToken });
-    return new PrismaClient({ adapter });
-  }
-
-  console.log("📁 Connecting to local SQLite...");
-  return new PrismaClient();
-}
-
-const prisma = createClient();
+const client = createClient({
+  url:
+    process.env.TURSO_DATABASE_URL ||
+    process.env.DATABASE_URL ||
+    "file:local.db",
+  authToken: process.env.TURSO_AUTH_TOKEN,
+});
 
 async function main() {
   console.log("🌟 Seeding database...");
 
+  const now = new Date().toISOString();
+
   // ─── Site Settings ───
-  await prisma.siteSettings.upsert({
-    where: { id: "singleton" },
-    update: {
-      weddingDate: new Date("2026-11-13T00:00:00.000Z"),
-    },
-    create: {
-      id: "singleton",
-      coupleName: "Jacob & Ashley",
-      weddingDate: new Date("2026-11-13T00:00:00.000Z"),
-      venueName: "The Highland Manor",
-      venueAddress: "Apopka, Florida",
-      ceremonyType: "Outdoor Ceremony & Indoor Reception",
-      dressCode: "Formal / Semi-Formal attire",
-      heroTagline: "We're getting married!",
-      heroTaglinePostWedding: "We did it! 🎉",
-      childrenPolicy:
-        "Children are welcome! Age limits and kid-specific activities to be determined. Babysitter(s) will be arranged for the event.",
-      parkingInfo:
-        "Yes, free parking is available on-site at The Highland Manor.",
-      weatherInfo:
-        "Central Florida can be warm and humid. The ceremony is outdoors, so we recommend light, breathable fabrics. The reception is indoors and air-conditioned.",
-      ogDescription:
-        "We're getting married! Join us for our celebration under the stars.",
-      weddingHashtag: "#ForeverCampbells",
-      bannerColor: "gold",
-    },
+  await client.execute({
+    sql: `INSERT OR REPLACE INTO SiteSettings (
+      id, coupleName, weddingDate, venueName, venueAddress, ceremonyType,
+      dressCode, heroTagline, heroTaglinePostWedding, childrenPolicy,
+      parkingInfo, weatherInfo, ogDescription, weddingHashtag, bannerColor, updatedAt
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    args: [
+      "singleton",
+      "Jacob & Ashley",
+      "2026-11-13T00:00:00.000Z",
+      "The Highland Manor",
+      "Apopka, Florida",
+      "Outdoor Ceremony & Indoor Reception",
+      "Formal / Semi-Formal attire",
+      "We're getting married!",
+      "We did it! 🎉",
+      "Children are welcome! Age limits and kid-specific activities to be determined. Babysitter(s) will be arranged for the event.",
+      "Yes, free parking is available on-site at The Highland Manor.",
+      "Central Florida can be warm and humid. The ceremony is outdoors, so we recommend light, breathable fabrics. The reception is indoors and air-conditioned.",
+      "We're getting married! Join us for our celebration under the stars.",
+      "#ForeverCampbells",
+      "gold",
+      now,
+    ],
   });
 
   // ─── Wedding Party: Bridesmaids ───
@@ -81,12 +73,24 @@ async function main() {
   const allPartyMembers = [...bridesmaids, ...groomsmen, ...specialRoles];
 
   for (const member of allPartyMembers) {
-    const existing = await prisma.weddingPartyMember.findFirst({
-      where: { name: member.name, role: member.role },
+    await client.execute({
+      sql: `INSERT OR IGNORE INTO WeddingPartyMember (id, name, role, side, sortOrder, createdAt, updatedAt)
+            SELECT ?, ?, ?, ?, ?, ?, ?
+            WHERE NOT EXISTS (
+              SELECT 1 FROM WeddingPartyMember WHERE name = ? AND role = ?
+            )`,
+      args: [
+        crypto.randomUUID(),
+        member.name,
+        member.role,
+        member.side,
+        member.sortOrder,
+        now,
+        now,
+        member.name,
+        member.role,
+      ],
     });
-    if (!existing) {
-      await prisma.weddingPartyMember.create({ data: member });
-    }
   }
 
   // ─── Hotels ───
@@ -109,12 +113,20 @@ async function main() {
   ];
 
   for (const hotel of hotels) {
-    const existing = await prisma.hotel.findFirst({
-      where: { name: hotel.name },
+    await client.execute({
+      sql: `INSERT OR IGNORE INTO Hotel (id, name, address, sortOrder)
+            SELECT ?, ?, ?, ?
+            WHERE NOT EXISTS (
+              SELECT 1 FROM Hotel WHERE name = ?
+            )`,
+      args: [
+        crypto.randomUUID(),
+        hotel.name,
+        hotel.address,
+        hotel.sortOrder,
+        hotel.name,
+      ],
     });
-    if (!existing) {
-      await prisma.hotel.create({ data: hotel });
-    }
   }
 
   // ─── Registry Items ───
@@ -127,12 +139,20 @@ async function main() {
   ];
 
   for (const item of registryItems) {
-    const existing = await prisma.registryItem.findFirst({
-      where: { name: item.name },
+    await client.execute({
+      sql: `INSERT OR IGNORE INTO RegistryItem (id, name, url, sortOrder)
+            SELECT ?, ?, ?, ?
+            WHERE NOT EXISTS (
+              SELECT 1 FROM RegistryItem WHERE name = ?
+            )`,
+      args: [
+        crypto.randomUUID(),
+        item.name,
+        item.url,
+        item.sortOrder,
+        item.name,
+      ],
     });
-    if (!existing) {
-      await prisma.registryItem.create({ data: item });
-    }
   }
 
   // ─── FAQs ───
@@ -199,12 +219,20 @@ async function main() {
   ];
 
   for (const faq of faqs) {
-    const existing = await prisma.fAQ.findFirst({
-      where: { question: faq.question },
+    await client.execute({
+      sql: `INSERT OR IGNORE INTO FAQ (id, question, answer, sortOrder)
+            SELECT ?, ?, ?, ?
+            WHERE NOT EXISTS (
+              SELECT 1 FROM FAQ WHERE question = ?
+            )`,
+      args: [
+        crypto.randomUUID(),
+        faq.question,
+        faq.answer,
+        faq.sortOrder,
+        faq.question,
+      ],
     });
-    if (!existing) {
-      await prisma.fAQ.create({ data: faq });
-    }
   }
 
   // ─── Entertainment ───
@@ -261,12 +289,21 @@ async function main() {
   ];
 
   for (const item of entertainment) {
-    const existing = await prisma.entertainment.findFirst({
-      where: { name: item.name },
+    await client.execute({
+      sql: `INSERT OR IGNORE INTO Entertainment (id, name, description, icon, sortOrder)
+            SELECT ?, ?, ?, ?, ?
+            WHERE NOT EXISTS (
+              SELECT 1 FROM Entertainment WHERE name = ?
+            )`,
+      args: [
+        crypto.randomUUID(),
+        item.name,
+        item.description,
+        item.icon,
+        item.sortOrder,
+        item.name,
+      ],
     });
-    if (!existing) {
-      await prisma.entertainment.create({ data: item });
-    }
   }
 
   // ─── Timeline Events ───
@@ -354,12 +391,26 @@ async function main() {
   ];
 
   for (const event of timelineEvents) {
-    const existing = await prisma.timelineEvent.findFirst({
-      where: { title: event.title, eventType: event.eventType },
+    await client.execute({
+      sql: `INSERT OR IGNORE INTO TimelineEvent (id, title, description, time, icon, eventType, sortOrder, createdAt, updatedAt)
+            SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?
+            WHERE NOT EXISTS (
+              SELECT 1 FROM TimelineEvent WHERE title = ? AND eventType = ?
+            )`,
+      args: [
+        crypto.randomUUID(),
+        event.title,
+        event.description,
+        event.time,
+        null,
+        event.eventType,
+        event.sortOrder,
+        now,
+        now,
+        event.title,
+        event.eventType,
+      ],
     });
-    if (!existing) {
-      await prisma.timelineEvent.create({ data: event });
-    }
   }
 
   // ─── Meal Options ───
@@ -387,68 +438,75 @@ async function main() {
   ];
 
   for (const option of mealOptions) {
-    const existing = await prisma.mealOption.findFirst({
-      where: { name: option.name },
+    await client.execute({
+      sql: `INSERT OR IGNORE INTO MealOption (id, name, description, sortOrder)
+            SELECT ?, ?, ?, ?
+            WHERE NOT EXISTS (
+              SELECT 1 FROM MealOption WHERE name = ?
+            )`,
+      args: [
+        crypto.randomUUID(),
+        option.name,
+        option.description,
+        option.sortOrder,
+        option.name,
+      ],
     });
-    if (!existing) {
-      await prisma.mealOption.create({ data: option });
-    }
   }
 
   // ─── Feature Flags ───
   const featureFlags = [
     {
       key: "rsvpEnabled",
-      enabled: true,
+      enabled: 1,
       description: "Enable RSVP form on the public site",
     },
     {
       key: "guestBookEnabled",
-      enabled: true,
+      enabled: 1,
       description: "Enable guest book signing on the public site",
     },
     {
       key: "photoUploadEnabled",
-      enabled: true,
+      enabled: 1,
       description: "Allow guests to upload photos",
     },
     {
       key: "registrySyncEnabled",
-      enabled: true,
+      enabled: 1,
       description: "Enable live registry synchronization",
     },
     {
       key: "songRequestsEnabled",
-      enabled: true,
+      enabled: 1,
       description: "Enable song requests on RSVP form",
     },
     {
       key: "entertainmentPageEnabled",
-      enabled: true,
+      enabled: 1,
       description: "Show entertainment page on the public site",
     },
     {
       key: "guestPhotoSharingEnabled",
-      enabled: true,
+      enabled: 1,
       description: "Allow guest photo sharing via the website",
     },
     {
       key: "liveGuestCountEnabled",
-      enabled: false,
+      enabled: 0,
       description: "Show live guest count on admin dashboard",
     },
     {
       key: "massEmailEnabled",
-      enabled: true,
+      enabled: 1,
       description: "Enable mass email campaigns",
     },
   ];
 
   for (const flag of featureFlags) {
-    await prisma.featureFlag.upsert({
-      where: { key: flag.key },
-      update: {},
-      create: flag,
+    await client.execute({
+      sql: `INSERT OR REPLACE INTO FeatureFlag (key, enabled, description) VALUES (?, ?, ?)`,
+      args: [flag.key, flag.enabled, flag.description],
     });
   }
 
@@ -456,17 +514,24 @@ async function main() {
   const integrations = [
     {
       moduleId: "amazon-registry",
-      enabled: false,
+      enabled: 0,
     },
   ];
 
   for (const integration of integrations) {
-    const existing = await prisma.integrationConfig.findFirst({
-      where: { moduleId: integration.moduleId },
+    await client.execute({
+      sql: `INSERT OR IGNORE INTO IntegrationConfig (id, moduleId, enabled)
+            SELECT ?, ?, ?
+            WHERE NOT EXISTS (
+              SELECT 1 FROM IntegrationConfig WHERE moduleId = ?
+            )`,
+      args: [
+        crypto.randomUUID(),
+        integration.moduleId,
+        integration.enabled,
+        integration.moduleId,
+      ],
     });
-    if (!existing) {
-      await prisma.integrationConfig.create({ data: integration });
-    }
   }
 
   // ─── Email Templates ───
@@ -479,7 +544,7 @@ async function main() {
       category: "system",
       variables:
         '["guestName", "coupleName", "weddingDate", "venueName"]',
-      isDefault: true,
+      isDefault: 1,
     },
     {
       slug: "rsvp-reminder",
@@ -489,7 +554,7 @@ async function main() {
       category: "system",
       variables:
         '["guestName", "coupleName", "rsvpDeadline", "websiteUrl"]',
-      isDefault: true,
+      isDefault: 1,
     },
     {
       slug: "rsvp-confirmation",
@@ -499,7 +564,7 @@ async function main() {
       category: "system",
       variables:
         '["guestName", "coupleName", "rsvpStatus", "websiteUrl"]',
-      isDefault: true,
+      isDefault: 1,
     },
     {
       slug: "wedding-update",
@@ -509,7 +574,7 @@ async function main() {
       category: "system",
       variables:
         '["guestName", "coupleName", "customMessage", "websiteUrl"]',
-      isDefault: true,
+      isDefault: 1,
     },
     {
       slug: "travel-hotel-info",
@@ -519,7 +584,7 @@ async function main() {
       category: "system",
       variables:
         '["guestName", "coupleName", "venueName", "venueAddress", "websiteUrl"]',
-      isDefault: true,
+      isDefault: 1,
     },
     {
       slug: "day-of-reminder",
@@ -529,7 +594,7 @@ async function main() {
       category: "system",
       variables:
         '["guestName", "coupleName", "weddingDate", "venueName", "websiteUrl"]',
-      isDefault: true,
+      isDefault: 1,
     },
     {
       slug: "thank-you",
@@ -538,7 +603,7 @@ async function main() {
       body: "Dear {{guestName}},\n\nThank you so much for being part of our special day! It meant the world to us to have you there.\n\nCheck out photos from the wedding: {{websiteUrl}}/gallery\n\nWith love and gratitude,\n{{coupleName}}",
       category: "system",
       variables: '["guestName", "coupleName", "websiteUrl"]',
-      isDefault: true,
+      isDefault: 1,
     },
     {
       slug: "photo-share-invite",
@@ -548,15 +613,28 @@ async function main() {
       category: "system",
       variables:
         '["guestName", "coupleName", "photoShareLink", "weddingHashtag"]',
-      isDefault: true,
+      isDefault: 1,
     },
   ];
 
   for (const template of emailTemplates) {
-    await prisma.emailTemplate.upsert({
-      where: { slug: template.slug },
-      update: {},
-      create: template,
+    await client.execute({
+      sql: `INSERT OR REPLACE INTO EmailTemplate (id, slug, name, subject, body, category, variables, isDefault, createdAt, updatedAt)
+            VALUES (COALESCE((SELECT id FROM EmailTemplate WHERE slug = ?), ?), ?, ?, ?, ?, ?, ?, ?, COALESCE((SELECT createdAt FROM EmailTemplate WHERE slug = ?), ?), ?)`,
+      args: [
+        template.slug,
+        crypto.randomUUID(),
+        template.slug,
+        template.name,
+        template.subject,
+        template.body,
+        template.category,
+        template.variables,
+        template.isDefault,
+        template.slug,
+        now,
+        now,
+      ],
     });
   }
 
@@ -582,12 +660,22 @@ async function main() {
   ];
 
   for (const tag of photoTags) {
-    const existing = await prisma.photoTag.findFirst({
-      where: { name: tag.name, type: tag.type },
+    await client.execute({
+      sql: `INSERT OR IGNORE INTO PhotoTag (id, name, type, color, sortOrder)
+            SELECT ?, ?, ?, ?, ?
+            WHERE NOT EXISTS (
+              SELECT 1 FROM PhotoTag WHERE name = ? AND type = ?
+            )`,
+      args: [
+        crypto.randomUUID(),
+        tag.name,
+        tag.type,
+        tag.color,
+        tag.sortOrder,
+        tag.name,
+        tag.type,
+      ],
     });
-    if (!existing) {
-      await prisma.photoTag.create({ data: tag });
-    }
   }
 
   console.log("✅ Database seeded successfully!");
@@ -598,6 +686,6 @@ main()
     console.error("❌ Seed failed:", e);
     process.exit(1);
   })
-  .finally(async () => {
-    await prisma.$disconnect();
+  .finally(() => {
+    client.close();
   });

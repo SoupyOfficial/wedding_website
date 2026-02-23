@@ -1,7 +1,7 @@
 import { createClient } from "@libsql/client";
-import * as dotenv from "dotenv";
 
-dotenv.config();
+// Load environment variables from .env
+import "dotenv/config";
 
 async function main() {
   const client = createClient({

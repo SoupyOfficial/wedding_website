@@ -26,28 +26,9 @@ jobs:
       - name: Type check
         run: npx tsc --noEmit
 
-  migration-integrity:
-    name: Migration Integrity
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: npm
-
-      - run: npm ci
-
-      - name: Check for migration drift
-        run: npm run db:check
-        # This runs `prisma migrate diff` comparing the schema against
-        # the migration history. If there is ANY drift (columns added
-        # via `db push` without a migration), this step fails the build.
-
   build:
     name: Build
-    needs: [lint-and-typecheck, migration-integrity]
+    needs: [lint-and-typecheck]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

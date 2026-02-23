@@ -1,7 +1,8 @@
 import { NextRequest } from "next/server";
-import prisma from "@/lib/db";
+import { query, queryOne, execute, toBool } from "@/lib/db";
 import { getProvider } from "@/lib/providers";
 import { successResponse, errorResponse } from "@/lib/api";
+import type { Photo, PhotoTag, PhotoWithTags } from "@/lib/db-types";
 
 export async function PUT(
   req: NextRequest,
@@ -12,21 +13,40 @@ export async function PUT(
     const body = await req.json();
     const { caption, category, approved } = body;
 
-    const photo = await prisma.photo.update({
-      where: { id },
-      data: {
-        ...(caption !== undefined && { caption }),
-        ...(category !== undefined && { category }),
-        ...(approved !== undefined && { approved }),
-      },
-      include: { tags: true },
-    });
+    const sets: string[] = [];
+    const args: (string | number | null)[] = [];
 
-    return successResponse(photo);
-  } catch (error: unknown) {
-    if (error && typeof error === "object" && "code" in error && error.code === "P2025") {
+    if (caption !== undefined) { sets.push("caption = ?"); args.push(caption); }
+    if (category !== undefined) { sets.push("category = ?"); args.push(category); }
+    if (approved !== undefined) { sets.push("approved = ?"); args.push(approved ? 1 : 0); }
+
+    if (sets.length === 0) {
+      return errorResponse("No fields to update.", 400);
+    }
+
+    args.push(id);
+    const { rowsAffected } = await execute(
+      `UPDATE Photo SET ${sets.join(", ")} WHERE id = ?`,
+      args
+    );
+
+    if (rowsAffected === 0) {
       return errorResponse("Photo not found.", 404);
     }
+
+    const photo = await queryOne<Photo>("SELECT * FROM Photo WHERE id = ?", [id]);
+    if (photo) toBool(photo, "approved");
+
+    const tags = await query<PhotoTag>(
+      `SELECT pt.* FROM PhotoTag pt
+       INNER JOIN "_PhotoToPhotoTag" j ON j.B = pt.id
+       WHERE j.A = ?`,
+      [id]
+    );
+
+    const result: PhotoWithTags = { ...photo!, tags };
+    return successResponse(result);
+  } catch (error) {
     console.error("Failed to update photo:", error);
     return errorResponse("Internal server error.", 500);
   }
@@ -39,24 +59,23 @@ export async function DELETE(
   try {
     const { id } = await params;
 
-    // Fetch photo to get storage key before deleting
-    const photo = await prisma.photo.findUnique({ where: { id } });
+    const photo = await queryOne<Photo>("SELECT * FROM Photo WHERE id = ?", [id]);
     if (!photo) {
       return errorResponse("Photo not found.", 404);
     }
 
-    // Delete from storage provider if we have a key
     if (photo.storageKey) {
       try {
         const storage = getProvider("storage");
         await storage.delete(photo.storageKey);
       } catch {
-        // Log but don't block DB deletion if storage delete fails
         console.error(`Failed to delete storage key: ${photo.storageKey}`);
       }
     }
 
-    await prisma.photo.delete({ where: { id } });
+    // Delete join table entries first, then the photo
+    await execute('DELETE FROM "_PhotoToPhotoTag" WHERE A = ?', [id]);
+    await execute("DELETE FROM Photo WHERE id = ?", [id]);
     return successResponse({ deleted: true });
   } catch (error) {
     console.error("Failed to delete photo:", error);

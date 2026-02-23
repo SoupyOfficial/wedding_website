@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
-import prisma from "@/lib/db";
+import { queryOne, execute } from "@/lib/db";
 import { successResponse, errorResponse } from "@/lib/api";
+import type { RegistryItem } from "@/lib/db-types";
 
 export async function PUT(
   req: NextRequest,
@@ -11,21 +12,26 @@ export async function PUT(
     const body = await req.json();
     const { name, url, iconUrl, sortOrder } = body;
 
-    const registry = await prisma.registryItem.update({
-      where: { id },
-      data: {
-        ...(name !== undefined && { name: name.trim() }),
-        ...(url !== undefined && { url: url.trim() }),
-        ...(iconUrl !== undefined && { iconUrl: iconUrl || null }),
-        ...(sortOrder !== undefined && { sortOrder }),
-      },
-    });
+    const sets: string[] = [];
+    const args: (string | number | null)[] = [];
 
+    if (name !== undefined) { sets.push("name = ?"); args.push(name.trim()); }
+    if (url !== undefined) { sets.push("url = ?"); args.push(url.trim()); }
+    if (iconUrl !== undefined) { sets.push("iconUrl = ?"); args.push(iconUrl || null); }
+    if (sortOrder !== undefined) { sets.push("sortOrder = ?"); args.push(sortOrder); }
+
+    if (sets.length === 0) return errorResponse("No fields to update.", 400);
+
+    args.push(id);
+    const { rowsAffected } = await execute(
+      `UPDATE RegistryItem SET ${sets.join(", ")} WHERE id = ?`,
+      args
+    );
+    if (rowsAffected === 0) return errorResponse("Registry item not found.", 404);
+
+    const registry = await queryOne<RegistryItem>("SELECT * FROM RegistryItem WHERE id = ?", [id]);
     return successResponse(registry);
-  } catch (error: unknown) {
-    if (error && typeof error === "object" && "code" in error && error.code === "P2025") {
-      return errorResponse("Registry item not found.", 404);
-    }
+  } catch (error) {
     console.error("Failed to update registry item:", error);
     return errorResponse("Internal server error.", 500);
   }
@@ -37,12 +43,10 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
-    await prisma.registryItem.delete({ where: { id } });
+    const { rowsAffected } = await execute("DELETE FROM RegistryItem WHERE id = ?", [id]);
+    if (rowsAffected === 0) return errorResponse("Registry item not found.", 404);
     return successResponse({ deleted: true });
-  } catch (error: unknown) {
-    if (error && typeof error === "object" && "code" in error && error.code === "P2025") {
-      return errorResponse("Registry item not found.", 404);
-    }
+  } catch (error) {
     console.error("Failed to delete registry item:", error);
     return errorResponse("Internal server error.", 500);
   }

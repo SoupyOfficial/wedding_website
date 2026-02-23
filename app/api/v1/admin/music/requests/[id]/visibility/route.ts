@@ -1,11 +1,9 @@
 import { NextRequest } from "next/server";
-import prisma from "@/lib/db";
+import { queryOne, execute, toBool } from "@/lib/db";
 import { successResponse, errorResponse } from "@/lib/api";
+import type { SongRequest } from "@/lib/db-types";
+import { SONG_BOOLS } from "@/lib/db-types";
 
-/**
- * POST /api/v1/admin/music/requests/[id]/visibility
- * Toggle whether an approved song is visible on the public playlist.
- */
 export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -19,10 +17,12 @@ export async function POST(
     } catch {
       // No body → default show
     }
-    const updated = await prisma.songRequest.update({
-      where: { id },
-      data: { isVisible },
-    });
+    await execute(
+      "UPDATE SongRequest SET isVisible = ? WHERE id = ?",
+      [isVisible ? 1 : 0, id]
+    );
+    const updated = await queryOne<SongRequest>("SELECT * FROM SongRequest WHERE id = ?", [id]);
+    if (updated) toBool(updated, ...SONG_BOOLS);
     return successResponse(updated);
   } catch (error) {
     console.error("Failed to toggle visibility:", error);

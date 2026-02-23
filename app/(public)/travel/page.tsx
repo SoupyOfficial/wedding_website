@@ -1,4 +1,6 @@
-import prisma from "@/lib/db";
+import { query, queryOne, toBool } from "@/lib/db";
+import type { SiteSettings, Hotel, TimelineEvent } from "@/lib/db-types";
+import { SETTINGS_BOOLS } from "@/lib/db-types";
 import SectionDivider from "@/components/SectionDivider";
 import { PageHeader } from "@/components/ui";
 import WeatherForecast from "@/components/WeatherForecast";
@@ -9,18 +11,15 @@ export const metadata = {
 };
 
 export default async function TravelPage() {
-  const settings = await prisma.siteSettings.findUnique({
-    where: { id: "singleton" },
-  });
+  const settings = await queryOne<SiteSettings>("SELECT * FROM SiteSettings WHERE id = ?", ["singleton"]);
+  if (settings) toBool(settings, ...SETTINGS_BOOLS);
 
-  const hotels = await prisma.hotel.findMany({
-    orderBy: { sortOrder: "asc" },
-  });
+  const hotels = await query<Hotel>("SELECT * FROM Hotel ORDER BY sortOrder ASC");
 
-  const timelineEvents = await prisma.timelineEvent.findMany({
-    where: { eventType: "wedding-day" },
-    orderBy: { sortOrder: "asc" },
-  });
+  const timelineEvents = await query<TimelineEvent>(
+    "SELECT * FROM TimelineEvent WHERE eventType = ? ORDER BY sortOrder ASC",
+    ["wedding-day"]
+  );
 
   const raffleTicketCount = settings?.raffleTicketCount ?? 2;
 
@@ -43,7 +42,7 @@ export default async function TravelPage() {
             Book early to secure the best rates — Orlando is a popular destination!
           </p>
           <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-            {hotels.map((hotel: { id: string; name: string; address: string | null; blockCode: string | null; blockDeadline: Date | null; notes: string | null; bookingLink: string | null; website: string | null; phone: string | null; distanceFromVenue: string | null; priceRange: string | null; amenities: string | null }) => (
+            {hotels.map((hotel) => (
               <div key={hotel.id} className="card-celestial text-center">
                 <div className="text-3xl mb-3">🏨</div>
                 <h3 className="text-gold font-serif text-xl mb-2">
@@ -259,7 +258,7 @@ export default async function TravelPage() {
 
         {/* Live Weather Forecast */}
         <WeatherForecast
-          weddingDate={settings?.weddingDate?.toISOString() ?? null}
+          weddingDate={settings?.weddingDate ?? null}
           timelineEvents={timelineEvents.map((e) => ({
             id: e.id,
             title: e.title,

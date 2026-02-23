@@ -48,3 +48,4 @@ next-env.d.ts
 
 # prisma shadow database (used by migration drift check)
 prisma/shadow.db
+local.db

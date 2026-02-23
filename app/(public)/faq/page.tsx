@@ -1,4 +1,5 @@
-import prisma from "@/lib/db";
+import { query } from "@/lib/db";
+import type { FAQ } from "@/lib/db-types";
 import { PageHeader } from "@/components/ui";
 
 export const metadata = {
@@ -7,9 +8,7 @@ export const metadata = {
 };
 
 export default async function FAQPage() {
-  const faqs = await prisma.fAQ.findMany({
-    orderBy: { sortOrder: "asc" },
-  });
+  const faqs = await query<FAQ>("SELECT * FROM FAQ ORDER BY sortOrder ASC");
 
   return (
     <div className="pt-24 pb-16">

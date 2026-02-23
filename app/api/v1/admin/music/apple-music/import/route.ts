@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import prisma from "@/lib/db";
+import { query, execute, generateId } from "@/lib/db";
 import {
   isAppleMusicConfigured,
   parsePlaylistUrl,
@@ -60,9 +60,7 @@ export async function POST(req: NextRequest) {
     // Get existing DJ list items to detect duplicates
     let existingSongs = new Set<string>();
     if (skipDuplicates) {
-      const existing = await prisma.dJList.findMany({
-        select: { songName: true, artist: true },
-      });
+      const existing = await query<{ songName: string; artist: string }>("SELECT songName, artist FROM DJList");
       existingSongs = new Set(
         existing.map(
           (s) => `${s.songName.toLowerCase()}::${s.artist.toLowerCase()}`
@@ -80,16 +78,12 @@ export async function POST(req: NextRequest) {
     // Bulk create DJ list items
     let addedCount = 0;
     if (tracksToAdd.length > 0) {
-      // Prisma doesn't support createMany with SQLite returning, so we batch
       for (const track of tracksToAdd) {
-        await prisma.dJList.create({
-          data: {
-            songName: track.songName,
-            artist: track.artist,
-            listType,
-            playTime: playTime || "",
-          },
-        });
+        const id = generateId();
+        await execute(
+          "INSERT INTO DJList (id, songName, artist, listType, playTime) VALUES (?, ?, ?, ?, ?)",
+          [id, track.songName, track.artist, listType, playTime || ""]
+        );
         addedCount++;
       }
     }

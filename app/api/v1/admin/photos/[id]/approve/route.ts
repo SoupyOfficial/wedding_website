@@ -1,4 +1,4 @@
-import prisma from "@/lib/db";
+import { execute } from "@/lib/db";
 import { successResponse, errorResponse } from "@/lib/api";
 
 export async function POST(
@@ -7,10 +7,7 @@ export async function POST(
 ) {
   try {
     const { id } = await params;
-    await prisma.photo.update({
-      where: { id },
-      data: { approved: true },
-    });
+    await execute("UPDATE Photo SET approved = 1 WHERE id = ?", [id]);
     return successResponse({ approved: true });
   } catch (error) {
     console.error("Failed to approve photo:", error);

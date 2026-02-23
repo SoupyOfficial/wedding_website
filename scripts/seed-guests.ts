@@ -1,20 +1,6 @@
 import "dotenv/config";
-import { PrismaClient } from "@prisma/client";
-import { PrismaLibSQL } from "@prisma/adapter-libsql";
-
-function createClient(): PrismaClient {
-  const tursoUrl = process.env.TURSO_DATABASE_URL;
-  const tursoToken = process.env.TURSO_AUTH_TOKEN;
-
-  if (tursoUrl && tursoToken) {
-    console.log("🔗 Connecting to Turso...");
-    const adapter = new PrismaLibSQL({ url: tursoUrl, authToken: tursoToken });
-    return new PrismaClient({ adapter });
-  }
-
-  console.log("📁 Connecting to local SQLite...");
-  return new PrismaClient();
-}
+import { createClient } from "@libsql/client";
+import crypto from "crypto";
 
 interface GuestInput {
   firstName: string;
@@ -344,7 +330,13 @@ const guests: GuestInput[] = [
   { firstName: "Scott", lastName: "Delconzo", group: "Ashley's Friends", notes: "Household: Marissa and Scott Delconzo" },
 ];
 
-const prisma = createClient();
+const client = createClient({
+  url:
+    process.env.TURSO_DATABASE_URL ||
+    process.env.DATABASE_URL ||
+    "file:local.db",
+  authToken: process.env.TURSO_AUTH_TOKEN,
+});
 
 async function main() {
   console.log("👥 Seeding guests...\n");
@@ -354,28 +346,31 @@ async function main() {
 
   for (const guest of guests) {
     // Check for existing guest with same first name, last name, and group
-    const existing = await prisma.guest.findFirst({
-      where: {
-        firstName: guest.firstName,
-        lastName: guest.lastName,
-        group: guest.group,
-      },
+    const existing = await client.execute({
+      sql: `SELECT id FROM Guest WHERE firstName = ? AND lastName = ? AND "group" = ?`,
+      args: [guest.firstName, guest.lastName, guest.group],
     });
 
-    if (existing) {
+    if (existing.rows.length > 0) {
       console.log(`  ⏭️  Skipped (already exists): ${guest.firstName} ${guest.lastName} [${guest.group}]`);
       skipped++;
       continue;
     }
 
-    await prisma.guest.create({
-      data: {
-        firstName: guest.firstName,
-        lastName: guest.lastName,
-        group: guest.group,
-        plusOneAllowed: guest.plusOneAllowed ?? false,
-        notes: guest.notes ?? null,
-      },
+    const now = new Date().toISOString();
+    await client.execute({
+      sql: `INSERT INTO Guest (id, firstName, lastName, "group", plusOneAllowed, notes, rsvpStatus, createdAt, updatedAt)
+            VALUES (?, ?, ?, ?, ?, ?, 'pending', ?, ?)`,
+      args: [
+        crypto.randomUUID(),
+        guest.firstName,
+        guest.lastName,
+        guest.group,
+        guest.plusOneAllowed ? 1 : 0,
+        guest.notes ?? null,
+        now,
+        now,
+      ],
     });
 
     const plusOneLabel = guest.plusOneAllowed ? " (+1)" : "";
@@ -395,6 +390,6 @@ main()
     console.error("❌ Guest seeding failed:", e);
     process.exit(1);
   })
-  .finally(async () => {
-    await prisma.$disconnect();
+  .finally(() => {
+    client.close();
   });

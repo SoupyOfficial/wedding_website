@@ -1,6 +1,8 @@
 import { NextRequest } from "next/server";
-import prisma from "@/lib/db";
+import { queryOne, execute, toBool } from "@/lib/db";
 import { successResponse, errorResponse } from "@/lib/api";
+import type { MealOption } from "@/lib/db-types";
+import { MEAL_BOOLS } from "@/lib/db-types";
 
 export async function PUT(
   req: NextRequest,
@@ -11,22 +13,28 @@ export async function PUT(
     const body = await req.json();
     const { name, description, isVegetarian, isVegan, isGlutenFree } = body;
 
-    const meal = await prisma.mealOption.update({
-      where: { id },
-      data: {
-        ...(name !== undefined && { name: name.trim() }),
-        ...(description !== undefined && { description }),
-        ...(isVegetarian !== undefined && { isVegetarian }),
-        ...(isVegan !== undefined && { isVegan }),
-        ...(isGlutenFree !== undefined && { isGlutenFree }),
-      },
-    });
+    const sets: string[] = [];
+    const args: (string | number | null)[] = [];
 
+    if (name !== undefined) { sets.push("name = ?"); args.push(name.trim()); }
+    if (description !== undefined) { sets.push("description = ?"); args.push(description); }
+    if (isVegetarian !== undefined) { sets.push("isVegetarian = ?"); args.push(isVegetarian ? 1 : 0); }
+    if (isVegan !== undefined) { sets.push("isVegan = ?"); args.push(isVegan ? 1 : 0); }
+    if (isGlutenFree !== undefined) { sets.push("isGlutenFree = ?"); args.push(isGlutenFree ? 1 : 0); }
+
+    if (sets.length === 0) return errorResponse("No fields to update.", 400);
+
+    args.push(id);
+    const { rowsAffected } = await execute(
+      `UPDATE MealOption SET ${sets.join(", ")} WHERE id = ?`,
+      args
+    );
+    if (rowsAffected === 0) return errorResponse("Meal option not found.", 404);
+
+    const meal = await queryOne<MealOption>("SELECT * FROM MealOption WHERE id = ?", [id]);
+    if (meal) toBool(meal, ...MEAL_BOOLS);
     return successResponse(meal);
-  } catch (error: unknown) {
-    if (error && typeof error === "object" && "code" in error && error.code === "P2025") {
-      return errorResponse("Meal option not found.", 404);
-    }
+  } catch (error) {
     console.error("Failed to update meal:", error);
     return errorResponse("Internal server error.", 500);
   }
@@ -38,12 +46,10 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
-    await prisma.mealOption.delete({ where: { id } });
+    const { rowsAffected } = await execute("DELETE FROM MealOption WHERE id = ?", [id]);
+    if (rowsAffected === 0) return errorResponse("Meal option not found.", 404);
     return successResponse({ deleted: true });
-  } catch (error: unknown) {
-    if (error && typeof error === "object" && "code" in error && error.code === "P2025") {
-      return errorResponse("Meal option not found.", 404);
-    }
+  } catch (error) {
     console.error("Failed to delete meal:", error);
     return errorResponse("Internal server error.", 500);
   }

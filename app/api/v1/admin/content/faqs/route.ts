@@ -1,12 +1,11 @@
 import { NextRequest } from "next/server";
-import prisma from "@/lib/db";
+import { query, queryOne, execute, generateId } from "@/lib/db";
 import { successResponse, errorResponse } from "@/lib/api";
+import type { FAQ } from "@/lib/db-types";
 
 export async function GET() {
   try {
-    const faqs = await prisma.fAQ.findMany({
-      orderBy: { sortOrder: "asc" },
-    });
+    const faqs = await query<FAQ>("SELECT * FROM FAQ ORDER BY sortOrder ASC");
     return successResponse(faqs);
   } catch (error) {
     console.error("Failed to fetch FAQs:", error);
@@ -23,14 +22,13 @@ export async function POST(req: NextRequest) {
       return errorResponse("Question and answer are required.", 400);
     }
 
-    const faq = await prisma.fAQ.create({
-      data: {
-        question: question.trim(),
-        answer: answer.trim(),
-        sortOrder: sortOrder ?? 0,
-      },
-    });
+    const id = generateId();
+    await execute(
+      "INSERT INTO FAQ (id, question, answer, sortOrder) VALUES (?, ?, ?, ?)",
+      [id, question.trim(), answer.trim(), sortOrder ?? 0]
+    );
 
+    const faq = await queryOne<FAQ>("SELECT * FROM FAQ WHERE id = ?", [id]);
     return successResponse(faq, undefined, 201);
   } catch (error) {
     console.error("Failed to create FAQ:", error);

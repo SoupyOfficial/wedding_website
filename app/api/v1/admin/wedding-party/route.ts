@@ -1,12 +1,13 @@
 import { NextRequest } from "next/server";
-import prisma from "@/lib/db";
+import { query, queryOne, execute, generateId, now } from "@/lib/db";
 import { successResponse, errorResponse } from "@/lib/api";
+import type { WeddingPartyMember } from "@/lib/db-types";
 
 export async function GET() {
   try {
-    const members = await prisma.weddingPartyMember.findMany({
-      orderBy: [{ side: "asc" }, { sortOrder: "asc" }],
-    });
+    const members = await query<WeddingPartyMember>(
+      "SELECT * FROM WeddingPartyMember ORDER BY side ASC, sortOrder ASC"
+    );
     return successResponse(members);
   } catch (error) {
     console.error("Failed to fetch wedding party:", error);
@@ -23,19 +24,15 @@ export async function POST(req: NextRequest) {
       return errorResponse("Name, role, and side are required.", 400);
     }
 
-    const member = await prisma.weddingPartyMember.create({
-      data: {
-        name: name.trim(),
-        role: role.trim(),
-        side: side.trim(),
-        bio: bio || "",
-        photoUrl: photoUrl || null,
-        relationToBrideOrGroom: body.relationToBrideOrGroom || "",
-        spouseOrPartner: body.spouseOrPartner || "",
-        sortOrder: sortOrder ?? 0,
-      },
-    });
+    const id = generateId();
+    const timestamp = now();
+    await execute(
+      `INSERT INTO WeddingPartyMember (id, name, role, side, bio, photoUrl, relationToBrideOrGroom, spouseOrPartner, sortOrder, createdAt, updatedAt)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [id, name.trim(), role.trim(), side.trim(), bio || "", photoUrl || null, body.relationToBrideOrGroom || "", body.spouseOrPartner || "", sortOrder ?? 0, timestamp, timestamp]
+    );
 
+    const member = await queryOne<WeddingPartyMember>("SELECT * FROM WeddingPartyMember WHERE id = ?", [id]);
     return successResponse(member, undefined, 201);
   } catch (error) {
     console.error("Failed to create wedding party member:", error);

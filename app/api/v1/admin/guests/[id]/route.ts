@@ -1,6 +1,8 @@
 import { NextRequest } from "next/server";
-import prisma from "@/lib/db";
+import { queryOne, execute, now, toBool } from "@/lib/db";
 import { successResponse, errorResponse } from "@/lib/api";
+import type { Guest } from "@/lib/db-types";
+import { GUEST_BOOLS } from "@/lib/db-types";
 
 export async function PUT(
   req: NextRequest,
@@ -16,33 +18,44 @@ export async function PUT(
       tableNumber, notes,
     } = body;
 
-    const guest = await prisma.guest.update({
-      where: { id },
-      data: {
-        ...(firstName !== undefined && { firstName: firstName.trim() }),
-        ...(lastName !== undefined && { lastName: lastName.trim() }),
-        ...(email !== undefined && { email: email || null }),
-        ...(phone !== undefined && { phone: phone || null }),
-        ...(group !== undefined && { group: group || null }),
-        ...(rsvpStatus !== undefined && { rsvpStatus }),
-        ...(plusOneAllowed !== undefined && { plusOneAllowed }),
-        ...(plusOneName !== undefined && { plusOneName: plusOneName || null }),
-        ...(plusOneAttending !== undefined && { plusOneAttending }),
-        ...(mealPreference !== undefined && { mealPreference: mealPreference || null }),
-        ...(dietaryNeeds !== undefined && { dietaryNeeds: dietaryNeeds || null }),
-        ...(songRequest !== undefined && { songRequest: songRequest || null }),
-        ...(childrenCount !== undefined && { childrenCount }),
-        ...(childrenNames !== undefined && { childrenNames: childrenNames || null }),
-        ...(tableNumber !== undefined && { tableNumber: tableNumber || null }),
-        ...(notes !== undefined && { notes: notes || null }),
-      },
-    });
+    const sets: string[] = [];
+    const args: (string | number | null)[] = [];
 
-    return successResponse(guest);
-  } catch (error: unknown) {
-    if (error && typeof error === "object" && "code" in error && error.code === "P2025") {
+    if (firstName !== undefined) { sets.push("firstName = ?"); args.push(firstName.trim()); }
+    if (lastName !== undefined) { sets.push("lastName = ?"); args.push(lastName.trim()); }
+    if (email !== undefined) { sets.push("email = ?"); args.push(email || null); }
+    if (phone !== undefined) { sets.push("phone = ?"); args.push(phone || null); }
+    if (group !== undefined) { sets.push('"group" = ?'); args.push(group || null); }
+    if (rsvpStatus !== undefined) { sets.push("rsvpStatus = ?"); args.push(rsvpStatus); }
+    if (plusOneAllowed !== undefined) { sets.push("plusOneAllowed = ?"); args.push(plusOneAllowed ? 1 : 0); }
+    if (plusOneName !== undefined) { sets.push("plusOneName = ?"); args.push(plusOneName || null); }
+    if (plusOneAttending !== undefined) { sets.push("plusOneAttending = ?"); args.push(plusOneAttending ? 1 : 0); }
+    if (mealPreference !== undefined) { sets.push("mealPreference = ?"); args.push(mealPreference || null); }
+    if (dietaryNeeds !== undefined) { sets.push("dietaryNeeds = ?"); args.push(dietaryNeeds || null); }
+    if (songRequest !== undefined) { sets.push("songRequest = ?"); args.push(songRequest || null); }
+    if (childrenCount !== undefined) { sets.push("childrenCount = ?"); args.push(childrenCount); }
+    if (childrenNames !== undefined) { sets.push("childrenNames = ?"); args.push(childrenNames || null); }
+    if (tableNumber !== undefined) { sets.push("tableNumber = ?"); args.push(tableNumber || null); }
+    if (notes !== undefined) { sets.push("notes = ?"); args.push(notes || null); }
+
+    sets.push("updatedAt = ?");
+    args.push(now());
+    args.push(id);
+
+    const { rowsAffected } = await execute(
+      `UPDATE Guest SET ${sets.join(", ")} WHERE id = ?`,
+      args
+    );
+
+    if (rowsAffected === 0) {
       return errorResponse("Guest not found.", 404);
     }
+
+    const guest = await queryOne<Guest>("SELECT * FROM Guest WHERE id = ?", [id]);
+    if (guest) toBool(guest, ...GUEST_BOOLS);
+
+    return successResponse(guest);
+  } catch (error) {
     console.error("Failed to update guest:", error);
     return errorResponse("Internal server error.", 500);
   }
@@ -54,12 +67,14 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
-    await prisma.guest.delete({ where: { id } });
-    return successResponse({ deleted: true });
-  } catch (error: unknown) {
-    if (error && typeof error === "object" && "code" in error && error.code === "P2025") {
+    const { rowsAffected } = await execute("DELETE FROM Guest WHERE id = ?", [id]);
+
+    if (rowsAffected === 0) {
       return errorResponse("Guest not found.", 404);
     }
+
+    return successResponse({ deleted: true });
+  } catch (error) {
     console.error("Failed to delete guest:", error);
     return errorResponse("Internal server error.", 500);
   }

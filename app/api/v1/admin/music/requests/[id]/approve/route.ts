@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import prisma from "@/lib/db";
+import { execute } from "@/lib/db";
 import { successResponse, errorResponse } from "@/lib/api";
 
 export async function POST(
@@ -15,10 +15,10 @@ export async function POST(
     } catch {
       // No body → default approve
     }
-    await prisma.songRequest.update({
-      where: { id },
-      data: { approved },
-    });
+    await execute(
+      "UPDATE SongRequest SET approved = ? WHERE id = ?",
+      [approved ? 1 : 0, id]
+    );
     return successResponse({ approved });
   } catch (error) {
     console.error("Failed to approve song request:", error);

@@ -1,4 +1,5 @@
-import prisma from "@/lib/db";
+import { query } from "@/lib/db";
+import type { WeddingPartyMember } from "@/lib/db-types";
 import SectionDivider from "@/components/SectionDivider";
 import { PageHeader } from "@/components/ui";
 
@@ -107,20 +108,20 @@ function MemberCard({
 }
 
 export default async function WeddingPartyPage() {
-  const allBrideSide = await prisma.weddingPartyMember.findMany({
-    where: { side: "bride" },
-    orderBy: { sortOrder: "asc" },
-  });
+  const allBrideSide = await query<WeddingPartyMember>(
+    "SELECT * FROM WeddingPartyMember WHERE side = ? ORDER BY sortOrder ASC",
+    ["bride"]
+  );
 
-  const allGroomSide = await prisma.weddingPartyMember.findMany({
-    where: { side: "groom" },
-    orderBy: { sortOrder: "asc" },
-  });
+  const allGroomSide = await query<WeddingPartyMember>(
+    "SELECT * FROM WeddingPartyMember WHERE side = ? ORDER BY sortOrder ASC",
+    ["groom"]
+  );
 
-  const special = await prisma.weddingPartyMember.findMany({
-    where: { side: "special" },
-    orderBy: { sortOrder: "asc" },
-  });
+  const special = await query<WeddingPartyMember>(
+    "SELECT * FROM WeddingPartyMember WHERE side = ? ORDER BY sortOrder ASC",
+    ["special"]
+  );
 
   // Separate bridal party from flower girls / ring bearers
   const bridesmaids = allBrideSide.filter((m) => !isFlowerGirlOrRingBearer(m.role));

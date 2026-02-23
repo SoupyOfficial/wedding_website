@@ -1,12 +1,13 @@
 import { NextRequest } from "next/server";
-import prisma from "@/lib/db";
+import { query, queryOne, execute, generateId, toBoolAll, toBool } from "@/lib/db";
 import { successResponse, errorResponse } from "@/lib/api";
+import type { MealOption } from "@/lib/db-types";
+import { MEAL_BOOLS } from "@/lib/db-types";
 
 export async function GET() {
   try {
-    const meals = await prisma.mealOption.findMany({
-      orderBy: { name: "asc" },
-    });
+    const meals = await query<MealOption>("SELECT * FROM MealOption ORDER BY name ASC");
+    toBoolAll(meals, ...MEAL_BOOLS);
     return successResponse(meals);
   } catch (error) {
     console.error("Failed to fetch meals:", error);
@@ -19,20 +20,16 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { name, description, isVegetarian, isVegan, isGlutenFree } = body;
 
-    if (!name?.trim()) {
-      return errorResponse("Name is required.", 400);
-    }
+    if (!name?.trim()) return errorResponse("Name is required.", 400);
 
-    const meal = await prisma.mealOption.create({
-      data: {
-        name: name.trim(),
-        description: description || null,
-        isVegetarian: isVegetarian ?? false,
-        isVegan: isVegan ?? false,
-        isGlutenFree: isGlutenFree ?? false,
-      },
-    });
+    const id = generateId();
+    await execute(
+      "INSERT INTO MealOption (id, name, description, isVegetarian, isVegan, isGlutenFree, isAvailable, sortOrder) VALUES (?, ?, ?, ?, ?, ?, 1, 0)",
+      [id, name.trim(), description || "", isVegetarian ? 1 : 0, isVegan ? 1 : 0, isGlutenFree ? 1 : 0]
+    );
 
+    const meal = await queryOne<MealOption>("SELECT * FROM MealOption WHERE id = ?", [id]);
+    if (meal) toBool(meal, ...MEAL_BOOLS);
     return successResponse(meal, undefined, 201);
   } catch (error) {
     console.error("Failed to create meal:", error);

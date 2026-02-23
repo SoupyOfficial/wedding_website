@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import prisma from "@/lib/db";
+import { execute, generateId, now } from "@/lib/db";
 import { getProvider } from "@/lib/providers";
 import { rateLimit } from "@/lib/api/middleware";
 import { successResponse, errorResponse } from "@/lib/api";
@@ -31,7 +31,6 @@ export async function POST(req: NextRequest) {
       return errorResponse("File must be under 10MB.", 400);
     }
 
-    // Whitelist safe file extensions
     const ext = (file.name.split(".").pop() || "").toLowerCase();
     if (!ALLOWED_EXTENSIONS.has(ext)) {
       return errorResponse("Only JPG, PNG, GIF, and WebP files are allowed.", 400);
@@ -43,35 +42,26 @@ export async function POST(req: NextRequest) {
     const safeCategory = category ? category.trim().slice(0, 50) : "guest-uploads";
     const filename = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
 
-    // Upload via the configured storage provider (local or Cloudinary)
     const storage = getProvider("storage");
     const result = await storage.upload(buffer, filename, {
       contentType: file.type,
       category: safeCategory,
     });
 
-    // Sanitize text inputs
     const safeCaption = caption ? caption.trim().slice(0, 200) : "";
     const safeUploader = uploaderName ? uploaderName.trim().slice(0, 100) : null;
 
-    const photo = await prisma.photo.create({
-      data: {
-        url: result.url,
-        caption: safeCaption,
-        uploadedBy: safeUploader,
-        category: safeCategory,
-        storageKey: result.key,
-        approved: false,
-      },
-    });
+    const id = generateId();
+    await execute(
+      "INSERT INTO Photo (id, url, caption, uploadedBy, category, storageKey, approved, sortOrder, createdAt) VALUES (?, ?, ?, ?, ?, ?, 0, 0, ?)",
+      [id, result.url, safeCaption, safeUploader, safeCategory, result.key, now()]
+    );
 
-    return successResponse({ id: photo.id, url: photo.url }, undefined, 201);
+    return successResponse({ id, url: result.url }, undefined, 201);
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : String(error);
+    const message = error instanceof Error ? error.message : String(error);
     console.error("Failed to upload photo:", message);
 
-    // Surface storage configuration errors clearly
     if (
       message.includes("read-only") ||
       message.includes("not configured") ||

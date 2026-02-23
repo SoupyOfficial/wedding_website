@@ -1,14 +1,17 @@
 import { NextRequest } from "next/server";
-import prisma from "@/lib/db";
+import { queryOne, execute, now, toBool } from "@/lib/db";
 import { successResponse, errorResponse } from "@/lib/api";
+import type { SiteSettings } from "@/lib/db-types";
+import { SETTINGS_BOOLS } from "@/lib/db-types";
 
 export async function GET() {
   try {
-    const settings = await prisma.siteSettings.findUnique({
-      where: { id: "singleton" },
-    });
+    const settings = await queryOne<SiteSettings>(
+      "SELECT * FROM SiteSettings WHERE id = ?",
+      ["singleton"]
+    );
+    if (settings) toBool(settings, ...SETTINGS_BOOLS);
 
-    // Redact the site password — only expose whether it's set
     const safeSettings = settings
       ? {
           ...settings,
@@ -27,55 +30,77 @@ export async function PUT(req: NextRequest) {
   try {
     const body = await req.json();
 
-    // Don't overwrite the password if the masked placeholder is sent back
-    const passwordUpdate =
-      body.sitePassword && body.sitePassword !== "••••••••"
-        ? { sitePassword: body.sitePassword }
-        : {};
+    const sets: string[] = [];
+    const args: (string | number | null)[] = [];
 
-    const settings = await prisma.siteSettings.update({
-      where: { id: "singleton" },
-      data: {
-        coupleName: body.coupleName,
-        weddingDate: body.weddingDate ? new Date(body.weddingDate) : undefined,
-        weddingTime: body.weddingTime ?? null,
-        venueName: body.venueName,
-        venueAddress: body.venueAddress,
-        ceremonyType: body.ceremonyType,
-        dressCode: body.dressCode,
-        contactEmailJoint: body.contactEmailJoint ?? "",
-        contactEmailBride: body.contactEmailBride ?? "",
-        contactEmailGroom: body.contactEmailGroom ?? "",
-        weddingHashtag: body.weddingHashtag ?? "",
-        ...passwordUpdate,
-        sitePasswordEnabled: body.sitePasswordEnabled ?? false,
-        rsvpDeadline: body.rsvpDeadline ? new Date(body.rsvpDeadline) : null,
-        rsvpEnabled: body.rsvpEnabled ?? true,
-        heroTagline: body.heroTagline ?? "",
-        heroTaglinePostWedding: body.heroTaglinePostWedding ?? "",
-        ourStoryContent: body.ourStoryContent ?? "",
-        travelContent: body.travelContent ?? "",
-        preWeddingContent: body.preWeddingContent ?? "",
-        postWeddingContent: body.postWeddingContent ?? "",
-        weatherInfo: body.weatherInfo ?? "",
-        parkingInfo: body.parkingInfo ?? "",
-        childrenPolicy: body.childrenPolicy ?? "",
-        faqContent: body.faqContent ?? "",
-        photoShareLink: body.photoShareLink ?? "",
-        ogImage: body.ogImage ?? "",
-        ogDescription: body.ogDescription ?? "",
-        socialInstagram: body.socialInstagram ?? "",
-        socialFacebook: body.socialFacebook ?? "",
-        socialTikTok: body.socialTikTok ?? "",
-        notifyOnRsvp: body.notifyOnRsvp ?? true,
-        notificationEmail: body.notificationEmail ?? "",
-        bannerText: body.bannerText ?? "",
-        bannerUrl: body.bannerUrl ?? "",
-        bannerActive: body.bannerActive ?? false,
-        bannerColor: body.bannerColor ?? "gold",
-        raffleTicketCount: body.raffleTicketCount ?? 2,
-      },
-    });
+    const fields: [string, unknown][] = [
+      ["coupleName", body.coupleName],
+      ["weddingDate", body.weddingDate ? new Date(body.weddingDate).toISOString() : undefined],
+      ["weddingTime", body.weddingTime ?? null],
+      ["venueName", body.venueName],
+      ["venueAddress", body.venueAddress],
+      ["ceremonyType", body.ceremonyType],
+      ["dressCode", body.dressCode],
+      ["contactEmailJoint", body.contactEmailJoint ?? ""],
+      ["contactEmailBride", body.contactEmailBride ?? ""],
+      ["contactEmailGroom", body.contactEmailGroom ?? ""],
+      ["weddingHashtag", body.weddingHashtag ?? ""],
+      ["sitePasswordEnabled", body.sitePasswordEnabled ? 1 : 0],
+      ["rsvpDeadline", body.rsvpDeadline ? new Date(body.rsvpDeadline).toISOString() : null],
+      ["rsvpEnabled", (body.rsvpEnabled ?? true) ? 1 : 0],
+      ["heroTagline", body.heroTagline ?? ""],
+      ["heroTaglinePostWedding", body.heroTaglinePostWedding ?? ""],
+      ["ourStoryContent", body.ourStoryContent ?? ""],
+      ["travelContent", body.travelContent ?? ""],
+      ["preWeddingContent", body.preWeddingContent ?? ""],
+      ["postWeddingContent", body.postWeddingContent ?? ""],
+      ["weatherInfo", body.weatherInfo ?? ""],
+      ["parkingInfo", body.parkingInfo ?? ""],
+      ["childrenPolicy", body.childrenPolicy ?? ""],
+      ["faqContent", body.faqContent ?? ""],
+      ["photoShareLink", body.photoShareLink ?? ""],
+      ["ogImage", body.ogImage ?? ""],
+      ["ogDescription", body.ogDescription ?? ""],
+      ["socialInstagram", body.socialInstagram ?? ""],
+      ["socialFacebook", body.socialFacebook ?? ""],
+      ["socialTikTok", body.socialTikTok ?? ""],
+      ["notifyOnRsvp", (body.notifyOnRsvp ?? true) ? 1 : 0],
+      ["notificationEmail", body.notificationEmail ?? ""],
+      ["bannerText", body.bannerText ?? ""],
+      ["bannerUrl", body.bannerUrl ?? ""],
+      ["bannerActive", (body.bannerActive ?? false) ? 1 : 0],
+      ["bannerColor", body.bannerColor ?? "gold"],
+      ["registryNote", body.registryNote ?? ""],
+      ["entertainmentNote", body.entertainmentNote ?? ""],
+      ["raffleTicketCount", body.raffleTicketCount ?? 2],
+    ];
+
+    // Only update password if a real value was sent
+    if (body.sitePassword && body.sitePassword !== "••••••••") {
+      fields.push(["sitePassword", body.sitePassword]);
+    }
+
+    for (const [col, val] of fields) {
+      if (val !== undefined) {
+        sets.push(`${col} = ?`);
+        args.push(val as string | number | null);
+      }
+    }
+
+    sets.push("updatedAt = ?");
+    args.push(now());
+    args.push("singleton");
+
+    await execute(
+      `UPDATE SiteSettings SET ${sets.join(", ")} WHERE id = ?`,
+      args
+    );
+
+    const settings = await queryOne<SiteSettings>(
+      "SELECT * FROM SiteSettings WHERE id = ?",
+      ["singleton"]
+    );
+    if (settings) toBool(settings, ...SETTINGS_BOOLS);
 
     return successResponse(settings);
   } catch (error) {

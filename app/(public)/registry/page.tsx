@@ -1,4 +1,6 @@
-import prisma from "@/lib/db";
+import { query, queryOne, toBool } from "@/lib/db";
+import type { RegistryItem, SiteSettings } from "@/lib/db-types";
+import { SETTINGS_BOOLS } from "@/lib/db-types";
 import SectionDivider from "@/components/SectionDivider";
 import { PageHeader } from "@/components/ui";
 
@@ -8,13 +10,10 @@ export const metadata = {
 };
 
 export default async function RegistryPage() {
-  const registries = await prisma.registryItem.findMany({
-    orderBy: { sortOrder: "asc" },
-  });
+  const registries = await query<RegistryItem>("SELECT * FROM RegistryItem ORDER BY sortOrder ASC");
 
-  const settings = await prisma.siteSettings.findUnique({
-    where: { id: "singleton" },
-  });
+  const settings = await queryOne<SiteSettings>("SELECT * FROM SiteSettings WHERE id = ?", ["singleton"]);
+  if (settings) toBool(settings, ...SETTINGS_BOOLS);
 
   const iconMap: Record<string, string> = {
     amazon: "📦",

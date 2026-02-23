@@ -1,4 +1,6 @@
-import prisma from "@/lib/db";
+import { queryOne, toBool } from "@/lib/db";
+import type { SiteSettings } from "@/lib/db-types";
+import { SETTINGS_BOOLS } from "@/lib/db-types";
 
 interface AnnouncementBannerProps {
   settings?: {
@@ -12,11 +14,12 @@ interface AnnouncementBannerProps {
 export default async function AnnouncementBanner({
   settings: propSettings,
 }: AnnouncementBannerProps = {}) {
-  const settings =
-    propSettings ||
-    (await prisma.siteSettings.findUnique({
-      where: { id: "singleton" },
-    }));
+  let settings = propSettings as (typeof propSettings | SiteSettings);
+  if (!settings) {
+    const dbSettings = await queryOne<SiteSettings>("SELECT * FROM SiteSettings WHERE id = ?", ["singleton"]);
+    if (dbSettings) toBool(dbSettings, ...SETTINGS_BOOLS);
+    settings = dbSettings;
+  }
 
   if (!settings?.bannerActive || !settings.bannerText) {
     return null;

@@ -1,11 +1,12 @@
 import Link from "next/link";
-import prisma from "@/lib/db";
+import { queryOne, toBool } from "@/lib/db";
+import type { SiteSettings } from "@/lib/db-types";
+import { SETTINGS_BOOLS } from "@/lib/db-types";
 import CountdownTimer from "@/components/CountdownTimer";
 
 export default async function HomePage() {
-  const settings = await prisma.siteSettings.findUnique({
-    where: { id: "singleton" },
-  });
+  const settings = await queryOne<SiteSettings>("SELECT * FROM SiteSettings WHERE id = ?", ["singleton"]);
+  if (settings) toBool(settings, ...SETTINGS_BOOLS);
 
   const weddingDate = settings?.weddingDate;
   const isPostWedding = weddingDate
@@ -62,7 +63,7 @@ export default async function HomePage() {
           {/* Countdown or Date */}
           {weddingDate ? (
             <CountdownTimer
-              targetDate={weddingDate.toISOString()}
+              targetDate={weddingDate}
               postWeddingMessage={
                 settings?.heroTaglinePostWedding || "We did it! 🎉"
               }

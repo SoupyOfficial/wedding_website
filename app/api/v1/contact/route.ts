@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import prisma from "@/lib/db";
+import { execute, generateId, now } from "@/lib/db";
 import { rateLimit } from "@/lib/api/middleware";
 import { successResponse, errorResponse } from "@/lib/api";
 
@@ -16,14 +16,17 @@ export async function POST(req: NextRequest) {
       return errorResponse("All fields are required.", 400);
     }
 
-    const msg = await prisma.contactMessage.create({
-      data: {
-        name: name.trim().slice(0, 100),
-        email: email.trim().slice(0, 200),
-        subject: subject.trim().slice(0, 200),
-        message: message.trim().slice(0, 2000),
-      },
-    });
+    await execute(
+      "INSERT INTO ContactMessage (id, name, email, subject, message, isRead, createdAt) VALUES (?, ?, ?, ?, ?, 0, ?)",
+      [
+        generateId(),
+        name.trim().slice(0, 100),
+        email.trim().slice(0, 200),
+        subject.trim().slice(0, 200),
+        message.trim().slice(0, 2000),
+        now(),
+      ]
+    );
 
     return successResponse({ message: "Message sent successfully." }, undefined, 201);
   } catch (error) {

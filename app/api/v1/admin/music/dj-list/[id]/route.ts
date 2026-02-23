@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
-import prisma from "@/lib/db";
+import { queryOne, execute } from "@/lib/db";
 import { successResponse, errorResponse } from "@/lib/api";
+import type { DJList } from "@/lib/db-types";
 
 export async function PUT(
   req: NextRequest,
@@ -11,21 +12,26 @@ export async function PUT(
     const body = await req.json();
     const { songName, artist, listType, playTime } = body;
 
-    const item = await prisma.dJList.update({
-      where: { id },
-      data: {
-        ...(songName !== undefined && { songName: songName.trim() }),
-        ...(artist !== undefined && { artist: artist || "" }),
-        ...(listType !== undefined && { listType }),
-        ...(playTime !== undefined && { playTime: playTime || "" }),
-      },
-    });
+    const sets: string[] = [];
+    const args: (string | number | null)[] = [];
 
+    if (songName !== undefined) { sets.push("songName = ?"); args.push(songName.trim()); }
+    if (artist !== undefined) { sets.push("artist = ?"); args.push(artist || ""); }
+    if (listType !== undefined) { sets.push("listType = ?"); args.push(listType); }
+    if (playTime !== undefined) { sets.push("playTime = ?"); args.push(playTime || ""); }
+
+    if (sets.length === 0) return errorResponse("No fields to update.", 400);
+
+    args.push(id);
+    const { rowsAffected } = await execute(
+      `UPDATE DJList SET ${sets.join(", ")} WHERE id = ?`,
+      args
+    );
+    if (rowsAffected === 0) return errorResponse("DJ list item not found.", 404);
+
+    const item = await queryOne<DJList>("SELECT * FROM DJList WHERE id = ?", [id]);
     return successResponse(item);
-  } catch (error: unknown) {
-    if (error && typeof error === "object" && "code" in error && error.code === "P2025") {
-      return errorResponse("DJ list item not found.", 404);
-    }
+  } catch (error) {
     console.error("Failed to update DJ list item:", error);
     return errorResponse("Internal server error.", 500);
   }
@@ -37,12 +43,10 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
-    await prisma.dJList.delete({ where: { id } });
+    const { rowsAffected } = await execute("DELETE FROM DJList WHERE id = ?", [id]);
+    if (rowsAffected === 0) return errorResponse("DJ list item not found.", 404);
     return successResponse({ deleted: true });
-  } catch (error: unknown) {
-    if (error && typeof error === "object" && "code" in error && error.code === "P2025") {
-      return errorResponse("DJ list item not found.", 404);
-    }
+  } catch (error) {
     console.error("Failed to delete DJ list item:", error);
     return errorResponse("Internal server error.", 500);
   }

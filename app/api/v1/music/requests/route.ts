@@ -1,24 +1,13 @@
 import { NextRequest } from "next/server";
-import prisma from "@/lib/db";
+import { query, queryOne, execute, generateId, now, isUniqueViolation } from "@/lib/db";
 import { successResponse, errorResponse } from "@/lib/api";
+import type { SongRequest } from "@/lib/db-types";
 
-/**
- * GET /api/v1/music/requests
- * Returns all visible, approved song requests for the public playlist display.
- */
 export async function GET() {
   try {
-    const songs = await prisma.songRequest.findMany({
-      where: { approved: true, isVisible: true },
-      orderBy: { createdAt: "desc" },
-      select: {
-        id: true,
-        songTitle: true,
-        artist: true,
-        artworkUrl: true,
-        guestName: true,
-      },
-    });
+    const songs = await query<Pick<SongRequest, "id" | "songTitle" | "artist" | "artworkUrl" | "guestName">>(
+      "SELECT id, songTitle, artist, artworkUrl, guestName FROM SongRequest WHERE approved = 1 AND isVisible = 1 ORDER BY createdAt DESC"
+    );
     return successResponse(songs);
   } catch (error) {
     console.error("Failed to fetch visible songs:", error);
@@ -26,43 +15,32 @@ export async function GET() {
   }
 }
 
-/**
- * POST /api/v1/music/requests
- * Submit a new song request from a guest.
- */
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-
     const { guestName, songTitle, artist, artworkUrl, previewUrl } = body;
 
     if (!guestName?.trim() || !songTitle?.trim()) {
       return errorResponse("Name and song title are required.", 400);
     }
 
-    // Basic duplicate check — same song+artist from same guest
-    const existing = await prisma.songRequest.findFirst({
-      where: {
-        guestName: guestName.trim(),
-        songTitle: songTitle.trim(),
-        artist: (artist || "").trim(),
-      },
-    });
+    const existing = await queryOne<SongRequest>(
+      "SELECT id FROM SongRequest WHERE guestName = ? AND songTitle = ? AND artist = ? LIMIT 1",
+      [guestName.trim(), songTitle.trim(), (artist || "").trim()]
+    );
 
     if (existing) {
       return errorResponse("You've already requested this song!", 409);
     }
 
-    const request = await prisma.songRequest.create({
-      data: {
-        guestName: guestName.trim(),
-        songTitle: songTitle.trim(),
-        artist: (artist || "").trim(),
-        artworkUrl: artworkUrl || null,
-        previewUrl: previewUrl || null,
-      },
-    });
+    const id = generateId();
+    const timestamp = now();
+    await execute(
+      "INSERT INTO SongRequest (id, guestName, songTitle, artist, artworkUrl, previewUrl, approved, isVisible, createdAt) VALUES (?, ?, ?, ?, ?, ?, 0, 0, ?)",
+      [id, guestName.trim(), songTitle.trim(), (artist || "").trim(), artworkUrl || null, previewUrl || null, timestamp]
+    );
 
+    const request = await queryOne<SongRequest>("SELECT * FROM SongRequest WHERE id = ?", [id]);
     return successResponse(request, undefined, 201);
   } catch (error) {
     console.error("Failed to create song request:", error);

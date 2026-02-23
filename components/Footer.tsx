@@ -1,10 +1,11 @@
 import Link from "next/link";
-import prisma from "@/lib/db";
+import { queryOne, toBool } from "@/lib/db";
+import type { SiteSettings } from "@/lib/db-types";
+import { SETTINGS_BOOLS } from "@/lib/db-types";
 
 export default async function Footer() {
-  const settings = await prisma.siteSettings.findUnique({
-    where: { id: "singleton" },
-  });
+  const settings = await queryOne<SiteSettings>("SELECT * FROM SiteSettings WHERE id = ?", ["singleton"]);
+  if (settings) toBool(settings, ...SETTINGS_BOOLS);
 
   return (
     <footer className="bg-midnight-500 border-t border-gold/10 relative overflow-hidden">

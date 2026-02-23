@@ -1,4 +1,6 @@
-import prisma from "@/lib/db";
+import { queryOne, toBool } from "@/lib/db";
+import type { SiteSettings } from "@/lib/db-types";
+import { SETTINGS_BOOLS } from "@/lib/db-types";
 import Link from "next/link";
 
 export const metadata = {
@@ -6,35 +8,48 @@ export const metadata = {
 };
 
 export default async function AdminDashboard() {
+  const cnt = (r: { cnt: number } | null) => r?.cnt ?? 0;
+
   const [
-    totalGuests,
-    rsvpYes,
-    rsvpNo,
-    rsvpPending,
-    totalPhotos,
-    pendingPhotos,
-    guestBookEntries,
-    pendingGuestBook,
-    songRequests,
-    contactMessages,
-    unreadMessages,
+    totalGuestsR,
+    rsvpYesR,
+    rsvpNoR,
+    rsvpPendingR,
+    totalPhotosR,
+    pendingPhotosR,
+    guestBookEntriesR,
+    pendingGuestBookR,
+    songRequestsR,
+    contactMessagesR,
+    unreadMessagesR,
   ] = await Promise.all([
-    prisma.guest.count(),
-    prisma.guest.count({ where: { rsvpStatus: "attending" } }),
-    prisma.guest.count({ where: { rsvpStatus: "declined" } }),
-    prisma.guest.count({ where: { rsvpStatus: "pending" } }),
-    prisma.photo.count(),
-    prisma.photo.count({ where: { approved: false } }),
-    prisma.guestBookEntry.count(),
-    prisma.guestBookEntry.count({ where: { isVisible: false } }),
-    prisma.songRequest.count(),
-    prisma.contactMessage.count(),
-    prisma.contactMessage.count({ where: { isRead: false } }),
+    queryOne<{ cnt: number }>("SELECT COUNT(*) as cnt FROM Guest"),
+    queryOne<{ cnt: number }>("SELECT COUNT(*) as cnt FROM Guest WHERE rsvpStatus = ?", ["attending"]),
+    queryOne<{ cnt: number }>("SELECT COUNT(*) as cnt FROM Guest WHERE rsvpStatus = ?", ["declined"]),
+    queryOne<{ cnt: number }>("SELECT COUNT(*) as cnt FROM Guest WHERE rsvpStatus = ?", ["pending"]),
+    queryOne<{ cnt: number }>("SELECT COUNT(*) as cnt FROM Photo"),
+    queryOne<{ cnt: number }>("SELECT COUNT(*) as cnt FROM Photo WHERE approved = 0"),
+    queryOne<{ cnt: number }>("SELECT COUNT(*) as cnt FROM GuestBookEntry"),
+    queryOne<{ cnt: number }>("SELECT COUNT(*) as cnt FROM GuestBookEntry WHERE isVisible = 0"),
+    queryOne<{ cnt: number }>("SELECT COUNT(*) as cnt FROM SongRequest"),
+    queryOne<{ cnt: number }>("SELECT COUNT(*) as cnt FROM ContactMessage"),
+    queryOne<{ cnt: number }>("SELECT COUNT(*) as cnt FROM ContactMessage WHERE isRead = 0"),
   ]);
 
-  const settings = await prisma.siteSettings.findUnique({
-    where: { id: "singleton" },
-  });
+  const totalGuests = cnt(totalGuestsR);
+  const rsvpYes = cnt(rsvpYesR);
+  const rsvpNo = cnt(rsvpNoR);
+  const rsvpPending = cnt(rsvpPendingR);
+  const totalPhotos = cnt(totalPhotosR);
+  const pendingPhotos = cnt(pendingPhotosR);
+  const guestBookEntries = cnt(guestBookEntriesR);
+  const pendingGuestBook = cnt(pendingGuestBookR);
+  const songRequests = cnt(songRequestsR);
+  const contactMessages = cnt(contactMessagesR);
+  const unreadMessages = cnt(unreadMessagesR);
+
+  const settings = await queryOne<SiteSettings>("SELECT * FROM SiteSettings WHERE id = ?", ["singleton"]);
+  if (settings) toBool(settings, ...SETTINGS_BOOLS);
 
   const weddingDate = settings?.weddingDate
     ? new Date(settings.weddingDate)

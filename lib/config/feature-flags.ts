@@ -1,4 +1,5 @@
-import prisma from "@/lib/db";
+import { query, queryOne, execute, toBool } from "@/lib/db";
+import type { FeatureFlag } from "@/lib/db-types";
 
 export interface FeatureFlags {
   rsvpEnabled: boolean;
@@ -27,11 +28,11 @@ const defaultFlags: FeatureFlags = {
 
 export async function getFeatureFlags(): Promise<FeatureFlags> {
   try {
-    const flags = await prisma.featureFlag.findMany();
+    const flags = await query<FeatureFlag>("SELECT * FROM FeatureFlag");
     const result = { ...defaultFlags };
 
     for (const flag of flags) {
-      result[flag.key] = flag.enabled;
+      result[flag.key] = flag.enabled === 1 || flag.enabled === true;
     }
 
     return result;
@@ -42,10 +43,9 @@ export async function getFeatureFlags(): Promise<FeatureFlags> {
 
 export async function getFeatureFlag(key: string): Promise<boolean> {
   try {
-    const flag = await prisma.featureFlag.findUnique({
-      where: { key },
-    });
-    return flag?.enabled ?? defaultFlags[key] ?? false;
+    const flag = await queryOne<FeatureFlag>("SELECT * FROM FeatureFlag WHERE key = ?", [key]);
+    if (!flag) return defaultFlags[key] ?? false;
+    return flag.enabled === 1 || flag.enabled === true;
   } catch {
     return defaultFlags[key] ?? false;
   }
@@ -55,9 +55,10 @@ export async function setFeatureFlag(
   key: string,
   enabled: boolean
 ): Promise<void> {
-  await prisma.featureFlag.upsert({
-    where: { key },
-    update: { enabled },
-    create: { key, enabled },
-  });
+  const existing = await queryOne<FeatureFlag>("SELECT * FROM FeatureFlag WHERE key = ?", [key]);
+  if (existing) {
+    await execute("UPDATE FeatureFlag SET enabled = ? WHERE key = ?", [enabled ? 1 : 0, key]);
+  } else {
+    await execute("INSERT INTO FeatureFlag (key, enabled) VALUES (?, ?)", [key, enabled ? 1 : 0]);
+  }
 }

@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
-import prisma from "@/lib/db";
+import { queryOne, execute, toBool } from "@/lib/db";
 import { successResponse, errorResponse } from "@/lib/api";
+import type { ContactMessage } from "@/lib/db-types";
 
 export async function PUT(
   req: NextRequest,
@@ -11,16 +12,19 @@ export async function PUT(
     const body = await req.json();
     const { isRead } = body;
 
-    const message = await prisma.contactMessage.update({
-      where: { id },
-      data: { ...(isRead !== undefined && { isRead }) },
-    });
+    if (isRead === undefined) return errorResponse("No fields to update.", 400);
 
+    const { rowsAffected } = await execute(
+      "UPDATE ContactMessage SET isRead = ? WHERE id = ?",
+      [isRead ? 1 : 0, id]
+    );
+
+    if (rowsAffected === 0) return errorResponse("Message not found.", 404);
+
+    const message = await queryOne<ContactMessage>("SELECT * FROM ContactMessage WHERE id = ?", [id]);
+    if (message) toBool(message, "isRead");
     return successResponse(message);
-  } catch (error: unknown) {
-    if (error && typeof error === "object" && "code" in error && error.code === "P2025") {
-      return errorResponse("Message not found.", 404);
-    }
+  } catch (error) {
     console.error("Failed to update message:", error);
     return errorResponse("Internal server error.", 500);
   }
@@ -32,12 +36,10 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
-    await prisma.contactMessage.delete({ where: { id } });
+    const { rowsAffected } = await execute("DELETE FROM ContactMessage WHERE id = ?", [id]);
+    if (rowsAffected === 0) return errorResponse("Message not found.", 404);
     return successResponse({ deleted: true });
-  } catch (error: unknown) {
-    if (error && typeof error === "object" && "code" in error && error.code === "P2025") {
-      return errorResponse("Message not found.", 404);
-    }
+  } catch (error) {
     console.error("Failed to delete message:", error);
     return errorResponse("Internal server error.", 500);
   }
