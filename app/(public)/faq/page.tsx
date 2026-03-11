@@ -1,5 +1,6 @@
 import { query } from "@/lib/db";
 import type { FAQ } from "@/lib/db-types";
+import { checkFeatureFlag } from "@/lib/feature-gate";
 import { PageHeader } from "@/components/ui";
 
 export const metadata = {
@@ -8,6 +9,9 @@ export const metadata = {
 };
 
 export default async function FAQPage() {
+  const gate = await checkFeatureFlag("faqPageEnabled");
+  if (gate) return gate;
+
   const faqs = await query<FAQ>("SELECT * FROM FAQ ORDER BY sortOrder ASC");
 
   return (

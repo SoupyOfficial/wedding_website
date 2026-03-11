@@ -3,6 +3,7 @@ import { execute, generateId, now } from "@/lib/db";
 import { getProvider } from "@/lib/providers";
 import { rateLimit } from "@/lib/api/middleware";
 import { successResponse, errorResponse } from "@/lib/api";
+import { getFeatureFlag } from "@/lib/config/feature-flags";
 
 const ALLOWED_EXTENSIONS = new Set(["jpg", "jpeg", "png", "gif", "webp"]);
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
@@ -13,6 +14,8 @@ export async function POST(req: NextRequest) {
   const limited = await limiter(req, {});
   if (limited) return limited;
   try {
+    const enabled = await getFeatureFlag("photoUploadEnabled");
+    if (!enabled) return errorResponse("Photo uploads are currently disabled.", 403);
     const formData = await req.formData();
     const file = formData.get("file") as File | null;
     const caption = formData.get("caption") as string | null;

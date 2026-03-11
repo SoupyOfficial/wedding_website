@@ -1,10 +1,13 @@
 import { NextRequest } from "next/server";
 import { query, queryOne, execute, generateId, now, isUniqueViolation } from "@/lib/db";
 import { successResponse, errorResponse } from "@/lib/api";
+import { getFeatureFlag } from "@/lib/config/feature-flags";
 import type { SongRequest } from "@/lib/db-types";
 
 export async function GET() {
   try {
+    const enabled = await getFeatureFlag("songRequestsEnabled");
+    if (!enabled) return errorResponse("Song requests are currently disabled.", 403);
     const songs = await query<Pick<SongRequest, "id" | "songTitle" | "artist" | "artworkUrl" | "guestName">>(
       "SELECT id, songTitle, artist, artworkUrl, guestName FROM SongRequest WHERE approved = 1 AND isVisible = 1 ORDER BY createdAt DESC"
     );
@@ -17,6 +20,9 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   try {
+    const enabled = await getFeatureFlag("songRequestsEnabled");
+    if (!enabled) return errorResponse("Song requests are currently disabled.", 403);
+
     const body = await req.json();
     const { guestName, songTitle, artist, artworkUrl, previewUrl } = body;
 

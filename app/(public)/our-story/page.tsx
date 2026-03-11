@@ -1,6 +1,8 @@
 import { query, queryOne, toBool } from "@/lib/db";
 import type { SiteSettings, Photo } from "@/lib/db-types";
 import { SETTINGS_BOOLS } from "@/lib/db-types";
+import { sanitizeHtml } from "@/lib/sanitize";
+import { checkFeatureFlag } from "@/lib/feature-gate";
 import SectionDivider from "@/components/SectionDivider";
 import { PageHeader } from "@/components/ui";
 
@@ -10,6 +12,8 @@ export const metadata = {
 };
 
 export default async function OurStoryPage() {
+  const gate = await checkFeatureFlag("ourStoryPageEnabled");
+  if (gate) return gate;
   const settings = await queryOne<SiteSettings>("SELECT * FROM SiteSettings WHERE id = ?", ["singleton"]);
   if (settings) toBool(settings, ...SETTINGS_BOOLS);
 
@@ -33,7 +37,7 @@ export default async function OurStoryPage() {
             <div
               className="text-ivory/80 leading-relaxed space-y-6"
               dangerouslySetInnerHTML={{
-                __html: settings.ourStoryContent.replace(/\n/g, "<br />"),
+                __html: sanitizeHtml(settings.ourStoryContent.replace(/\n/g, "<br />")),
               }}
             />
           </div>
@@ -71,6 +75,7 @@ export default async function OurStoryPage() {
                         src={photo.url}
                         alt={photo.caption || "Our story photo"}
                         className="w-full h-64 object-cover rounded-lg"
+                        loading="lazy"
                       />
                       {photo.caption && (
                         <p className="text-ivory/70 text-sm mt-3 italic">

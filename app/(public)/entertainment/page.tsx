@@ -1,6 +1,7 @@
 import { query, queryOne, toBool } from "@/lib/db";
 import type { Entertainment, SiteSettings } from "@/lib/db-types";
 import { SETTINGS_BOOLS } from "@/lib/db-types";
+import { checkFeatureFlag } from "@/lib/feature-gate";
 import SectionDivider from "@/components/SectionDivider";
 import { PageHeader } from "@/components/ui";
 
@@ -10,6 +11,9 @@ export const metadata = {
 };
 
 export default async function EntertainmentPage() {
+  const gate = await checkFeatureFlag("entertainmentPageEnabled");
+  if (gate) return gate;
+
   const entertainment = await query<Entertainment>("SELECT * FROM Entertainment ORDER BY sortOrder ASC");
 
   const settings = await queryOne<SiteSettings>("SELECT * FROM SiteSettings WHERE id = ?", ["singleton"]);

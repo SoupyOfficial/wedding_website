@@ -13,7 +13,11 @@ const styles = {
 
 export default function Alert({ type, message, className = "" }: AlertProps) {
   return (
-    <div className={`p-3 border rounded-lg text-sm ${styles[type]} ${className}`}>
+    <div
+      role="alert"
+      aria-live="polite"
+      className={`p-3 border rounded-lg text-sm ${styles[type]} ${className}`}
+    >
       {message}
     </div>
   );

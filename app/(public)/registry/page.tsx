@@ -1,6 +1,7 @@
 import { query, queryOne, toBool } from "@/lib/db";
 import type { RegistryItem, SiteSettings } from "@/lib/db-types";
 import { SETTINGS_BOOLS } from "@/lib/db-types";
+import { checkFeatureFlag } from "@/lib/feature-gate";
 import SectionDivider from "@/components/SectionDivider";
 import { PageHeader } from "@/components/ui";
 
@@ -10,6 +11,8 @@ export const metadata = {
 };
 
 export default async function RegistryPage() {
+  const gate = await checkFeatureFlag("registryPageEnabled");
+  if (gate) return gate;
   const registries = await query<RegistryItem>("SELECT * FROM RegistryItem ORDER BY sortOrder ASC");
 
   const settings = await queryOne<SiteSettings>("SELECT * FROM SiteSettings WHERE id = ?", ["singleton"]);

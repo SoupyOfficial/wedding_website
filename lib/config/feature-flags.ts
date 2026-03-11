@@ -11,6 +11,16 @@ export interface FeatureFlags {
   guestPhotoSharingEnabled: boolean;
   liveGuestCountEnabled: boolean;
   massEmailEnabled: boolean;
+  ourStoryPageEnabled: boolean;
+  eventDetailsPageEnabled: boolean;
+  travelPageEnabled: boolean;
+  weddingPartyPageEnabled: boolean;
+  galleryPageEnabled: boolean;
+  registryPageEnabled: boolean;
+  faqPageEnabled: boolean;
+  contactPageEnabled: boolean;
+  musicPageEnabled: boolean;
+  photosOfUsPageEnabled: boolean;
   [key: string]: boolean;
 }
 
@@ -24,6 +34,16 @@ const defaultFlags: FeatureFlags = {
   guestPhotoSharingEnabled: false,
   liveGuestCountEnabled: false,
   massEmailEnabled: true,
+  ourStoryPageEnabled: true,
+  eventDetailsPageEnabled: true,
+  travelPageEnabled: true,
+  weddingPartyPageEnabled: true,
+  galleryPageEnabled: true,
+  registryPageEnabled: true,
+  faqPageEnabled: true,
+  contactPageEnabled: true,
+  musicPageEnabled: true,
+  photosOfUsPageEnabled: true,
 };
 
 export async function getFeatureFlags(): Promise<FeatureFlags> {

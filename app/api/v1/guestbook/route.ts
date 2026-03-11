@@ -2,12 +2,15 @@ import { NextRequest } from "next/server";
 import { query, execute, generateId, now, toBoolAll } from "@/lib/db";
 import { rateLimit } from "@/lib/api/middleware";
 import { successResponse, errorResponse } from "@/lib/api";
+import { getFeatureFlag } from "@/lib/config/feature-flags";
 import type { GuestBookEntry } from "@/lib/db-types";
 
 const postLimiter = rateLimit({ windowMs: 60_000, maxRequests: 3 });
 
 export async function GET() {
   try {
+    const enabled = await getFeatureFlag("guestBookEnabled");
+    if (!enabled) return errorResponse("Guest book is currently disabled.", 403);
     const entries = await query<GuestBookEntry>(
       "SELECT * FROM GuestBookEntry WHERE isVisible = 1 ORDER BY createdAt DESC"
     );
@@ -24,6 +27,9 @@ export async function POST(req: NextRequest) {
   const limited = await postLimiter(req, {});
   if (limited) return limited;
   try {
+    const enabled = await getFeatureFlag("guestBookEnabled");
+    if (!enabled) return errorResponse("Guest book is currently disabled.", 403);
+
     const body = await req.json();
     const { name, message } = body;
 

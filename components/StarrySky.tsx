@@ -28,6 +28,10 @@ export default function StarrySky() {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
+    // Respect prefers-reduced-motion
+    const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    if (motionQuery.matches) return;
+
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 

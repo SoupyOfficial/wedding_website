@@ -1,6 +1,7 @@
 import { query, queryOne, toBool } from "@/lib/db";
 import type { SiteSettings, Hotel, TimelineEvent } from "@/lib/db-types";
 import { SETTINGS_BOOLS } from "@/lib/db-types";
+import { checkFeatureFlag } from "@/lib/feature-gate";
 import SectionDivider from "@/components/SectionDivider";
 import { PageHeader } from "@/components/ui";
 import WeatherForecast from "@/components/WeatherForecast";
@@ -11,6 +12,8 @@ export const metadata = {
 };
 
 export default async function TravelPage() {
+  const gate = await checkFeatureFlag("travelPageEnabled");
+  if (gate) return gate;
   const settings = await queryOne<SiteSettings>("SELECT * FROM SiteSettings WHERE id = ?", ["singleton"]);
   if (settings) toBool(settings, ...SETTINGS_BOOLS);
 

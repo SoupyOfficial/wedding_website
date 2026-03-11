@@ -3,6 +3,7 @@ import { queryOne, execute, generateId, now, toBool } from "@/lib/db";
 import { eventBus } from "@/lib/events/event-bus";
 import { rateLimit } from "@/lib/api/middleware";
 import { successResponse, errorResponse } from "@/lib/api";
+import { getFeatureFlag } from "@/lib/config/feature-flags";
 import type { Guest } from "@/lib/db-types";
 
 const limiter = rateLimit({ windowMs: 60_000, maxRequests: 5 });
@@ -11,6 +12,9 @@ export async function POST(req: NextRequest) {
   const limited = await limiter(req, {});
   if (limited) return limited;
   try {
+    const enabled = await getFeatureFlag("rsvpEnabled");
+    if (!enabled) return errorResponse("RSVP is currently closed.", 403);
+
     const body = await req.json();
     const {
       guestId,

@@ -1,6 +1,7 @@
 import { query } from "@/lib/db";
 import GalleryClient from "./GalleryClient";
 import { PageHeader } from "@/components/ui";
+import { checkFeatureFlag } from "@/lib/feature-gate";
 import type { Photo, PhotoTag } from "@/lib/db-types";
 
 export const metadata = {
@@ -9,6 +10,8 @@ export const metadata = {
 };
 
 export default async function GalleryPage() {
+  const gate = await checkFeatureFlag("galleryPageEnabled");
+  if (gate) return gate;
   // Get approved photos
   const photos = await query<Photo>(
     "SELECT * FROM Photo WHERE approved = 1 ORDER BY createdAt DESC"

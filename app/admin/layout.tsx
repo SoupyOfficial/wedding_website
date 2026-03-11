@@ -16,6 +16,7 @@ const navItems = [
   { href: "/admin/meals", label: "Meals", icon: "🍽️" },
   { href: "/admin/guest-book", label: "Guest Book", icon: "📖" },
   { href: "/admin/communications", label: "Communications", icon: "✉️" },
+  { href: "/admin/features", label: "Features", icon: "🔧" },
   { href: "/admin/settings", label: "Settings", icon: "⚙️" },
 ];
 

@@ -10,30 +10,32 @@ interface NavLink {
   label: string;
   hidePostWedding?: boolean;
   showPostWedding?: boolean;
+  featureFlag?: string;
 }
 
 const navLinks: NavLink[] = [
   { href: "/", label: "Home" },
-  { href: "/our-story", label: "Our Story" },
-  { href: "/event-details", label: "Event Details" },
-  { href: "/travel", label: "Travel & Stay" },
-  { href: "/wedding-party", label: "Wedding Party" },
-  { href: "/entertainment", label: "Entertainment" },
-  { href: "/music", label: "Song Requests" },
-  { href: "/rsvp", label: "RSVP", hidePostWedding: true },
-  { href: "/registry", label: "Registry" },
-  { href: "/faq", label: "FAQ" },
-  { href: "/gallery", label: "Gallery" },
-  { href: "/photos-of-us", label: "Photos of Us" },
-  { href: "/guest-book", label: "Guest Book" },
-  { href: "/contact", label: "Contact" },
+  { href: "/our-story", label: "Our Story", featureFlag: "ourStoryPageEnabled" },
+  { href: "/event-details", label: "Event Details", featureFlag: "eventDetailsPageEnabled" },
+  { href: "/travel", label: "Travel & Stay", featureFlag: "travelPageEnabled" },
+  { href: "/wedding-party", label: "Wedding Party", featureFlag: "weddingPartyPageEnabled" },
+  { href: "/entertainment", label: "Entertainment", featureFlag: "entertainmentPageEnabled" },
+  { href: "/music", label: "Song Requests", featureFlag: "musicPageEnabled" },
+  { href: "/rsvp", label: "RSVP", hidePostWedding: true, featureFlag: "rsvpEnabled" },
+  { href: "/registry", label: "Registry", featureFlag: "registryPageEnabled" },
+  { href: "/faq", label: "FAQ", featureFlag: "faqPageEnabled" },
+  { href: "/gallery", label: "Gallery", featureFlag: "galleryPageEnabled" },
+  { href: "/photos-of-us", label: "Photos of Us", featureFlag: "photosOfUsPageEnabled" },
+  { href: "/guest-book", label: "Guest Book", featureFlag: "guestBookEnabled" },
+  { href: "/contact", label: "Contact", featureFlag: "contactPageEnabled" },
 ];
 
 interface NavigationProps {
   weddingDate?: string | null;
+  featureFlags?: Record<string, boolean>;
 }
 
-export default function Navigation({ weddingDate }: NavigationProps) {
+export default function Navigation({ weddingDate, featureFlags = {} }: NavigationProps) {
   const pathname = usePathname();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
@@ -57,6 +59,7 @@ export default function Navigation({ weddingDate }: NavigationProps) {
   const filteredLinks = navLinks.filter((link) => {
     if (isPostWedding && link.hidePostWedding) return false;
     if (!isPostWedding && link.showPostWedding) return false;
+    if (link.featureFlag && featureFlags[link.featureFlag] === false) return false;
     return true;
   });
 
@@ -85,6 +88,7 @@ export default function Navigation({ weddingDate }: NavigationProps) {
               <Link
                 key={link.href}
                 href={link.href}
+                aria-current={pathname === link.href ? "page" : undefined}
                 className={clsx(
                   "px-3 py-2 text-sm font-medium rounded-md transition-all duration-200",
                   pathname === link.href
@@ -152,6 +156,7 @@ export default function Navigation({ weddingDate }: NavigationProps) {
                   ? "text-gold bg-gold/10"
                   : "text-ivory/80 hover:text-gold hover:bg-gold/5"
               )}
+              aria-current={pathname === link.href ? "page" : undefined}
             >
               {link.label}
             </Link>

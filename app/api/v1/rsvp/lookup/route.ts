@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { query, queryOne, toBool, toBoolAll } from "@/lib/db";
 import { rateLimit } from "@/lib/api/middleware";
 import { successResponse, errorResponse } from "@/lib/api";
+import { getFeatureFlag } from "@/lib/config/feature-flags";
 import type { Guest, MealOption } from "@/lib/db-types";
 
 const limiter = rateLimit({ windowMs: 60_000, maxRequests: 10 });
@@ -9,6 +10,9 @@ const limiter = rateLimit({ windowMs: 60_000, maxRequests: 10 });
 export async function GET(req: NextRequest) {
   const limited = await limiter(req, {});
   if (limited) return limited;
+  const enabled = await getFeatureFlag("rsvpEnabled");
+  if (!enabled) return errorResponse("RSVP is currently closed.", 403);
+
   const name = req.nextUrl.searchParams.get("name");
 
   if (!name || name.trim().length < 2) {

@@ -1,5 +1,6 @@
 import { query } from "@/lib/db";
 import type { WeddingPartyMember } from "@/lib/db-types";
+import { checkFeatureFlag } from "@/lib/feature-gate";
 import SectionDivider from "@/components/SectionDivider";
 import { PageHeader } from "@/components/ui";
 
@@ -108,6 +109,9 @@ function MemberCard({
 }
 
 export default async function WeddingPartyPage() {
+  const gate = await checkFeatureFlag("weddingPartyPageEnabled");
+  if (gate) return gate;
+
   const allBrideSide = await query<WeddingPartyMember>(
     "SELECT * FROM WeddingPartyMember WHERE side = ? ORDER BY sortOrder ASC",
     ["bride"]
