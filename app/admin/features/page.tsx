@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { useAdminFetch } from "@/lib/hooks/use-admin-fetch";
+import { useAdminFetchRaw } from "@/lib/hooks/use-admin-fetch";
 import { AdminPageHeader, Alert, LoadingState } from "@/components/ui";
 
 interface FeatureFlags {
@@ -52,7 +52,7 @@ const FLAG_GROUPS: { title: string; items: FlagConfig[] }[] = [
 ];
 
 export default function AdminFeaturesPage() {
-  const { data: flags, loading, error: fetchError, setData } = useAdminFetch<Record<string, boolean>>("/api/v1/admin/features");
+  const { data: flags, loading, error: fetchError, setData } = useAdminFetchRaw<Record<string, boolean>>("/api/v1/admin/features");
   const [saving, setSaving] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");

@@ -40,6 +40,40 @@ export function useAdminFetch<T>(url: string): UseAdminFetchResult<T> {
   return { data, loading, error, refetch, setData };
 }
 
+interface UseAdminFetchRawResult<T> {
+  data: T | null;
+  loading: boolean;
+  error: string | null;
+  refetch: () => Promise<void>;
+  setData: React.Dispatch<React.SetStateAction<T | null>>;
+}
+
+export function useAdminFetchRaw<T>(url: string): UseAdminFetchRawResult<T> {
+  const [data, setData] = useState<T | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const refetch = useCallback(async () => {
+    try {
+      setError(null);
+      const res = await fetch(url);
+      const json = await res.json();
+      if (json.data) setData(json.data);
+    } catch (err) {
+      console.error(`Failed to fetch ${url}:`, err);
+      setError("Failed to load data.");
+    } finally {
+      setLoading(false);
+    }
+  }, [url]);
+
+  useEffect(() => {
+    refetch();
+  }, [refetch]);
+
+  return { data, loading, error, refetch, setData };
+}
+
 interface UseAdminMultiFetchResult<T extends Record<string, unknown[]>> {
   data: T;
   loading: boolean;
