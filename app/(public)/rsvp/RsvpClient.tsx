@@ -122,7 +122,7 @@ export default function RsvpClient() {
   }
 
   return (
-    <div className="pt-24 pb-16">
+    <div className="pt-8 pb-16">
       <div className="section-padding">
         <PageHeader title="RSVP" subtitle="We can't wait to celebrate with you!" />
 

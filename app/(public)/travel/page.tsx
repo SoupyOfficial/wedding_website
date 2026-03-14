@@ -27,7 +27,7 @@ export default async function TravelPage() {
   const raffleTicketCount = settings?.raffleTicketCount ?? 2;
 
   return (
-    <div className="pt-24 pb-16">
+    <div className="pt-8 pb-16">
       <div className="section-padding">
         <PageHeader
           title="Travel & Stay"

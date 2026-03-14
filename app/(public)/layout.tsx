@@ -34,7 +34,7 @@ export default async function PublicLayout({
         weddingDate={settings?.weddingDate || null}
         featureFlags={featureFlags}
       />
-      <main id="main-content" className="relative z-10">{children}</main>
+      <main id="main-content" className="relative z-10 pt-16 lg:pt-20">{children}</main>
       <Footer />
     </div>
   );

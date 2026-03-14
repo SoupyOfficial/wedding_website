@@ -15,7 +15,7 @@ export default async function FAQPage() {
   const faqs = await query<FAQ>("SELECT * FROM FAQ ORDER BY sortOrder ASC");
 
   return (
-    <div className="pt-24 pb-16">
+    <div className="pt-8 pb-16">
       <div className="section-padding">
         <PageHeader
           title="Frequently Asked Questions"

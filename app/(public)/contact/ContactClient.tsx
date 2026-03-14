@@ -51,7 +51,7 @@ export default function ContactClient() {
   }
 
   return (
-    <div className="pt-24 pb-16">
+    <div className="pt-8 pb-16">
       <div className="section-padding">
         <PageHeader title="Contact Us" subtitle="Have a question? We'd love to hear from you." />
 

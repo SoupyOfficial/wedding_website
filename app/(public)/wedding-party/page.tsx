@@ -142,7 +142,7 @@ export default async function WeddingPartyPage() {
   const otherSpecial = special.filter((m) => !isFlowerGirlOrRingBearer(m.role));
 
   return (
-    <div className="pt-24 pb-16">
+    <div className="pt-8 pb-16">
       <div className="section-padding">
         <PageHeader
           title="Wedding Party"

@@ -20,7 +20,7 @@ export default async function HomePage() {
   const name2 = nameParts[1]?.trim() || "Ashley";
 
   return (
-    <div className="relative">
+    <div className="relative -mt-16 lg:-mt-20">
       {/* Hero Section */}
       <section className="min-h-screen flex flex-col items-center justify-center text-center px-4 relative">
         {/* Moon Decoration */}

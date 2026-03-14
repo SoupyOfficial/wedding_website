@@ -71,7 +71,7 @@ export default function GuestBookClient() {
   }
 
   return (
-    <div className="pt-24 pb-16">
+    <div className="pt-8 pb-16">
       <div className="section-padding">
         <PageHeader title="Sign a Star" subtitle="Leave us a message and add your star to our constellation of love" />
 

@@ -83,14 +83,14 @@ export default function Navigation({ weddingDate, featureFlags = {} }: Navigatio
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center space-x-1">
+          <div className="hidden lg:flex items-center gap-1 xl:gap-2">
             {filteredLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
                 aria-current={pathname === link.href ? "page" : undefined}
                 className={clsx(
-                  "px-3 py-2 text-sm font-medium rounded-md transition-all duration-200",
+                  "px-2.5 xl:px-3 py-2 text-xs xl:text-sm font-medium rounded-md transition-all duration-200 whitespace-nowrap",
                   pathname === link.href
                     ? "text-gold border-b-2 border-gold"
                     : "text-ivory/80 hover:text-gold hover:bg-gold/5"

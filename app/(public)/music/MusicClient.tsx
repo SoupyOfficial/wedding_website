@@ -182,7 +182,7 @@ export default function MusicClient() {
   }, []);
 
   return (
-    <div className="pt-24 pb-16">
+    <div className="pt-8 pb-16">
       <div className="section-padding">
         <PageHeader
           title="Music & Song Requests"
