@@ -7,6 +7,8 @@ import type { SiteSettings } from "@/lib/db-types";
 import { SETTINGS_BOOLS } from "@/lib/db-types";
 import { getFeatureFlags } from "@/lib/config/feature-flags";
 
+export const dynamic = "force-dynamic";
+
 export default async function PublicLayout({
   children,
 }: {
