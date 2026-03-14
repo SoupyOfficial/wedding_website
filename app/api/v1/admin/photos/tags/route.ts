@@ -3,6 +3,8 @@ import { query, queryOne, execute, generateId, now, isUniqueViolation } from "@/
 import { successResponse, errorResponse } from "@/lib/api";
 import type { PhotoTag } from "@/lib/db-types";
 
+export const dynamic = "force-dynamic";
+
 // GET all tags with photo counts
 export async function GET() {
   try {

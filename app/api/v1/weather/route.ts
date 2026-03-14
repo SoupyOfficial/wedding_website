@@ -3,6 +3,8 @@ import { queryOne, toBool } from "@/lib/db";
 import { successResponse, errorResponse } from "@/lib/api";
 import type { SiteSettings } from "@/lib/db-types";
 
+export const dynamic = "force-dynamic";
+
 /**
  * GET /api/v1/weather
  *

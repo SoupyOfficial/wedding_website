@@ -3,6 +3,8 @@ import { query, queryOne, execute, generateId } from "@/lib/db";
 import { successResponse, errorResponse } from "@/lib/api";
 import type { RegistryItem } from "@/lib/db-types";
 
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   try {
     const registries = await query<RegistryItem>(

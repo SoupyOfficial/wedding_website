@@ -4,6 +4,8 @@ import { successResponse, errorResponse } from "@/lib/api";
 import type { Guest } from "@/lib/db-types";
 import { GUEST_BOOLS } from "@/lib/db-types";
 
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   try {
     const guests = await query<Guest>(

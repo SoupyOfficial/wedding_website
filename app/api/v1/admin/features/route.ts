@@ -2,6 +2,8 @@ import { NextRequest } from "next/server";
 import { getFeatureFlags, setFeatureFlag } from "@/lib/config/feature-flags";
 import { successResponse, errorResponse } from "@/lib/api";
 
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   try {
     const flags = await getFeatureFlags();

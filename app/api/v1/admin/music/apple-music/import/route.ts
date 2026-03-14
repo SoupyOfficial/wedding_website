@@ -7,6 +7,8 @@ import {
 } from "@/lib/apple-music";
 import { successResponse, errorResponse } from "@/lib/api";
 
+export const dynamic = "force-dynamic";
+
 /**
  * GET /api/v1/admin/music/apple-music/import?check=true
  * Check if Apple Music API credentials are configured.

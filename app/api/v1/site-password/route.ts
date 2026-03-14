@@ -5,6 +5,8 @@ import { rateLimit } from "@/lib/api/middleware";
 import { successResponse, errorResponse } from "@/lib/api";
 import type { SiteSettings } from "@/lib/db-types";
 
+export const dynamic = "force-dynamic";
+
 const limiter = rateLimit({ windowMs: 60_000, maxRequests: 5 });
 
 export async function POST(req: NextRequest) {

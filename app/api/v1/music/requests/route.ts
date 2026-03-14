@@ -4,6 +4,8 @@ import { successResponse, errorResponse } from "@/lib/api";
 import { getFeatureFlag } from "@/lib/config/feature-flags";
 import type { SongRequest } from "@/lib/db-types";
 
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   try {
     const enabled = await getFeatureFlag("songRequestsEnabled");

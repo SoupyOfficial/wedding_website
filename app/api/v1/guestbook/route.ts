@@ -5,6 +5,8 @@ import { successResponse, errorResponse } from "@/lib/api";
 import { getFeatureFlag } from "@/lib/config/feature-flags";
 import type { GuestBookEntry } from "@/lib/db-types";
 
+export const dynamic = "force-dynamic";
+
 const postLimiter = rateLimit({ windowMs: 60_000, maxRequests: 3 });
 
 export async function GET() {

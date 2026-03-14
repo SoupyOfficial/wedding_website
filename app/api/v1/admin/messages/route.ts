@@ -2,6 +2,8 @@ import { query, toBoolAll } from "@/lib/db";
 import { successResponse, errorResponse } from "@/lib/api";
 import type { ContactMessage } from "@/lib/db-types";
 
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   try {
     const messages = await query<ContactMessage>(

@@ -5,6 +5,8 @@ import { rateLimit } from "@/lib/api/middleware";
 import { successResponse, errorResponse } from "@/lib/api";
 import { getFeatureFlag } from "@/lib/config/feature-flags";
 
+export const dynamic = "force-dynamic";
+
 const ALLOWED_EXTENSIONS = new Set(["jpg", "jpeg", "png", "gif", "webp"]);
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 

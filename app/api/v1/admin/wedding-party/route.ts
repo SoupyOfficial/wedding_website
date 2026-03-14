@@ -3,6 +3,8 @@ import { query, queryOne, execute, generateId, now } from "@/lib/db";
 import { successResponse, errorResponse } from "@/lib/api";
 import type { WeddingPartyMember } from "@/lib/db-types";
 
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   try {
     const members = await query<WeddingPartyMember>(

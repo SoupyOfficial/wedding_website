@@ -5,6 +5,8 @@ import { successResponse, errorResponse } from "@/lib/api";
 import { getFeatureFlag } from "@/lib/config/feature-flags";
 import type { Guest, MealOption } from "@/lib/db-types";
 
+export const dynamic = "force-dynamic";
+
 const limiter = rateLimit({ windowMs: 60_000, maxRequests: 10 });
 
 export async function GET(req: NextRequest) {

@@ -1,6 +1,8 @@
 import { NextRequest } from "next/server";
 import { successResponse, errorResponse } from "@/lib/api";
 
+export const dynamic = "force-dynamic";
+
 /**
  * GET /api/v1/music/search?q=...&limit=8
  * Public proxy for the iTunes Search API (free, no credentials needed).

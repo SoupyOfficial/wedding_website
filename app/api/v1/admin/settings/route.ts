@@ -4,6 +4,8 @@ import { successResponse, errorResponse } from "@/lib/api";
 import type { SiteSettings } from "@/lib/db-types";
 import { SETTINGS_BOOLS } from "@/lib/db-types";
 
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   try {
     const settings = await queryOne<SiteSettings>(

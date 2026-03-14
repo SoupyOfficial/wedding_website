@@ -1,6 +1,8 @@
 import { NextRequest } from "next/server";
 import { successResponse, errorResponse } from "@/lib/api";
 
+export const dynamic = "force-dynamic";
+
 /**
  * GET /api/v1/admin/music/apple-music/search?q=...&limit=10
  * Proxies the iTunes Search API to avoid CORS issues.

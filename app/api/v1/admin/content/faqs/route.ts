@@ -3,6 +3,8 @@ import { query, queryOne, execute, generateId } from "@/lib/db";
 import { successResponse, errorResponse } from "@/lib/api";
 import type { FAQ } from "@/lib/db-types";
 
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   try {
     const faqs = await query<FAQ>("SELECT * FROM FAQ ORDER BY sortOrder ASC");

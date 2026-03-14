@@ -3,6 +3,8 @@ import { successResponse, errorResponse } from "@/lib/api";
 import type { SongRequest } from "@/lib/db-types";
 import { SONG_BOOLS } from "@/lib/db-types";
 
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   try {
     const requests = await query<SongRequest>(

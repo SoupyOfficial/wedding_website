@@ -4,6 +4,8 @@ import { successResponse, errorResponse } from "@/lib/api";
 import type { MealOption } from "@/lib/db-types";
 import { MEAL_BOOLS } from "@/lib/db-types";
 
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   try {
     const meals = await query<MealOption>("SELECT * FROM MealOption ORDER BY name ASC");
