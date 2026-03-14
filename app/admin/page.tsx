@@ -2,6 +2,7 @@ import { queryOne, toBool } from "@/lib/db";
 import type { SiteSettings } from "@/lib/db-types";
 import { SETTINGS_BOOLS } from "@/lib/db-types";
 import Link from "next/link";
+import { AdminPageHeader } from "@/components/ui";
 
 export const metadata = {
   title: "Admin Dashboard | Forever Campbells",
@@ -124,18 +125,16 @@ export default async function AdminDashboard() {
   return (
     <div>
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-gold font-serif text-3xl mb-2">Dashboard</h1>
-        {daysUntil !== null && (
-          <p className="text-ivory/50">
-            {daysUntil > 0
-              ? `${daysUntil} days until the wedding! 🌙`
-              : daysUntil === 0
-              ? "Today is the day! 🎉"
-              : "The wedding has passed. ✨"}
-          </p>
-        )}
-      </div>
+      <AdminPageHeader
+        title="Dashboard"
+        subtitle={daysUntil !== null
+          ? daysUntil > 0
+            ? `${daysUntil} days until the wedding! 🌙`
+            : daysUntil === 0
+            ? "Today is the day! 🎉"
+            : "The wedding has passed. ✨"
+          : undefined}
+      />
 
       {/* RSVP Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">

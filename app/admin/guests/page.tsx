@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useAdminFetch } from "@/lib/hooks";
-import { AdminPageHeader, Modal, FilterBar, LoadingState } from "@/components/ui";
+import { AdminPageHeader, Modal, FilterBar, LoadingState, EmptyState, Alert, ConfirmButton } from "@/components/ui";
 
 interface Guest {
   id: string;
@@ -124,7 +124,6 @@ export default function AdminGuestsPage() {
   }
 
   async function handleDelete(id: string) {
-    if (!confirm("Are you sure you want to remove this guest?")) return;
     try {
       await fetch(`/api/v1/admin/guests/${id}`, { method: "DELETE" });
       if (editing?.id === id) closeEditor();
@@ -179,41 +178,41 @@ export default function AdminGuestsPage() {
       {loading ? (
         <LoadingState message="Loading guests..." />
       ) : (
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto rounded-lg border border-gold/10">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-gold/10">
-                <th className="text-left py-3 px-2 text-ivory/50 font-normal">Name</th>
-                <th className="text-left py-3 px-2 text-ivory/50 font-normal">Email</th>
-                <th className="text-left py-3 px-2 text-ivory/50 font-normal">RSVP</th>
-                <th className="text-left py-3 px-2 text-ivory/50 font-normal">Group</th>
-                <th className="text-left py-3 px-2 text-ivory/50 font-normal">Plus One</th>
-                <th className="text-left py-3 px-2 text-ivory/50 font-normal">Table</th>
-                <th className="text-right py-3 px-2 text-ivory/50 font-normal">Actions</th>
+              <tr className="bg-royal/30 text-gold/80 text-left text-xs uppercase tracking-wider">
+                <th className="px-4 py-3">Name</th>
+                <th className="px-4 py-3">Email</th>
+                <th className="px-4 py-3">RSVP</th>
+                <th className="px-4 py-3">Group</th>
+                <th className="px-4 py-3">Plus One</th>
+                <th className="px-4 py-3">Table</th>
+                <th className="px-4 py-3 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-gold/5">
               {filteredGuests.map((guest) => (
-                <tr key={guest.id} className="border-b border-gold/5 hover:bg-royal/10 transition-colors">
-                  <td className="py-3 px-2 text-ivory">{guest.firstName} {guest.lastName}</td>
-                  <td className="py-3 px-2 text-ivory/60">{guest.email || "—"}</td>
-                  <td className="py-3 px-2">
+                <tr key={guest.id} className="hover:bg-royal/10 transition-colors">
+                  <td className="px-4 py-3 text-ivory">{guest.firstName} {guest.lastName}</td>
+                  <td className="px-4 py-3 text-ivory/60">{guest.email || "—"}</td>
+                  <td className="px-4 py-3">
                     <span className={`text-xs px-2 py-1 rounded ${guest.rsvpStatus === "attending" ? "text-green-400 bg-green-900/30" : guest.rsvpStatus === "declined" ? "text-red-400 bg-red-900/30" : "text-yellow-400 bg-yellow-900/30"}`}>
                       {guest.rsvpStatus.charAt(0).toUpperCase() + guest.rsvpStatus.slice(1)}
                     </span>
                   </td>
-                  <td className="py-3 px-2 text-ivory/50">{guest.group || "—"}</td>
-                  <td className="py-3 px-2 text-ivory/50">{guest.plusOneAllowed ? guest.plusOneName || "Allowed" : "—"}</td>
-                  <td className="py-3 px-2 text-ivory/50">{guest.tableNumber || "—"}</td>
-                  <td className="py-3 px-2 text-right space-x-2">
+                  <td className="px-4 py-3 text-ivory/50">{guest.group || "—"}</td>
+                  <td className="px-4 py-3 text-ivory/50">{guest.plusOneAllowed ? guest.plusOneName || "Allowed" : "—"}</td>
+                  <td className="px-4 py-3 text-ivory/50">{guest.tableNumber || "—"}</td>
+                  <td className="px-4 py-3 text-right space-x-2">
                     <button onClick={() => openEdit(guest)} className="text-gold/60 hover:text-gold text-xs transition-colors">Edit</button>
-                    <button onClick={() => handleDelete(guest.id)} className="text-red-400/60 hover:text-red-400 text-xs transition-colors">Remove</button>
+                    <ConfirmButton onConfirm={() => handleDelete(guest.id)} message="Are you sure you want to remove this guest?" className="text-red-400/60 hover:text-red-400 text-xs transition-colors">Remove</ConfirmButton>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
-          {filteredGuests.length === 0 && <div className="text-center py-8 text-ivory/40">No guests found.</div>}
+          {filteredGuests.length === 0 && <EmptyState title="No guests found." />}
         </div>
       )}
 
@@ -223,7 +222,7 @@ export default function AdminGuestsPage() {
           onClose={closeEditor}
           maxWidth="max-w-2xl"
         >
-            {formError && <div className="mb-3 p-2 bg-red-900/30 border border-red-500/30 rounded text-red-300 text-sm">{formError}</div>}
+            {formError && <Alert type="error" message={formError} className="mb-3" />}
             <form onSubmit={handleSave} className="space-y-4">
               <div className="grid md:grid-cols-2 gap-4">
                 <div>

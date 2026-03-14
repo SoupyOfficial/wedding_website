@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useAdminFetch } from "@/lib/hooks";
-import { AdminPageHeader, Modal, LoadingState, EmptyState } from "@/components/ui";
+import { AdminPageHeader, Modal, LoadingState, EmptyState, ConfirmButton } from "@/components/ui";
 
 interface MealOption {
   id: string;
@@ -73,7 +73,6 @@ export default function AdminMealsPage() {
   }
 
   async function handleDelete(id: string) {
-    if (!confirm("Remove this meal option?")) return;
     try {
       await fetch(`/api/v1/admin/meals/${id}`, { method: "DELETE" });
       if (editing?.id === id) closeEditor();
@@ -106,7 +105,7 @@ export default function AdminMealsPage() {
               </div>
               <div className="flex gap-2">
                 <button onClick={() => openEdit(meal)} className="text-gold/60 hover:text-gold text-xs transition-colors">Edit</button>
-                <button onClick={() => handleDelete(meal.id)} className="text-red-400/60 hover:text-red-400 text-xs transition-colors">Remove</button>
+                <ConfirmButton onConfirm={() => handleDelete(meal.id)} message="Remove this meal option?" className="text-red-400/60 hover:text-red-400 text-xs transition-colors">Remove</ConfirmButton>
               </div>
             </div>
           ))}

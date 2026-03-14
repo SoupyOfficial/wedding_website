@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useAdminFetch } from "@/lib/hooks";
-import { AdminPageHeader, Modal, LoadingState, EmptyState } from "@/components/ui";
+import { AdminPageHeader, Modal, LoadingState, EmptyState, ConfirmButton } from "@/components/ui";
 
 interface WeddingPartyMember {
   id: string;
@@ -77,7 +77,6 @@ export default function AdminWeddingPartyPage() {
   }
 
   async function handleDelete(id: string) {
-    if (!confirm("Remove this member?")) return;
     try {
       await fetch(`/api/v1/admin/wedding-party/${id}`, { method: "DELETE" });
       if (editing?.id === id) closeEditor();
@@ -149,7 +148,7 @@ export default function AdminWeddingPartyPage() {
                       </div>
                       <div className="flex gap-2">
                         <button onClick={() => openEdit(member)} className="text-gold/60 hover:text-gold text-xs transition-colors">Edit</button>
-                        <button onClick={() => handleDelete(member.id)} className="text-red-400/60 hover:text-red-400 text-xs transition-colors">Remove</button>
+                        <ConfirmButton onConfirm={() => handleDelete(member.id)} message="Remove this member?" className="text-red-400/60 hover:text-red-400 text-xs transition-colors">Remove</ConfirmButton>
                       </div>
                     </div>
                   ))}

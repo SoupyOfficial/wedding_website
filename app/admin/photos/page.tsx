@@ -2,7 +2,7 @@
 
 import { useState, useRef } from "react";
 import { useAdminMultiFetch } from "@/lib/hooks";
-import { AdminPageHeader, FilterBar, Modal, LoadingState, EmptyState } from "@/components/ui";
+import { AdminPageHeader, FilterBar, Modal, LoadingState, EmptyState, ConfirmButton } from "@/components/ui";
 
 interface PhotoTag {
   id: string;
@@ -105,7 +105,6 @@ export default function AdminPhotosPage() {
 
   // ── Delete Photo ──────────────────────────────
   async function handleDelete(id: string) {
-    if (!confirm("Delete this photo?")) return;
     try {
       await fetch(`/api/v1/admin/photos/${id}`, { method: "DELETE" });
       refetch();
@@ -152,7 +151,6 @@ export default function AdminPhotosPage() {
   }
 
   async function handleDeleteTag(tagId: string) {
-    if (!confirm("Delete this tag? It will be removed from all photos.")) return;
     try {
       await fetch(`/api/v1/admin/photos/tags/${tagId}`, { method: "DELETE" });
       refetch();
@@ -286,9 +284,9 @@ export default function AdminPhotosPage() {
                 >
                   <span>{typeInfo?.icon}</span>
                   <span>{tag.name}</span>
-                  <span onClick={(e) => { e.stopPropagation(); handleDeleteTag(tag.id); }}
-                    className="ml-1 opacity-0 group-hover:opacity-100 hover:text-red-400 cursor-pointer" title="Delete tag"
-                  >×</span>
+                  <ConfirmButton onConfirm={() => handleDeleteTag(tag.id)}
+                    message="Delete this tag? It will be removed from all photos."
+                    className="ml-1 opacity-0 group-hover:opacity-100 hover:text-red-400 cursor-pointer text-inherit">×</ConfirmButton>
                 </button>
               );
             })}
@@ -297,21 +295,17 @@ export default function AdminPhotosPage() {
       )}
 
       {/* Status Filters */}
-      <div className="flex gap-2 mb-6">
-        {(["all", "pending", "approved"] as const).map((f) => (
-          <button key={f} onClick={() => setFilter(f)}
-            className={`px-3 py-2 rounded text-sm transition-colors ${
-              filter === f
-                ? "bg-gold/20 text-gold border border-gold"
-                : "bg-royal/20 text-ivory/50 border border-gold/10 hover:border-gold/30"
-            }`}
-          >
-            {f.charAt(0).toUpperCase() + f.slice(1)}
-            {f === "pending" && pendingCount > 0 && (
-              <span className="ml-1 bg-gold text-midnight px-1.5 py-0.5 rounded-full text-xs">{pendingCount}</span>
-            )}
-          </button>
-        ))}
+      <div className="mb-6">
+        <FilterBar
+          filters={[
+            { value: "all" as const, label: "All" },
+            { value: "pending" as const, label: `Pending${pendingCount > 0 ? ` (${pendingCount})` : ""}` },
+            { value: "approved" as const, label: "Approved" },
+          ]}
+          active={filter}
+          onChange={setFilter}
+          variant="button"
+        />
       </div>
 
       {/* Photo Grid */}
@@ -364,10 +358,11 @@ export default function AdminPhotosPage() {
                   >
                     {photo.approved ? "Unapprove" : "Approve"}
                   </button>
-                  <button onClick={() => handleDelete(photo.id)}
+                  <ConfirmButton onConfirm={() => handleDelete(photo.id)}
+                    message="Delete this photo?"
                     className="bg-red-600 text-white px-3 py-1 rounded text-xs hover:bg-red-700">
                     Delete
-                  </button>
+                  </ConfirmButton>
                 </div>
               </div>
 

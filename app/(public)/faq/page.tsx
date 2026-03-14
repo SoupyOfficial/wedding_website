@@ -1,5 +1,6 @@
-import { query } from "@/lib/db";
-import type { FAQ } from "@/lib/db-types";
+import { query, queryOne, toBool } from "@/lib/db";
+import type { FAQ, SiteSettings } from "@/lib/db-types";
+import { SETTINGS_BOOLS } from "@/lib/db-types";
 import { checkFeatureFlag } from "@/lib/feature-gate";
 import { PageHeader } from "@/components/ui";
 
@@ -14,6 +15,9 @@ export default async function FAQPage() {
 
   const faqs = await query<FAQ>("SELECT * FROM FAQ ORDER BY sortOrder ASC");
 
+  const settings = await queryOne<SiteSettings>("SELECT * FROM SiteSettings WHERE id = ?", ["singleton"]);
+  if (settings) toBool(settings, ...SETTINGS_BOOLS);
+
   return (
     <div className="pt-8 pb-16">
       <div className="section-padding">
@@ -22,6 +26,18 @@ export default async function FAQPage() {
           subtitle="Have a question? We might have the answer right here."
           className="mb-16"
         />
+
+        {/* FAQ Intro Content */}
+        {settings?.faqContent && (
+          <div className="max-w-3xl mx-auto mb-12">
+            <div
+              className="text-ivory/70 leading-relaxed text-center"
+              dangerouslySetInnerHTML={{
+                __html: settings.faqContent.replace(/\n/g, "<br />"),
+              }}
+            />
+          </div>
+        )}
 
         {/* FAQ Accordion */}
         <div className="max-w-3xl mx-auto space-y-4">

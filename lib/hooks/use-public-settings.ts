@@ -18,6 +18,8 @@ export interface PublicSettings {
   ceremonyType: string;
   registryNote: string;
   entertainmentNote: string;
+  rsvpDeadline: string | null;
+  childrenPolicy: string;
 }
 
 /**

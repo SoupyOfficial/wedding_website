@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useAdminFetch } from "@/lib/hooks";
-import { AdminPageHeader, FilterBar, Modal, LoadingState, EmptyState } from "@/components/ui";
+import { AdminPageHeader, FilterBar, Modal, LoadingState, EmptyState, ConfirmButton } from "@/components/ui";
 
 interface GuestBookEntry {
   id: string;
@@ -68,7 +68,6 @@ export default function AdminGuestBookPage() {
 
   // ── Delete Entry ──────────────────────────────
   async function handleDelete(id: string) {
-    if (!confirm("Delete this entry?")) return;
     try {
       await fetch(`/api/v1/admin/guest-book/${id}`, { method: "DELETE" });
       setEntries((prev) => prev.filter((e) => e.id !== id));
@@ -144,12 +143,13 @@ export default function AdminGuestBookPage() {
                   >
                     {entry.isVisible ? "Hide" : "Show"}
                   </button>
-                  <button
-                    onClick={() => handleDelete(entry.id)}
+                  <ConfirmButton
+                    onConfirm={() => handleDelete(entry.id)}
+                    message="Delete this entry?"
                     className="text-xs px-3 py-1 rounded bg-red-500/20 text-red-300 hover:bg-red-500/30 transition-colors"
                   >
                     Delete
-                  </button>
+                  </ConfirmButton>
                 </div>
               </div>
             </div>

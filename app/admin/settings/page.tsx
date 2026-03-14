@@ -109,7 +109,7 @@ export default function AdminSettingsPage() {
   }
 
   if (!settings) {
-    return <div className="text-center py-8 text-red-400">Failed to load settings.</div>;
+    return <Alert type="error" message="Failed to load settings." className="my-8" />;
   }
 
   return (

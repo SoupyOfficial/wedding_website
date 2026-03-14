@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { Alert } from "@/components/ui";
 
 export default function AdminLoginPage() {
   const [email, setEmail] = useState("");
@@ -49,9 +50,7 @@ export default function AdminLoginPage() {
 
         <div className="card-celestial">
           {error && (
-            <div className="mb-4 p-3 bg-red-900/30 border border-red-500/30 rounded-lg text-red-300 text-sm text-center">
-              {error}
-            </div>
+            <Alert type="error" message={error} className="mb-4 text-center" />
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">

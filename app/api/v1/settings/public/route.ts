@@ -34,6 +34,10 @@ export async function GET() {
       socialTikTok: settings.socialTikTok,
       heroTagline: settings.heroTagline,
       ceremonyType: settings.ceremonyType,
+      registryNote: settings.registryNote,
+      entertainmentNote: settings.entertainmentNote,
+      rsvpDeadline: settings.rsvpDeadline,
+      childrenPolicy: settings.childrenPolicy,
     });
   } catch (error) {
     console.error("Failed to fetch public settings:", error);

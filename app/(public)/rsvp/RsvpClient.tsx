@@ -28,7 +28,7 @@ interface MealOption {
   isGlutenFree: boolean;
 }
 
-export default function RsvpClient() {
+export default function RsvpClient({ rsvpDeadline }: { rsvpDeadline: string | null }) {
   const [step, setStep] = useState<Step>("lookup");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -125,6 +125,22 @@ export default function RsvpClient() {
     <div className="pt-8 pb-16">
       <div className="section-padding">
         <PageHeader title="RSVP" subtitle="We can't wait to celebrate with you!" />
+
+        {/* RSVP Deadline */}
+        {rsvpDeadline && (
+          <div className="text-center mb-6">
+            <p className="text-ivory/60 text-sm">
+              Please respond by{" "}
+              <span className="text-gold font-semibold">
+                {new Date(rsvpDeadline).toLocaleDateString("en-US", {
+                  month: "long",
+                  day: "numeric",
+                  year: "numeric",
+                })}
+              </span>
+            </p>
+          </div>
+        )}
 
         {/* Progress Steps */}
         {step !== "done" && (

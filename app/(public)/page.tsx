@@ -81,6 +81,24 @@ export default async function HomePage() {
             </p>
           )}
 
+          {/* Pre/Post Wedding Content */}
+          {isPostWedding && settings?.postWeddingContent && (
+            <div
+              className="text-ivory/70 leading-relaxed max-w-xl mx-auto"
+              dangerouslySetInnerHTML={{
+                __html: settings.postWeddingContent.replace(/\n/g, "<br />"),
+              }}
+            />
+          )}
+          {!isPostWedding && settings?.preWeddingContent && (
+            <div
+              className="text-ivory/70 leading-relaxed max-w-xl mx-auto"
+              dangerouslySetInnerHTML={{
+                __html: settings.preWeddingContent.replace(/\n/g, "<br />"),
+              }}
+            />
+          )}
+
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
             {!isPostWedding && (

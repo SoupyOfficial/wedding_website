@@ -21,6 +21,13 @@ type VisibleSong = {
   guestName: string;
 };
 
+type DJSong = {
+  id: string;
+  songName: string;
+  artist: string;
+  listType: string;
+};
+
 export default function MusicClient() {
   // ── Search state ──────────────────────────────
   const [searchQuery, setSearchQuery] = useState("");
@@ -43,6 +50,10 @@ export default function MusicClient() {
   const [visibleSongs, setVisibleSongs] = useState<VisibleSong[]>([]);
   const [loadingPlaylist, setLoadingPlaylist] = useState(true);
 
+  // ── DJ curated playlist ───────────────────────
+  const [djPlaylist, setDjPlaylist] = useState<DJSong[]>([]);
+  const [loadingDJ, setLoadingDJ] = useState(true);
+
   // ── Audio preview ─────────────────────────────
   const [playingPreview, setPlayingPreview] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -56,6 +67,14 @@ export default function MusicClient() {
       })
       .catch(() => {})
       .finally(() => setLoadingPlaylist(false));
+
+    fetch("/api/v1/music/dj-playlist")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.success) setDjPlaylist(data.data);
+      })
+      .catch(() => {})
+      .finally(() => setLoadingDJ(false));
   }, []);
 
   // ── iTunes search with debounce ───────────────
@@ -451,6 +470,53 @@ export default function MusicClient() {
           </section>
 
           {/* ── DJ Note ──────────────────────────── */}
+          {djPlaylist.length > 0 && (
+            <section>
+              <div className="text-center mb-8">
+                <h2 className="heading-gold text-3xl mb-3">🎤 DJ&apos;s Playlist</h2>
+                <p className="text-ivory/60 max-w-lg mx-auto">
+                  Songs curated by the couple for the celebration. Get ready to dance!
+                </p>
+              </div>
+
+              {loadingDJ ? (
+                <div className="flex justify-center py-12">
+                  <div className="w-8 h-8 border-2 border-gold/40 border-t-gold rounded-full animate-spin" />
+                </div>
+              ) : (
+                <div className="grid gap-3 max-w-xl mx-auto">
+                  {djPlaylist.map((song, i) => (
+                    <div
+                      key={song.id}
+                      className="flex items-center gap-4 bg-royal/20 border border-gold/10 rounded-lg p-4 hover:border-gold/30 transition-colors"
+                    >
+                      <span className="text-gold/30 font-mono text-sm w-6 text-right shrink-0">
+                        {i + 1}.
+                      </span>
+                      <div className="w-11 h-11 rounded-md bg-royal/50 border border-gold/20 flex items-center justify-center text-lg shrink-0">
+                        🎤
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-ivory font-medium truncate">
+                          {song.songName}
+                        </div>
+                        <div className="text-ivory/50 text-sm truncate">
+                          {song.artist || "Unknown Artist"}
+                          {song.listType && (
+                            <span className="text-gold/40 ml-2 text-xs">
+                              · {song.listType === "must-play" ? "Must Play" : song.listType === "do-not-play" ? "Do Not Play" : song.listType}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </section>
+          )}
+
+          {/* ── DJ Closing Note ──────────────────── */}
           <section className="text-center">
             <div className="card-celestial max-w-lg mx-auto">
               <div className="text-3xl mb-3">🎤</div>

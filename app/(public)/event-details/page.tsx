@@ -83,6 +83,30 @@ export default async function EventDetailsPage() {
           </div>
         </div>
 
+        {/* RSVP Deadline */}
+        {settings?.rsvpDeadline && (
+          <div className="max-w-2xl mx-auto mb-16 text-center">
+            <div className="card-celestial border-gold/30">
+              <div className="text-3xl mb-3">💌</div>
+              <h3 className="heading-gold text-xl mb-2">RSVP Deadline</h3>
+              <p className="text-ivory/70">
+                Please let us know by{" "}
+                <span className="text-gold font-semibold">
+                  {new Date(settings.rsvpDeadline).toLocaleDateString("en-US", {
+                    weekday: "long",
+                    month: "long",
+                    day: "numeric",
+                    year: "numeric",
+                  })}
+                </span>
+              </p>
+              <a href="/rsvp" className="btn-gold inline-block mt-4 px-6 py-2 text-sm">
+                RSVP Now
+              </a>
+            </div>
+          </div>
+        )}
+
         {/* Unplugged Ceremony Notice */}
         <div className="max-w-2xl mx-auto mb-16">
           <div className="card-celestial border-gold/40 text-center">
@@ -108,9 +132,13 @@ export default async function EventDetailsPage() {
             </h2>
             <div className="relative">
               <div className="absolute left-8 top-0 bottom-0 w-px bg-gold/20" />
-              {timelineEvents.map((event: { id: string; title: string; time: string | null; description: string | null }) => (
+              {timelineEvents.map((event: { id: string; title: string; time: string | null; description: string | null; icon: string | null }) => (
                 <div key={event.id} className="flex items-start mb-8 pl-16 relative">
-                  <div className="absolute left-6 top-2 w-4 h-4 bg-gold/80 rounded-full border-2 border-midnight shadow-glow" />
+                  {event.icon ? (
+                    <div className="absolute left-4 top-1 text-lg">{event.icon}</div>
+                  ) : (
+                    <div className="absolute left-6 top-2 w-4 h-4 bg-gold/80 rounded-full border-2 border-midnight shadow-glow" />
+                  )}
                   <div>
                     <div className="flex items-baseline gap-3 mb-1">
                       <span className="text-gold font-serif text-lg font-semibold">
@@ -154,6 +182,17 @@ export default async function EventDetailsPage() {
                 "Free parking available on-site."}
             </p>
           </div>
+
+          {/* Children Policy */}
+          {settings?.childrenPolicy && (
+            <div className="card-celestial text-center">
+              <div className="text-3xl mb-3">👶</div>
+              <h3 className="heading-gold text-xl mb-2">Children</h3>
+              <p className="text-ivory/70">
+                {settings.childrenPolicy}
+              </p>
+            </div>
+          )}
         </div>
       </div>
     </div>

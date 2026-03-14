@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useAdminMultiFetch } from "@/lib/hooks";
-import { AdminPageHeader, Modal, LoadingState, EmptyState } from "@/components/ui";
+import { AdminPageHeader, FilterBar, Modal, LoadingState, EmptyState, ConfirmButton } from "@/components/ui";
 
 interface TimelineEvent {
   id: string;
@@ -95,7 +95,6 @@ export default function AdminContentPage() {
   }
 
   async function handleDeleteTimeline(id: string) {
-    if (!confirm("Remove this timeline event?")) return;
     try {
       await fetch(`/api/v1/admin/content/timeline/${id}`, { method: "DELETE" });
       if (editingTimeline?.id === id) setEditingTimeline(null);
@@ -139,7 +138,6 @@ export default function AdminContentPage() {
   }
 
   async function handleDeleteFAQ(id: string) {
-    if (!confirm("Remove this FAQ?")) return;
     try {
       await fetch(`/api/v1/admin/content/faqs/${id}`, { method: "DELETE" });
       if (editingFAQ?.id === id) setEditingFAQ(null);
@@ -152,13 +150,15 @@ export default function AdminContentPage() {
       <AdminPageHeader title="Content Manager" subtitle="Manage timeline events and FAQs" />
 
       <div className="flex items-center justify-between mb-6 border-b border-gold/10 pb-4">
-        <div className="flex gap-2">
-          {(["timeline", "faqs"] as const).map((t) => (
-            <button key={t} onClick={() => setTab(t)} className={`px-4 py-2 rounded text-sm transition-colors ${tab === t ? "bg-gold/20 text-gold" : "text-ivory/50 hover:text-ivory"}`}>
-              {t === "timeline" ? `Timeline (${timeline.length})` : `FAQs (${faqs.length})`}
-            </button>
-          ))}
-        </div>
+        <FilterBar
+          filters={[
+            { value: "timeline" as const, label: `Timeline (${timeline.length})` },
+            { value: "faqs" as const, label: `FAQs (${faqs.length})` },
+          ]}
+          active={tab}
+          onChange={setTab}
+          variant="button"
+        />
         <button onClick={tab === "timeline" ? openNewTimeline : openNewFAQ} className="btn-gold px-4 py-2 text-sm">
           + Add {tab === "timeline" ? "Event" : "FAQ"}
         </button>
@@ -185,7 +185,7 @@ export default function AdminContentPage() {
                   </div>
                   <div className="flex gap-2">
                     <button onClick={() => openEditTimeline(event)} className="text-gold/60 hover:text-gold text-xs transition-colors">Edit</button>
-                    <button onClick={() => handleDeleteTimeline(event.id)} className="text-red-400/60 hover:text-red-400 text-xs transition-colors">Remove</button>
+                    <ConfirmButton onConfirm={() => handleDeleteTimeline(event.id)} message="Remove this timeline event?" className="text-red-400/60 hover:text-red-400 text-xs transition-colors">Remove</ConfirmButton>
                   </div>
                 </div>
               )) : (
@@ -206,7 +206,7 @@ export default function AdminContentPage() {
                     </div>
                     <div className="flex gap-2 flex-shrink-0">
                       <button onClick={() => openEditFAQ(faq)} className="text-gold/60 hover:text-gold text-xs transition-colors">Edit</button>
-                      <button onClick={() => handleDeleteFAQ(faq.id)} className="text-red-400/60 hover:text-red-400 text-xs transition-colors">Remove</button>
+                      <ConfirmButton onConfirm={() => handleDeleteFAQ(faq.id)} message="Remove this FAQ?" className="text-red-400/60 hover:text-red-400 text-xs transition-colors">Remove</ConfirmButton>
                     </div>
                   </div>
                 </div>

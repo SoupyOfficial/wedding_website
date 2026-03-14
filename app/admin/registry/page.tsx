@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { AdminPageHeader, Modal, LoadingState, EmptyState, Alert, ConfirmButton } from "@/components/ui";
 
 interface RegistryItem {
   id: string;
@@ -13,6 +14,7 @@ interface RegistryItem {
 export default function AdminRegistryPage() {
   const [items, setItems] = useState<RegistryItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   // Modal
   const [showModal, setShowModal] = useState(false);
@@ -45,11 +47,13 @@ export default function AdminRegistryPage() {
       setEditingItem(null);
       setForm({ name: "", url: "", iconUrl: "", sortOrder: items.length });
     }
+    setError("");
     setShowModal(true);
   }
 
   async function saveItem() {
     if (!form.name.trim()) return;
+    setError("");
     try {
       if (editingItem) {
         const res = await fetch(`/api/v1/admin/registry/${editingItem.id}`, {
@@ -72,12 +76,11 @@ export default function AdminRegistryPage() {
       }
       setShowModal(false);
     } catch {
-      console.error("Failed to save registry item");
+      setError("Failed to save registry item.");
     }
   }
 
   async function deleteItem(id: string) {
-    if (!confirm("Delete this registry item?")) return;
     try {
       const res = await fetch(`/api/v1/admin/registry/${id}`, { method: "DELETE" });
       if (res.ok) setItems((prev) => prev.filter((i) => i.id !== id));
@@ -85,105 +88,60 @@ export default function AdminRegistryPage() {
   }
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <div className="text-ivory/60 text-lg">Loading registry items...</div>
-      </div>
-    );
+    return <LoadingState message="Loading registry items..." />;
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="font-display text-3xl text-gold">Registry</h1>
-          <p className="text-ivory/50 text-sm mt-1">{items.length} registry items</p>
-        </div>
-        <button onClick={() => openModal()} className="btn-gold text-sm px-4 py-2">
-          + Add Registry Item
-        </button>
-      </div>
+    <div>
+      <AdminPageHeader
+        title="Registry"
+        subtitle={`${items.length} registry items`}
+        actions={<button onClick={() => openModal()} className="btn-gold px-4 py-2 text-sm">+ Add Registry Item</button>}
+      />
+
+      {error && <Alert type="error" message={error} className="mb-4" />}
 
       {items.length === 0 ? (
-        <div className="text-center py-16 text-ivory/40">
-          <p className="text-lg mb-2">No registry items yet</p>
-          <p className="text-sm">Add your first registry link above.</p>
-        </div>
+        <EmptyState title="No registry items yet" subtitle="Add your first registry link above." />
       ) : (
-        <div className="overflow-x-auto rounded-lg border border-gold/10">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="bg-royal/30 text-gold/80 text-left text-xs uppercase tracking-wider">
-                <th className="px-4 py-3 w-12">#</th>
-                <th className="px-4 py-3">Name</th>
-                <th className="px-4 py-3">URL</th>
-                <th className="px-4 py-3">Icon</th>
-                <th className="px-4 py-3 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gold/5">
-              {items
-                .sort((a, b) => a.sortOrder - b.sortOrder)
-                .map((item) => (
-                  <tr key={item.id} className="hover:bg-royal/10 transition-colors">
-                    <td className="px-4 py-3 text-ivory/40 font-mono">{item.sortOrder}</td>
-                    <td className="px-4 py-3 text-ivory font-medium">{item.name}</td>
-                    <td className="px-4 py-3">
-                      {item.url ? (
-                        <a
-                          href={item.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-gold/70 hover:text-gold underline truncate block max-w-[300px]"
-                        >
-                          {item.url}
-                        </a>
-                      ) : (
-                        <span className="text-ivory/30">—</span>
-                      )}
-                    </td>
-                    <td className="px-4 py-3">
-                      {item.iconUrl ? (
-                        <img
-                          src={item.iconUrl}
-                          alt=""
-                          className="w-8 h-8 rounded object-contain bg-white/10 p-0.5"
-                        />
-                      ) : (
-                        <span className="text-ivory/30">—</span>
-                      )}
-                    </td>
-                    <td className="px-4 py-3 text-right space-x-2">
-                      <button
-                        onClick={() => openModal(item)}
-                        className="text-xs px-2 py-1 rounded bg-gold/20 text-gold hover:bg-gold/30 transition-colors"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => deleteItem(item.id)}
-                        className="text-xs px-2 py-1 rounded bg-red-500/20 text-red-300 hover:bg-red-500/30 transition-colors"
-                      >
-                        Delete
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-            </tbody>
-          </table>
+        <div className="space-y-2">
+          {items
+            .sort((a, b) => a.sortOrder - b.sortOrder)
+            .map((item) => (
+              <div key={item.id} className="flex items-center justify-between bg-royal/20 border border-gold/10 rounded-lg p-4">
+                <div className="flex items-center gap-3">
+                  {item.iconUrl ? (
+                    <img src={item.iconUrl} alt="" className="w-8 h-8 rounded object-contain bg-white/10 p-0.5 flex-shrink-0" />
+                  ) : (
+                    <div className="w-8 h-8 rounded bg-royal/40 flex items-center justify-center text-sm flex-shrink-0">🎁</div>
+                  )}
+                  <div>
+                    <p className="text-ivory font-medium">{item.name}</p>
+                    {item.url ? (
+                      <a href={item.url} target="_blank" rel="noopener noreferrer" className="text-gold/70 hover:text-gold text-xs underline truncate block max-w-[300px]">
+                        {item.url}
+                      </a>
+                    ) : (
+                      <span className="text-ivory/30 text-xs">No URL</span>
+                    )}
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <button onClick={() => openModal(item)} className="text-gold/60 hover:text-gold text-xs transition-colors">Edit</button>
+                  <ConfirmButton onConfirm={() => deleteItem(item.id)} message="Delete this registry item?" className="text-red-400/60 hover:text-red-400 text-xs transition-colors">
+                    Remove
+                  </ConfirmButton>
+                </div>
+              </div>
+            ))}
         </div>
       )}
 
       {/* ─── Modal ────────────────────────────────── */}
       {showModal && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-          <div className="bg-midnight border border-gold/20 rounded-xl p-6 w-full max-w-md space-y-4">
-            <h2 className="font-display text-xl text-gold">
-              {editingItem ? "Edit Registry Item" : "Add Registry Item"}
-            </h2>
-
+        <Modal title={editingItem ? "Edit Registry Item" : "Add Registry Item"} onClose={() => setShowModal(false)}>
             <div>
-              <label className="block text-ivory/70 text-sm mb-1">Name *</label>
+              <label className="block text-ivory/70 text-xs mb-1">Name *</label>
               <input
                 type="text"
                 value={form.name}
@@ -194,7 +152,7 @@ export default function AdminRegistryPage() {
             </div>
 
             <div>
-              <label className="block text-ivory/70 text-sm mb-1">Registry URL</label>
+              <label className="block text-ivory/70 text-xs mb-1">Registry URL</label>
               <input
                 type="url"
                 value={form.url}
@@ -205,7 +163,7 @@ export default function AdminRegistryPage() {
             </div>
 
             <div>
-              <label className="block text-ivory/70 text-sm mb-1">Icon URL</label>
+              <label className="block text-ivory/70 text-xs mb-1">Icon URL</label>
               <input
                 type="url"
                 value={form.iconUrl}
@@ -216,7 +174,7 @@ export default function AdminRegistryPage() {
             </div>
 
             <div>
-              <label className="block text-ivory/70 text-sm mb-1">Sort Order</label>
+              <label className="block text-ivory/70 text-xs mb-1">Sort Order</label>
               <input
                 type="number"
                 value={form.sortOrder}
@@ -233,8 +191,7 @@ export default function AdminRegistryPage() {
                 Cancel
               </button>
             </div>
-          </div>
-        </div>
+        </Modal>
       )}
     </div>
   );

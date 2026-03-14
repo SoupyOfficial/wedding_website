@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { AdminPageHeader, FilterBar, Modal, LoadingState, EmptyState } from "@/components/ui";
+import { AdminPageHeader, FilterBar, Modal, LoadingState, EmptyState, Alert, ConfirmButton } from "@/components/ui";
 import { PLAY_TIME_OPTIONS, DJ_LIST_TYPES } from "@/lib/constants";
 
 type SongRequest = {
@@ -192,7 +192,6 @@ export default function AdminMusicPage() {
   };
 
   const deleteRequest = async (id: string) => {
-    if (!confirm("Delete this song request?")) return;
     try {
       const res = await fetch(`/api/v1/admin/music/requests/${id}`, { method: "DELETE" });
       if (res.ok) setRequests((prev) => prev.filter((r) => r.id !== id));
@@ -262,7 +261,6 @@ export default function AdminMusicPage() {
   };
 
   const deleteDJItem = async (id: string) => {
-    if (!confirm("Delete this DJ list item?")) return;
     try {
       const res = await fetch(`/api/v1/admin/music/dj-list/${id}`, { method: "DELETE" });
       if (res.ok) setDJItems((prev) => prev.filter((d) => d.id !== id));
@@ -382,21 +380,16 @@ export default function AdminMusicPage() {
       {/* ─── REQUESTS TAB ─────────────────────────── */}
       {activeTab === "requests" && (
         <div className="space-y-4">
-          <div className="flex gap-2">
-            {(["all", "pending", "approved"] as const).map((f) => (
-              <button
-                key={f}
-                onClick={() => setRequestFilter(f)}
-                className={`px-3 py-1 text-xs rounded-full transition-colors
-                  ${requestFilter === f
-                    ? "bg-gold/20 text-gold border border-gold/40"
-                    : "bg-royal/20 text-ivory/60 border border-gold/10 hover:text-ivory"
-                  }`}
-              >
-                {f === "all" ? "All" : f === "pending" ? "Pending" : "Approved"}
-              </button>
-            ))}
-          </div>
+          <FilterBar
+            filters={[
+              { value: "all" as const, label: "All" },
+              { value: "pending" as const, label: "Pending" },
+              { value: "approved" as const, label: "Approved" },
+            ]}
+            active={requestFilter}
+            onChange={setRequestFilter}
+            variant="pill"
+          />
 
           {filteredRequests.length === 0 ? (
             <EmptyState title="No song requests yet" />
@@ -463,12 +456,13 @@ export default function AdminMusicPage() {
                         >
                           {r.approved ? "Unapprove" : "Approve"}
                         </button>
-                        <button
-                          onClick={() => deleteRequest(r.id)}
+                        <ConfirmButton
+                          onConfirm={() => deleteRequest(r.id)}
+                          message="Delete this song request?"
                           className="text-xs px-2 py-1 rounded bg-red-500/20 text-red-300 hover:bg-red-500/30 transition-colors"
                         >
                           Delete
-                        </button>
+                        </ConfirmButton>
                       </td>
                     </tr>
                   ))}
@@ -516,21 +510,16 @@ export default function AdminMusicPage() {
       {/* ─── DJ LIST TAB ──────────────────────────── */}
       {activeTab === "dj" && (
         <div className="space-y-4">
-          <div className="flex gap-2">
-            {(["all", "must-play", "do-not-play"] as const).map((f) => (
-              <button
-                key={f}
-                onClick={() => setDJFilter(f)}
-                className={`px-3 py-1 text-xs rounded-full transition-colors
-                  ${djFilter === f
-                    ? "bg-gold/20 text-gold border border-gold/40"
-                    : "bg-royal/20 text-ivory/60 border border-gold/10 hover:text-ivory"
-                  }`}
-              >
-                {f === "all" ? "All" : f === "must-play" ? "Must Play" : "Do Not Play"}
-              </button>
-            ))}
-          </div>
+          <FilterBar
+            filters={[
+              { value: "all" as const, label: "All" },
+              { value: "must-play" as const, label: "Must Play" },
+              { value: "do-not-play" as const, label: "Do Not Play" },
+            ]}
+            active={djFilter}
+            onChange={setDJFilter}
+            variant="pill"
+          />
 
           {filteredDJ.length === 0 ? (
             <EmptyState title="No DJ list items" subtitle="Add songs or import from Apple Music." />
@@ -578,12 +567,13 @@ export default function AdminMusicPage() {
                         >
                           Edit
                         </button>
-                        <button
-                          onClick={() => deleteDJItem(d.id)}
+                        <ConfirmButton
+                          onConfirm={() => deleteDJItem(d.id)}
+                          message="Delete this DJ list item?"
                           className="text-xs px-2 py-1 rounded bg-red-500/20 text-red-300 hover:bg-red-500/30 transition-colors"
                         >
                           Delete
-                        </button>
+                        </ConfirmButton>
                       </td>
                     </tr>
                   ))}
@@ -845,9 +835,7 @@ export default function AdminMusicPage() {
                     </div>
 
                     {importError && (
-                      <div className="p-3 bg-red-900/30 border border-red-500/30 rounded-lg text-red-300 text-sm">
-                        {importError}
-                      </div>
+                      <Alert type="error" message={importError} />
                     )}
 
                     <div className="flex gap-3 pt-2">

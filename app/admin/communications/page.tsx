@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useAdminFetch } from "@/lib/hooks";
-import { AdminPageHeader, FilterBar, LoadingState, EmptyState } from "@/components/ui";
+import { AdminPageHeader, FilterBar, LoadingState, EmptyState, ConfirmButton } from "@/components/ui";
 
 interface ContactMessage {
   id: string;
@@ -69,7 +69,6 @@ export default function AdminCommunicationsPage() {
 
   // ── Delete ────────────────────────────────────
   async function handleDelete(id: string) {
-    if (!confirm("Delete this message?")) return;
     try {
       await fetch(`/api/v1/admin/messages/${id}`, { method: "DELETE" });
       setMessages((prev) => prev.filter((m) => m.id !== id));
@@ -160,12 +159,13 @@ export default function AdminCommunicationsPage() {
                     >
                       {selected.isRead ? "Mark Unread" : "Mark Read"}
                     </button>
-                    <button
-                      onClick={() => handleDelete(selected.id)}
+                    <ConfirmButton
+                      onConfirm={() => handleDelete(selected.id)}
+                      message="Delete this message?"
                       className="text-xs px-3 py-1 rounded bg-red-500/20 text-red-300 hover:bg-red-500/30 transition-colors"
                     >
                       Delete
-                    </button>
+                    </ConfirmButton>
                   </div>
                 </div>
                 <div className="border-t border-gold/10 pt-4">
