@@ -26,7 +26,13 @@ export async function PUT(
     if (email !== undefined) { sets.push("email = ?"); args.push(email || null); }
     if (phone !== undefined) { sets.push("phone = ?"); args.push(phone || null); }
     if (group !== undefined) { sets.push('"group" = ?'); args.push(group || null); }
-    if (rsvpStatus !== undefined) { sets.push("rsvpStatus = ?"); args.push(rsvpStatus); }
+    if (rsvpStatus !== undefined) {
+      const validStatuses = ["pending", "attending", "declined"];
+      if (!validStatuses.includes(rsvpStatus)) {
+        return errorResponse("Invalid rsvpStatus. Must be: pending, attending, or declined.", 400);
+      }
+      sets.push("rsvpStatus = ?"); args.push(rsvpStatus);
+    }
     if (plusOneAllowed !== undefined) { sets.push("plusOneAllowed = ?"); args.push(plusOneAllowed ? 1 : 0); }
     if (plusOneName !== undefined) { sets.push("plusOneName = ?"); args.push(plusOneName || null); }
     if (plusOneAttending !== undefined) { sets.push("plusOneAttending = ?"); args.push(plusOneAttending ? 1 : 0); }

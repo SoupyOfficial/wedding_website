@@ -3,8 +3,8 @@ import { queryOne, execute } from "@/lib/db";
 import { successResponse, errorResponse } from "@/lib/api";
 import type { PhotoTag } from "@/lib/db-types";
 
-// PATCH update a tag
-export async function PATCH(
+// PUT update a tag
+export async function PUT(
   req: NextRequest,
   { params }: { params: Promise<{ tagId: string }> }
 ) {

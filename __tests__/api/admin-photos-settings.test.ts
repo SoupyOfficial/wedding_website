@@ -129,16 +129,36 @@ describe("Admin Photos [id]", () => {
 import { POST as photoApprove } from "@/app/api/v1/admin/photos/[id]/approve/route";
 
 describe("Admin Photos Approve", () => {
-  it("POST approves photo", async () => {
-    const res = await photoApprove(new Request("http://l", { method: "POST" }), params("1"));
+  it("POST approves photo (default)", async () => {
+    const res = await photoApprove(new NextRequest("http://l", { method: "POST" }), params("1"));
     const data = await res.json();
     expect(res.status).toBe(200);
     expect(data.data.approved).toBe(true);
   });
 
+  it("POST un-approves photo", async () => {
+    const res = await photoApprove(
+      new NextRequest("http://l", {
+        method: "POST",
+        body: JSON.stringify({ approved: false }),
+        headers: { "Content-Type": "application/json" },
+      }),
+      params("1")
+    );
+    const data = await res.json();
+    expect(res.status).toBe(200);
+    expect(data.data.approved).toBe(false);
+  });
+
+  it("POST returns 404 when not found", async () => {
+    mockExecute.mockResolvedValueOnce({ rowsAffected: 0, lastInsertRowid: undefined });
+    const res = await photoApprove(new NextRequest("http://l", { method: "POST" }), params("999"));
+    expect(res.status).toBe(404);
+  });
+
   it("POST returns 500 on error", async () => {
     mockExecute.mockRejectedValueOnce(new Error("db"));
-    const res = await photoApprove(new Request("http://l", { method: "POST" }), params("1"));
+    const res = await photoApprove(new NextRequest("http://l", { method: "POST" }), params("1"));
     expect(res.status).toBe(500);
   });
 });
@@ -210,37 +230,37 @@ describe("Admin Photo Tags", () => {
 });
 
 // ─── Photo Tags [tagId] ───────────────────────────
-import { PATCH as tagPatch, DELETE as tagDel } from "@/app/api/v1/admin/photos/tags/[tagId]/route";
+import { PUT as tagPut, DELETE as tagDel } from "@/app/api/v1/admin/photos/tags/[tagId]/route";
 
 describe("Admin Photo Tags [tagId]", () => {
-  it("PATCH updates tag", async () => {
+  it("PUT updates tag", async () => {
     const req = new NextRequest("http://l", {
-      method: "PATCH",
+      method: "PUT",
       body: JSON.stringify({ name: "Updated" }),
       headers: { "Content-Type": "application/json" },
     });
-    const res = await tagPatch(req, tagParams("1"));
+    const res = await tagPut(req, tagParams("1"));
     expect(res.status).toBe(200);
   });
 
-  it("PATCH returns 400 for empty update", async () => {
+  it("PUT returns 400 for empty update", async () => {
     const req = new NextRequest("http://l", {
-      method: "PATCH",
+      method: "PUT",
       body: JSON.stringify({}),
       headers: { "Content-Type": "application/json" },
     });
-    const res = await tagPatch(req, tagParams("1"));
+    const res = await tagPut(req, tagParams("1"));
     expect(res.status).toBe(400);
   });
 
-  it("PATCH returns 404", async () => {
+  it("PUT returns 404", async () => {
     mockExecute.mockResolvedValueOnce({ rowsAffected: 0, lastInsertRowid: undefined });
     const req = new NextRequest("http://l", {
-      method: "PATCH",
+      method: "PUT",
       body: JSON.stringify({ name: "X" }),
       headers: { "Content-Type": "application/json" },
     });
-    const res = await tagPatch(req, tagParams("1"));
+    const res = await tagPut(req, tagParams("1"));
     expect(res.status).toBe(404);
   });
 
@@ -257,14 +277,14 @@ describe("Admin Photo Tags [tagId]", () => {
     expect(res.status).toBe(404);
   });
 
-  it("PATCH returns 500 on error", async () => {
+  it("PUT returns 500 on error", async () => {
     mockExecute.mockRejectedValueOnce(new Error("db"));
     const req = new NextRequest("http://l", {
-      method: "PATCH",
+      method: "PUT",
       body: JSON.stringify({ name: "X" }),
       headers: { "Content-Type": "application/json" },
     });
-    const res = await tagPatch(req, tagParams("1"));
+    const res = await tagPut(req, tagParams("1"));
     expect(res.status).toBe(500);
   });
 

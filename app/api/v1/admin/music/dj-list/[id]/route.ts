@@ -17,7 +17,13 @@ export async function PUT(
 
     if (songName !== undefined) { sets.push("songName = ?"); args.push(songName.trim()); }
     if (artist !== undefined) { sets.push("artist = ?"); args.push(artist || ""); }
-    if (listType !== undefined) { sets.push("listType = ?"); args.push(listType); }
+    if (listType !== undefined) {
+      const validListTypes = ["must-play", "do-not-play"];
+      if (!validListTypes.includes(listType)) {
+        return errorResponse("Invalid listType. Must be: must-play or do-not-play.", 400);
+      }
+      sets.push("listType = ?"); args.push(listType);
+    }
     if (playTime !== undefined) { sets.push("playTime = ?"); args.push(playTime || ""); }
 
     if (sets.length === 0) return errorResponse("No fields to update.", 400);

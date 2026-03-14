@@ -22,10 +22,16 @@ export async function POST(req: NextRequest) {
 
     if (!songName?.trim()) return errorResponse("Song name is required.", 400);
 
+    const validListTypes = ["must-play", "do-not-play"];
+    const resolvedListType = listType || "must-play";
+    if (!validListTypes.includes(resolvedListType)) {
+      return errorResponse("Invalid listType. Must be: must-play or do-not-play.", 400);
+    }
+
     const id = generateId();
     await execute(
       "INSERT INTO DJList (id, songName, artist, listType, playTime) VALUES (?, ?, ?, ?, ?)",
-      [id, songName.trim(), artist || "", listType || "must-play", playTime || ""]
+      [id, songName.trim(), artist || "", resolvedListType, playTime || ""]
     );
 
     const item = await queryOne<DJList>("SELECT * FROM DJList WHERE id = ?", [id]);

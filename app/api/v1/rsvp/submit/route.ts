@@ -45,7 +45,13 @@ export async function POST(req: NextRequest) {
     if (phone) { sets.push("phone = ?"); args.push(String(phone).slice(0, 30)); }
     if (dietaryNotes) { sets.push("dietaryNeeds = ?"); args.push(String(dietaryNotes).slice(0, 500)); }
     if (plusOneName) { sets.push("plusOneName = ?"); args.push(String(plusOneName).slice(0, 100)); }
-    if (mealOptionId) { sets.push("mealPreference = ?"); args.push(mealOptionId); }
+    if (mealOptionId) {
+      const meal = await queryOne("SELECT id FROM MealOption WHERE id = ?", [mealOptionId]);
+      if (!meal) {
+        return errorResponse("Invalid meal option.", 400);
+      }
+      sets.push("mealPreference = ?"); args.push(mealOptionId);
+    }
 
     args.push(guestId);
     await execute(

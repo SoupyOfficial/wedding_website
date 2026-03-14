@@ -26,6 +26,10 @@ export async function POST(req: NextRequest) {
       return successResponse({ verified: true });
     }
 
+    if (!password || typeof password !== "string" || password.length > 200) {
+      return errorResponse("Invalid password.", 400);
+    }
+
     if (password !== settings.sitePassword) {
       return errorResponse("Incorrect password.", 401);
     }
