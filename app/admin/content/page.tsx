@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { useAdminMultiFetch } from "@/lib/hooks";
-import { AdminPageHeader, FilterBar, Modal, LoadingState, EmptyState, ConfirmButton } from "@/components/ui";
+import { useAdminFetch } from "@/lib/hooks";
+import { AdminPageHeader, Modal, LoadingState, EmptyState, ConfirmButton } from "@/components/ui";
 
 interface TimelineEvent {
   id: string;
@@ -11,13 +11,6 @@ interface TimelineEvent {
   time: string;
   icon: string;
   eventType: string;
-  sortOrder: number;
-}
-
-interface FAQ {
-  id: string;
-  question: string;
-  answer: string;
   sortOrder: number;
 }
 
@@ -30,35 +23,17 @@ const EMPTY_TIMELINE: Omit<TimelineEvent, "id"> = {
   sortOrder: 0,
 };
 
-const EMPTY_FAQ: Omit<FAQ, "id"> = {
-  question: "",
-  answer: "",
-  sortOrder: 0,
-};
-
 export default function AdminContentPage() {
-  const [tab, setTab] = useState<"timeline" | "faqs">("timeline");
-
-  const { data, loading, refetch } = useAdminMultiFetch<{
-    timeline: TimelineEvent[];
-    faqs: FAQ[];
-  }>({
-    timeline: "/api/v1/admin/content/timeline",
-    faqs: "/api/v1/admin/content/faqs",
-  });
-
-  const timeline = data.timeline;
-  const faqs = data.faqs;
+  const { data: timeline, loading, refetch } = useAdminFetch<TimelineEvent[]>("/api/v1/admin/content/timeline");
 
   // Editing state
   const [editingTimeline, setEditingTimeline] = useState<TimelineEvent | null>(null);
-  const [editingFAQ, setEditingFAQ] = useState<FAQ | null>(null);
   const [isNew, setIsNew] = useState(false);
   const [saving, setSaving] = useState(false);
 
   // ----- Timeline CRUD -----
   function openNewTimeline() {
-    setEditingTimeline({ id: "", ...EMPTY_TIMELINE, sortOrder: timeline.length } as TimelineEvent);
+    setEditingTimeline({ id: "", ...EMPTY_TIMELINE, sortOrder: (timeline ?? []).length } as TimelineEvent);
     setIsNew(true);
   }
 
@@ -102,120 +77,39 @@ export default function AdminContentPage() {
     } catch { /* silently fail */ }
   }
 
-  // ----- FAQ CRUD -----
-  function openNewFAQ() {
-    setEditingFAQ({ id: "", ...EMPTY_FAQ, sortOrder: faqs.length } as FAQ);
-    setIsNew(true);
-  }
-
-  function openEditFAQ(f: FAQ) {
-    setEditingFAQ({ ...f });
-    setIsNew(false);
-  }
-
-  async function handleSaveFAQ(e: React.FormEvent) {
-    e.preventDefault();
-    if (!editingFAQ) return;
-    setSaving(true);
-    try {
-      const url = isNew ? "/api/v1/admin/content/faqs" : `/api/v1/admin/content/faqs/${editingFAQ.id}`;
-      const method = isNew ? "POST" : "PUT";
-      await fetch(url, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          question: editingFAQ.question,
-          answer: editingFAQ.answer,
-          sortOrder: editingFAQ.sortOrder,
-        }),
-      });
-      setEditingFAQ(null);
-      setIsNew(false);
-      refetch();
-    } catch { /* silently fail */ } finally {
-      setSaving(false);
-    }
-  }
-
-  async function handleDeleteFAQ(id: string) {
-    try {
-      await fetch(`/api/v1/admin/content/faqs/${id}`, { method: "DELETE" });
-      if (editingFAQ?.id === id) setEditingFAQ(null);
-      refetch();
-    } catch { /* silently fail */ }
-  }
-
   return (
     <div>
-      <AdminPageHeader title="Content Manager" subtitle="Manage timeline events and FAQs" />
-
-      <div className="flex items-center justify-between mb-6 border-b border-gold/10 pb-4">
-        <FilterBar
-          filters={[
-            { value: "timeline" as const, label: `Timeline (${timeline.length})` },
-            { value: "faqs" as const, label: `FAQs (${faqs.length})` },
-          ]}
-          active={tab}
-          onChange={setTab}
-          variant="button"
-        />
-        <button onClick={tab === "timeline" ? openNewTimeline : openNewFAQ} className="btn-gold px-4 py-2 text-sm">
-          + Add {tab === "timeline" ? "Event" : "FAQ"}
-        </button>
-      </div>
+      <AdminPageHeader
+        title="Timeline"
+        subtitle={`${(timeline ?? []).length} event${(timeline ?? []).length !== 1 ? "s" : ""} — displayed on the Event Details page`}
+        actions={<button onClick={openNewTimeline} className="btn-gold px-4 py-2 text-sm">+ Add Event</button>}
+      />
 
       {loading ? (
         <LoadingState />
       ) : (
-        <>
-          {/* Timeline Tab */}
-          {tab === "timeline" && (
-            <div className="space-y-2">
-              {timeline.length > 0 ? timeline.map((event) => (
-                <div key={event.id} className="flex items-center justify-between bg-royal/20 border border-gold/10 rounded-lg p-4">
-                  <div className="flex items-center gap-3">
-                    <span className="text-xl">{event.icon || "\u23F0"}</span>
-                    <div>
-                      <p className="text-ivory font-medium">{event.title}</p>
-                      <div className="flex gap-2 text-ivory/40 text-xs">
-                        {event.time && <span>{event.time}</span>}
-                        {event.description && <span>&bull; {event.description}</span>}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex gap-2">
-                    <button onClick={() => openEditTimeline(event)} className="text-gold/60 hover:text-gold text-xs transition-colors">Edit</button>
-                    <ConfirmButton onConfirm={() => handleDeleteTimeline(event.id)} message="Remove this timeline event?" className="text-red-400/60 hover:text-red-400 text-xs transition-colors">Remove</ConfirmButton>
+        <div className="space-y-2">
+          {(timeline ?? []).length > 0 ? (timeline ?? []).map((event) => (
+            <div key={event.id} className="flex items-center justify-between bg-royal/20 border border-gold/10 rounded-lg p-4">
+              <div className="flex items-center gap-3">
+                <span className="text-xl">{event.icon || "\u23F0"}</span>
+                <div>
+                  <p className="text-ivory font-medium">{event.title}</p>
+                  <div className="flex gap-2 text-ivory/40 text-xs">
+                    {event.time && <span>{event.time}</span>}
+                    {event.description && <span>&bull; {event.description}</span>}
                   </div>
                 </div>
-              )) : (
-                <EmptyState title="No timeline events yet" />
-              )}
+              </div>
+              <div className="flex gap-2">
+                <button onClick={() => openEditTimeline(event)} className="text-gold/60 hover:text-gold text-xs transition-colors">Edit</button>
+                <ConfirmButton onConfirm={() => handleDeleteTimeline(event.id)} message="Remove this timeline event?" className="text-red-400/60 hover:text-red-400 text-xs transition-colors">Remove</ConfirmButton>
+              </div>
             </div>
+          )) : (
+            <EmptyState title="No timeline events yet" subtitle="Add events to your wedding day timeline." />
           )}
-
-          {/* FAQs Tab */}
-          {tab === "faqs" && (
-            <div className="space-y-2">
-              {faqs.length > 0 ? faqs.map((faq) => (
-                <div key={faq.id} className="bg-royal/20 border border-gold/10 rounded-lg p-4">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1">
-                      <p className="text-gold font-serif">{faq.question}</p>
-                      <p className="text-ivory/60 text-sm mt-1">{faq.answer}</p>
-                    </div>
-                    <div className="flex gap-2 flex-shrink-0">
-                      <button onClick={() => openEditFAQ(faq)} className="text-gold/60 hover:text-gold text-xs transition-colors">Edit</button>
-                      <ConfirmButton onConfirm={() => handleDeleteFAQ(faq.id)} message="Remove this FAQ?" className="text-red-400/60 hover:text-red-400 text-xs transition-colors">Remove</ConfirmButton>
-                    </div>
-                  </div>
-                </div>
-              )) : (
-                <EmptyState title="No FAQs yet" />
-              )}
-            </div>
-          )}
-        </>
+        </div>
       )}
 
       {/* Timeline Edit Modal */}
@@ -260,29 +154,6 @@ export default function AdminContentPage() {
         </Modal>
       )}
 
-      {/* FAQ Edit Modal */}
-      {editingFAQ && (
-        <Modal title={isNew ? "Add FAQ" : "Edit FAQ"} onClose={() => { setEditingFAQ(null); setIsNew(false); }}>
-            <form onSubmit={handleSaveFAQ} className="space-y-4">
-              <div>
-                <label className="block text-ivory/70 text-xs mb-1">Question *</label>
-                <input type="text" value={editingFAQ.question} onChange={(e) => setEditingFAQ({ ...editingFAQ, question: e.target.value })} className="input-celestial w-full" required />
-              </div>
-              <div>
-                <label className="block text-ivory/70 text-xs mb-1">Answer *</label>
-                <textarea value={editingFAQ.answer} onChange={(e) => setEditingFAQ({ ...editingFAQ, answer: e.target.value })} className="input-celestial w-full h-24 resize-none" required />
-              </div>
-              <div>
-                <label className="block text-ivory/70 text-xs mb-1">Sort Order</label>
-                <input type="number" value={editingFAQ.sortOrder} onChange={(e) => setEditingFAQ({ ...editingFAQ, sortOrder: parseInt(e.target.value) || 0 })} className="input-celestial w-24" />
-              </div>
-              <div className="flex gap-3 justify-end pt-2">
-                <button type="button" onClick={() => { setEditingFAQ(null); setIsNew(false); }} className="btn-outline px-4 py-2 text-sm">Cancel</button>
-                <button type="submit" disabled={saving} className="btn-gold px-4 py-2 text-sm">{saving ? "Saving..." : isNew ? "Add FAQ" : "Save Changes"}</button>
-              </div>
-            </form>
-        </Modal>
-      )}
     </div>
   );
 }

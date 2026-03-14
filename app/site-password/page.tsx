@@ -1,13 +1,27 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 export default function SitePasswordPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [coupleName, setCoupleName] = useState("Forever Campbells");
+  const [contactEmail, setContactEmail] = useState("");
   const router = useRouter();
+
+  useEffect(() => {
+    fetch("/api/v1/settings/public")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.data) {
+          if (data.data.coupleName) setCoupleName(data.data.coupleName);
+          if (data.data.contactEmailJoint) setContactEmail(data.data.contactEmailJoint);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -43,7 +57,7 @@ export default function SitePasswordPage() {
         <div className="text-center mb-8">
           <div className="text-5xl mb-4">🌙</div>
           <h1 className="font-serif text-3xl text-gold mb-2">
-            Forever Campbells
+            {coupleName}
           </h1>
           <p className="text-ivory/50 text-sm">
             Enter the password from your invitation
@@ -79,12 +93,14 @@ export default function SitePasswordPage() {
           </form>
         </div>
 
-        <p className="text-center text-ivory/30 text-xs mt-6">
-          Can&apos;t find your password? Contact us at{" "}
-          <a href="mailto:forevercampbells@hotmail.com" className="text-gold/50 hover:text-gold">
-            forevercampbells@hotmail.com
-          </a>
-        </p>
+        {contactEmail && (
+          <p className="text-center text-ivory/30 text-xs mt-6">
+            Can&apos;t find your password? Contact us at{" "}
+            <a href={`mailto:${contactEmail}`} className="text-gold/50 hover:text-gold">
+              {contactEmail}
+            </a>
+          </p>
+        )}
       </div>
     </div>
   );

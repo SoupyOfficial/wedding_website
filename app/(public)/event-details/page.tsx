@@ -78,7 +78,7 @@ export default async function EventDetailsPage() {
               {settings?.venueAddress || "Apopka, Florida"}
             </p>
             <p className="text-gold/80 mt-4 text-sm">
-              5 hours of celebration
+              Dinner, Dancing &amp; Celebration
             </p>
           </div>
         </div>
@@ -190,6 +190,17 @@ export default async function EventDetailsPage() {
               <h3 className="heading-gold text-xl mb-2">Children</h3>
               <p className="text-ivory/70">
                 {settings.childrenPolicy}
+              </p>
+            </div>
+          )}
+
+          {/* Weather Info */}
+          {settings?.weatherInfo && (
+            <div className="card-celestial text-center">
+              <div className="text-3xl mb-3">🌤️</div>
+              <h3 className="heading-gold text-xl mb-2">Weather</h3>
+              <p className="text-ivory/70">
+                {settings.weatherInfo}
               </p>
             </div>
           )}

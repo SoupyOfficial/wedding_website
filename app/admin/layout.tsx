@@ -8,7 +8,8 @@ import { useState } from "react";
 const navItems = [
   { href: "/admin", label: "Dashboard", icon: "📊" },
   { href: "/admin/guests", label: "Guests", icon: "👥" },
-  { href: "/admin/content", label: "Content", icon: "📝" },
+  { href: "/admin/content", label: "Timeline", icon: "📝" },
+  { href: "/admin/faqs", label: "FAQs", icon: "❓" },
   { href: "/admin/wedding-party", label: "Wedding Party", icon: "💐" },
   { href: "/admin/photos", label: "Photos", icon: "📸" },
   { href: "/admin/registry", label: "Registry", icon: "🎁" },
