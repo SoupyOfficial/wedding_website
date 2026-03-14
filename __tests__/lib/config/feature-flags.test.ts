@@ -6,6 +6,8 @@ vi.mock("@/lib/db", () => ({
   queryOne: vi.fn(),
   execute: vi.fn(),
   toBool: vi.fn((row: unknown) => row),
+  generateId: vi.fn().mockReturnValue("test-id"),
+  now: vi.fn().mockReturnValue("2026-01-01T00:00:00.000Z"),
 }));
 
 import { query, queryOne, execute } from "@/lib/db";
@@ -91,8 +93,8 @@ describe("setFeatureFlag", () => {
     await setFeatureFlag("rsvpEnabled", false);
 
     expect(mockExecute).toHaveBeenCalledWith(
-      "UPDATE FeatureFlag SET enabled = ? WHERE key = ?",
-      [0, "rsvpEnabled"]
+      "UPDATE FeatureFlag SET enabled = ?, updatedAt = ? WHERE key = ?",
+      [0, "2026-01-01T00:00:00.000Z", "rsvpEnabled"]
     );
   });
 
@@ -103,8 +105,8 @@ describe("setFeatureFlag", () => {
     await setFeatureFlag("newFlag", true);
 
     expect(mockExecute).toHaveBeenCalledWith(
-      "INSERT INTO FeatureFlag (key, enabled) VALUES (?, ?)",
-      ["newFlag", 1]
+      "INSERT INTO FeatureFlag (id, key, enabled, updatedAt) VALUES (?, ?, ?, ?)",
+      ["test-id", "newFlag", 1, "2026-01-01T00:00:00.000Z"]
     );
   });
 });

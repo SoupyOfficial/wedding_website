@@ -1,4 +1,4 @@
-import { query, queryOne, execute, toBool } from "@/lib/db";
+import { query, queryOne, execute, toBool, generateId, now } from "@/lib/db";
 import type { FeatureFlag } from "@/lib/db-types";
 
 export interface FeatureFlags {
@@ -77,8 +77,8 @@ export async function setFeatureFlag(
 ): Promise<void> {
   const existing = await queryOne<FeatureFlag>("SELECT * FROM FeatureFlag WHERE key = ?", [key]);
   if (existing) {
-    await execute("UPDATE FeatureFlag SET enabled = ? WHERE key = ?", [enabled ? 1 : 0, key]);
+    await execute("UPDATE FeatureFlag SET enabled = ?, updatedAt = ? WHERE key = ?", [enabled ? 1 : 0, now(), key]);
   } else {
-    await execute("INSERT INTO FeatureFlag (key, enabled) VALUES (?, ?)", [key, enabled ? 1 : 0]);
+    await execute("INSERT INTO FeatureFlag (id, key, enabled, updatedAt) VALUES (?, ?, ?, ?)", [generateId(), key, enabled ? 1 : 0, now()]);
   }
 }
