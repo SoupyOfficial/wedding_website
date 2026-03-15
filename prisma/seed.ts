@@ -346,7 +346,7 @@ async function main() {
       sortOrder: 5,
     },
     {
-      title: "First Dances",
+      title: "First Dance",
       time: "TBD",
       description: "Our first dance as a married couple.",
       eventType: "wedding-day",

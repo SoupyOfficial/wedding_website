@@ -270,7 +270,7 @@ export default function WeatherForecast({
               <span className="text-amber-400/80 font-semibold">
                 We recommend planning for all possibilities:
               </span>{" "}
-              bring sunscreen, a small umbrella or rain jacket, and stay hydrated. The ceremony is
+              bring sunscreen, a small umbrella or rain jacket, and plenty of water to stay hydrated. The ceremony is
               outdoors, but the reception is indoors and fully air-conditioned — so rain or shine,
               the party goes on! 🎉
             </p>
