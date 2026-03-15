@@ -141,10 +141,25 @@ export default async function WeddingPartyPage() {
   ];
   const otherSpecial = special.filter((m) => !isFlowerGirlOrRingBearer(m.role));
 
-  // Derive subtitles from actual roles present
+  // Derive subtitles from actual roles present, pluralizing when multiple share a role
+  function pluralizeRole(role: string, count: number): string {
+    if (count <= 1) return role;
+    const lower = role.toLowerCase();
+    if (lower === "groomsman") return role.replace(/man$/i, "men");
+    if (lower === "best man" || lower === "man of honor") return role;
+    if (lower.endsWith("man")) return role.replace(/man$/i, "men");
+    if (lower.endsWith("s")) return role;
+    return role + "s";
+  }
+
   function getSideSubtitle(members: WeddingPartyMember[]): string {
-    const roles = [...new Set(members.map((m) => m.role))];
-    return roles.join(", ");
+    const roleCounts = new Map<string, number>();
+    for (const m of members) {
+      roleCounts.set(m.role, (roleCounts.get(m.role) || 0) + 1);
+    }
+    return [...roleCounts.entries()]
+      .map(([role, count]) => pluralizeRole(role, count))
+      .join(", ");
   }
 
   return (
