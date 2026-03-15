@@ -19,19 +19,44 @@ export async function PUT(
     if (question !== undefined) { sets.push("question = ?"); args.push(question.trim()); }
     if (answer !== undefined) { sets.push("answer = ?"); args.push(answer.trim()); }
     if (sortOrder !== undefined) { sets.push("sortOrder = ?"); args.push(sortOrder); }
-    if (body.isVisible !== undefined) { sets.push("isVisible = ?"); args.push(body.isVisible ? 1 : 0); }
 
-    if (sets.length === 0) return errorResponse("No fields to update.", 400);
+    // isVisible may not exist if migration hasn't run — try separately
+    let visibilityHandled = false;
+    if (body.isVisible !== undefined) {
+      try {
+        await execute("UPDATE FAQ SET isVisible = ? WHERE id = ?", [body.isVisible ? 1 : 0, id]);
+        visibilityHandled = true;
+      } catch {
+        // Column doesn't exist yet — skip
+      }
+    }
 
-    args.push(id);
-    const { rowsAffected } = await execute(
-      `UPDATE FAQ SET ${sets.join(", ")} WHERE id = ?`,
-      args
-    );
-    if (rowsAffected === 0) return errorResponse("FAQ not found.", 404);
+    if (sets.length === 0 && !visibilityHandled) {
+      if (body.isVisible !== undefined) {
+        // Only isVisible was requested but column doesn't exist
+        const faq = await queryOne<FAQ>("SELECT * FROM FAQ WHERE id = ?", [id]);
+        if (!faq) return errorResponse("FAQ not found.", 404);
+        if (faq.isVisible === undefined || faq.isVisible === null) faq.isVisible = true;
+        toBool(faq, ...FAQ_BOOLS);
+        return successResponse(faq);
+      }
+      return errorResponse("No fields to update.", 400);
+    }
+
+    if (sets.length > 0) {
+      args.push(id);
+      const { rowsAffected } = await execute(
+        `UPDATE FAQ SET ${sets.join(", ")} WHERE id = ?`,
+        args
+      );
+      if (rowsAffected === 0) return errorResponse("FAQ not found.", 404);
+    }
 
     const faq = await queryOne<FAQ>("SELECT * FROM FAQ WHERE id = ?", [id]);
-    if (faq) toBool(faq, ...FAQ_BOOLS);
+    if (faq) {
+      if (faq.isVisible === undefined || faq.isVisible === null) faq.isVisible = true;
+      toBool(faq, ...FAQ_BOOLS);
+    }
     return successResponse(faq);
   } catch (error) {
     console.error("Failed to update FAQ:", error);

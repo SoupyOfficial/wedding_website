@@ -9,7 +9,10 @@ export const dynamic = "force-dynamic";
 export async function GET() {
   try {
     const faqs = await query<FAQ>("SELECT * FROM FAQ ORDER BY sortOrder ASC");
-    faqs.forEach((f) => toBool(f, ...FAQ_BOOLS));
+    faqs.forEach((f) => {
+      if (f.isVisible === undefined || f.isVisible === null) f.isVisible = true;
+      toBool(f, ...FAQ_BOOLS);
+    });
     return successResponse(faqs);
   } catch (error) {
     console.error("Failed to fetch FAQs:", error);
@@ -27,14 +30,25 @@ export async function POST(req: NextRequest) {
     }
 
     const id = generateId();
-    const isVisible = body.isVisible !== undefined ? (body.isVisible ? 1 : 0) : 1;
-    await execute(
-      "INSERT INTO FAQ (id, question, answer, sortOrder, isVisible) VALUES (?, ?, ?, ?, ?)",
-      [id, question.trim(), answer.trim(), sortOrder ?? 0, isVisible]
-    );
+    try {
+      const isVisible = body.isVisible !== undefined ? (body.isVisible ? 1 : 0) : 1;
+      await execute(
+        "INSERT INTO FAQ (id, question, answer, sortOrder, isVisible) VALUES (?, ?, ?, ?, ?)",
+        [id, question.trim(), answer.trim(), sortOrder ?? 0, isVisible]
+      );
+    } catch {
+      // Fallback if isVisible column doesn't exist yet
+      await execute(
+        "INSERT INTO FAQ (id, question, answer, sortOrder) VALUES (?, ?, ?, ?)",
+        [id, question.trim(), answer.trim(), sortOrder ?? 0]
+      );
+    }
 
     const faq = await queryOne<FAQ>("SELECT * FROM FAQ WHERE id = ?", [id]);
-    if (faq) toBool(faq, ...FAQ_BOOLS);
+    if (faq) {
+      if (faq.isVisible === undefined || faq.isVisible === null) faq.isVisible = true;
+      toBool(faq, ...FAQ_BOOLS);
+    }
     return successResponse(faq, undefined, 201);
   } catch (error) {
     console.error("Failed to create FAQ:", error);
