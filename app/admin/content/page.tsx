@@ -24,7 +24,7 @@ const EMPTY_TIMELINE: Omit<TimelineEvent, "id"> = {
 };
 
 export default function AdminContentPage() {
-  const { data: timeline, loading, refetch } = useAdminFetch<TimelineEvent[]>("/api/v1/admin/content/timeline");
+  const { data: timeline, loading, refetch } = useAdminFetch<TimelineEvent>("/api/v1/admin/content/timeline");
 
   // Editing state
   const [editingTimeline, setEditingTimeline] = useState<TimelineEvent | null>(null);
