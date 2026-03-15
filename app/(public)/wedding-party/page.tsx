@@ -141,6 +141,12 @@ export default async function WeddingPartyPage() {
   ];
   const otherSpecial = special.filter((m) => !isFlowerGirlOrRingBearer(m.role));
 
+  // Derive subtitles from actual roles present
+  function getSideSubtitle(members: WeddingPartyMember[]): string {
+    const roles = [...new Set(members.map((m) => m.role))];
+    return roles.join(", ");
+  }
+
   return (
     <div className="pt-8 pb-16">
       <div className="section-padding">
@@ -157,7 +163,7 @@ export default async function WeddingPartyPage() {
               The Bride&apos;s Side
             </h2>
             <p className="text-ivory/50 text-center text-sm mb-8">
-              Bridesmaids &amp; Maid of Honor
+              {getSideSubtitle(bridesmaids)}
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
               {bridesmaids.map((member: WPMember) => (
@@ -176,7 +182,7 @@ export default async function WeddingPartyPage() {
               The Groom&apos;s Side
             </h2>
             <p className="text-ivory/50 text-center text-sm mb-8">
-              Groomsmen &amp; Best Man
+              {getSideSubtitle(groomsmen)}
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
               {groomsmen.map((member: WPMember) => (
