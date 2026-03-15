@@ -1,7 +1,8 @@
 import { NextRequest } from "next/server";
-import { queryOne, execute } from "@/lib/db";
+import { queryOne, execute, toBool } from "@/lib/db";
 import { successResponse, errorResponse } from "@/lib/api";
 import type { FAQ } from "@/lib/db-types";
+import { FAQ_BOOLS } from "@/lib/db-types";
 
 export async function PUT(
   req: NextRequest,
@@ -18,6 +19,7 @@ export async function PUT(
     if (question !== undefined) { sets.push("question = ?"); args.push(question.trim()); }
     if (answer !== undefined) { sets.push("answer = ?"); args.push(answer.trim()); }
     if (sortOrder !== undefined) { sets.push("sortOrder = ?"); args.push(sortOrder); }
+    if (body.isVisible !== undefined) { sets.push("isVisible = ?"); args.push(body.isVisible ? 1 : 0); }
 
     if (sets.length === 0) return errorResponse("No fields to update.", 400);
 
@@ -29,6 +31,7 @@ export async function PUT(
     if (rowsAffected === 0) return errorResponse("FAQ not found.", 404);
 
     const faq = await queryOne<FAQ>("SELECT * FROM FAQ WHERE id = ?", [id]);
+    if (faq) toBool(faq, ...FAQ_BOOLS);
     return successResponse(faq);
   } catch (error) {
     console.error("Failed to update FAQ:", error);

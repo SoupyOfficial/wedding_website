@@ -138,7 +138,10 @@ export interface FAQ {
   question: string;
   answer: string;
   sortOrder: number;
+  isVisible: boolean;
 }
+
+export const FAQ_BOOLS = ["isVisible"] as const;
 
 export interface Photo {
   id: string;

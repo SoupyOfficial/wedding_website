@@ -1,13 +1,15 @@
 import { NextRequest } from "next/server";
-import { query, queryOne, execute, generateId } from "@/lib/db";
+import { query, queryOne, execute, generateId, toBool } from "@/lib/db";
 import { successResponse, errorResponse } from "@/lib/api";
 import type { FAQ } from "@/lib/db-types";
+import { FAQ_BOOLS } from "@/lib/db-types";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
     const faqs = await query<FAQ>("SELECT * FROM FAQ ORDER BY sortOrder ASC");
+    faqs.forEach((f) => toBool(f, ...FAQ_BOOLS));
     return successResponse(faqs);
   } catch (error) {
     console.error("Failed to fetch FAQs:", error);
@@ -25,12 +27,14 @@ export async function POST(req: NextRequest) {
     }
 
     const id = generateId();
+    const isVisible = body.isVisible !== undefined ? (body.isVisible ? 1 : 0) : 1;
     await execute(
-      "INSERT INTO FAQ (id, question, answer, sortOrder) VALUES (?, ?, ?, ?)",
-      [id, question.trim(), answer.trim(), sortOrder ?? 0]
+      "INSERT INTO FAQ (id, question, answer, sortOrder, isVisible) VALUES (?, ?, ?, ?, ?)",
+      [id, question.trim(), answer.trim(), sortOrder ?? 0, isVisible]
     );
 
     const faq = await queryOne<FAQ>("SELECT * FROM FAQ WHERE id = ?", [id]);
+    if (faq) toBool(faq, ...FAQ_BOOLS);
     return successResponse(faq, undefined, 201);
   } catch (error) {
     console.error("Failed to create FAQ:", error);

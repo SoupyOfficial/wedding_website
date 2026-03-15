@@ -13,7 +13,7 @@ export default async function FAQPage() {
   const gate = await checkFeatureFlag("faqPageEnabled");
   if (gate) return gate;
 
-  const faqs = await query<FAQ>("SELECT * FROM FAQ ORDER BY sortOrder ASC");
+  const faqs = await query<FAQ>("SELECT * FROM FAQ WHERE isVisible = 1 ORDER BY sortOrder ASC");
 
   const settings = await queryOne<SiteSettings>("SELECT * FROM SiteSettings WHERE id = ?", ["singleton"]);
   if (settings) toBool(settings, ...SETTINGS_BOOLS);

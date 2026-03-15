@@ -150,10 +150,11 @@ model RegistryItem {
 // FAQs
 // ─────────────────────────────────────────────
 model FAQ {
-  id        String @id @default(cuid())
+  id        String  @id @default(cuid())
   question  String
   answer    String
-  sortOrder Int    @default(0)
+  sortOrder Int     @default(0)
+  isVisible Boolean @default(true)
 }
 
 // ─────────────────────────────────────────────

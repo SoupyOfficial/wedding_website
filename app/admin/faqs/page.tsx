@@ -8,6 +8,7 @@ interface FAQ {
   question: string;
   answer: string;
   sortOrder: number;
+  isVisible: boolean;
 }
 
 export default function AdminFAQsPage() {
@@ -17,7 +18,7 @@ export default function AdminFAQsPage() {
 
   const [showModal, setShowModal] = useState(false);
   const [editingItem, setEditingItem] = useState<FAQ | null>(null);
-  const [form, setForm] = useState({ question: "", answer: "", sortOrder: 0 });
+  const [form, setForm] = useState({ question: "", answer: "", sortOrder: 0, isVisible: true });
 
   const fetchItems = useCallback(async () => {
     try {
@@ -33,10 +34,10 @@ export default function AdminFAQsPage() {
   function openModal(item?: FAQ) {
     if (item) {
       setEditingItem(item);
-      setForm({ question: item.question, answer: item.answer, sortOrder: item.sortOrder });
+      setForm({ question: item.question, answer: item.answer, sortOrder: item.sortOrder, isVisible: item.isVisible });
     } else {
       setEditingItem(null);
-      setForm({ question: "", answer: "", sortOrder: items.length });
+      setForm({ question: "", answer: "", sortOrder: items.length, isVisible: true });
     }
     setError("");
     setShowModal(true);
@@ -76,6 +77,18 @@ export default function AdminFAQsPage() {
     } catch { /* silently fail */ }
   }
 
+  async function toggleVisibility(item: FAQ) {
+    try {
+      const res = await fetch(`/api/v1/admin/content/faqs/${item.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isVisible: !item.isVisible }),
+      });
+      const data = await res.json();
+      if (data.success) setItems((prev) => prev.map((i) => (i.id === item.id ? data.data : i)));
+    } catch { /* silently fail */ }
+  }
+
   if (loading) return <LoadingState message="Loading FAQs..." />;
 
   return (
@@ -93,16 +106,22 @@ export default function AdminFAQsPage() {
       ) : (
         <div className="space-y-2">
           {items.sort((a, b) => a.sortOrder - b.sortOrder).map((item) => (
-            <div key={item.id} className="bg-royal/20 border border-gold/10 rounded-lg p-4">
+            <div key={item.id} className={`bg-royal/20 border border-gold/10 rounded-lg p-4 ${!item.isVisible ? "opacity-50" : ""}`}>
               <div className="flex items-start justify-between gap-4">
                 <div className="flex items-start gap-3 flex-1">
                   <div className="w-8 h-8 rounded bg-royal/40 flex items-center justify-center text-sm flex-shrink-0 mt-0.5">❓</div>
                   <div className="flex-1">
-                    <p className="text-gold font-serif">{item.question}</p>
+                    <div className="flex items-center gap-2">
+                      <p className="text-gold font-serif">{item.question}</p>
+                      {!item.isVisible && <span className="text-xs bg-ivory/10 text-ivory/40 px-2 py-0.5 rounded">Hidden</span>}
+                    </div>
                     <p className="text-ivory/60 text-sm mt-1 line-clamp-2">{item.answer}</p>
                   </div>
                 </div>
                 <div className="flex gap-2 flex-shrink-0">
+                  <button onClick={() => toggleVisibility(item)} className={`text-xs transition-colors ${item.isVisible ? "text-green-400/60 hover:text-green-400" : "text-ivory/40 hover:text-ivory/60"}`}>
+                    {item.isVisible ? "Visible" : "Hidden"}
+                  </button>
                   <button onClick={() => openModal(item)} className="text-gold/60 hover:text-gold text-xs transition-colors">Edit</button>
                   <ConfirmButton onConfirm={() => deleteItem(item.id)} message="Delete this FAQ?" className="text-red-400/60 hover:text-red-400 text-xs transition-colors">
                     Remove
@@ -129,6 +148,10 @@ export default function AdminFAQsPage() {
               <label className="block text-ivory/70 text-xs mb-1">Sort Order</label>
               <input type="number" value={form.sortOrder} onChange={(e) => setForm({ ...form, sortOrder: parseInt(e.target.value) || 0 })} className="input-celestial w-full" />
             </div>
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" checked={form.isVisible} onChange={(e) => setForm({ ...form, isVisible: e.target.checked })} className="accent-gold w-4 h-4" />
+              <span className="text-ivory/70 text-sm">Visible on public FAQ page</span>
+            </label>
             <div className="flex gap-3 pt-2">
               <button onClick={saveItem} className="btn-gold flex-1 py-2">{editingItem ? "Save Changes" : "Add FAQ"}</button>
               <button onClick={() => setShowModal(false)} className="btn-outline flex-1 py-2">Cancel</button>
