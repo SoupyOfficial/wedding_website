@@ -10,15 +10,27 @@ export async function PUT(
   try {
     const { id } = await params;
     const body = await req.json();
-    const { name, url, iconUrl, sortOrder } = body;
+    const { 
+      name, url, iconUrl, sortOrder, 
+      itemType, price, totalNeeded, totalBought, 
+      goalAmount, raisedAmount, description, status 
+    } = body;
 
     const sets: string[] = [];
     const args: (string | number | null)[] = [];
 
     if (name !== undefined) { sets.push("name = ?"); args.push(name.trim()); }
-    if (url !== undefined) { sets.push("url = ?"); args.push(url.trim()); }
+    if (url !== undefined) { sets.push("url = ?"); args.push(url?.trim() || ""); }
     if (iconUrl !== undefined) { sets.push("iconUrl = ?"); args.push(iconUrl || null); }
     if (sortOrder !== undefined) { sets.push("sortOrder = ?"); args.push(sortOrder); }
+    if (itemType !== undefined) { sets.push("itemType = ?"); args.push(itemType); }
+    if (price !== undefined) { sets.push("price = ?"); args.push(price); }
+    if (totalNeeded !== undefined) { sets.push("totalNeeded = ?"); args.push(totalNeeded); }
+    if (totalBought !== undefined) { sets.push("totalBought = ?"); args.push(totalBought); }
+    if (goalAmount !== undefined) { sets.push("goalAmount = ?"); args.push(goalAmount); }
+    if (raisedAmount !== undefined) { sets.push("raisedAmount = ?"); args.push(raisedAmount); }
+    if (description !== undefined) { sets.push("description = ?"); args.push(description || null); }
+    if (status !== undefined) { sets.push("status = ?"); args.push(status); }
 
     if (sets.length === 0) return errorResponse("No fields to update.", 400);
 

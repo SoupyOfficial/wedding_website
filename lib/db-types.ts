@@ -131,6 +131,14 @@ export interface RegistryItem {
   url: string;
   iconUrl: string | null;
   sortOrder: number;
+  itemType: string;
+  price: number | null;
+  totalNeeded: number | null;
+  totalBought: number;
+  goalAmount: number | null;
+  raisedAmount: number;
+  description: string | null;
+  status: string;
 }
 
 export interface FAQ {
@@ -326,5 +334,15 @@ export interface EmailLog {
   sentAt: string | null;
   deliveredAt: string | null;
   openedAt: string | null;
+  createdAt: string;
+}
+
+export interface RegistryContribution {
+  id: string;
+  registryItemId: string;
+  guestName: string;
+  guestEmail: string | null;
+  amount: number | null;
+  status: string;
   createdAt: string;
 }

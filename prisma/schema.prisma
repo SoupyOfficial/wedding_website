@@ -139,11 +139,19 @@ model Hotel {
 // Registry Items
 // ─────────────────────────────────────────────
 model RegistryItem {
-  id        String @id @default(cuid())
-  name      String
-  url       String
-  iconUrl   String?
-  sortOrder Int    @default(0)
+  id           String  @id @default(cuid())
+  name         String
+  url          String
+  iconUrl      String?
+  sortOrder    Int     @default(0)
+  itemType     String  @default("store") // "store", "product", "fund"
+  price        Float?  
+  totalNeeded  Int?    
+  totalBought  Int     @default(0) 
+  goalAmount   Float?  
+  raisedAmount Float   @default(0) 
+  description  String? 
+  status       String  @default("active") // "active", "fulfilled", "hidden"
 }
 
 // ─────────────────────────────────────────────
@@ -354,4 +362,17 @@ model EmailLog {
   deliveredAt DateTime?
   openedAt    DateTime?
   createdAt   DateTime      @default(now())
+}
+
+// ---------------------------------------------
+// Registry Contributions
+// ---------------------------------------------
+model RegistryContribution {
+  id             String   @id @default(cuid())
+  registryItemId String
+  guestName      String
+  guestEmail     String?
+  amount         Float?
+  status         String   @default("confirmed")
+  createdAt      DateTime @default(now())
 }

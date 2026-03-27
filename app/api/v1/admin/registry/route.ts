@@ -20,14 +20,28 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { name, url, iconUrl, sortOrder } = body;
+    const { name, url, iconUrl, sortOrder, itemType, price, totalNeeded, totalBought, goalAmount, raisedAmount, description, status } = body;
 
     if (!name?.trim()) return errorResponse("Name is required.", 400);
 
     const id = generateId();
     await execute(
-      "INSERT INTO RegistryItem (id, name, url, iconUrl, sortOrder) VALUES (?, ?, ?, ?, ?)",
-      [id, name.trim(), url?.trim() || "", iconUrl || null, sortOrder ?? 0]
+      "INSERT INTO RegistryItem (id, name, url, iconUrl, sortOrder, itemType, price, totalNeeded, totalBought, goalAmount, raisedAmount, description, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+      [
+        id, 
+        name.trim(), 
+        url?.trim() || "", 
+        iconUrl || null, 
+        sortOrder ?? 0,
+        itemType || "store",
+        price ?? null,
+        totalNeeded ?? null,
+        totalBought ?? 0,
+        goalAmount ?? null,
+        raisedAmount ?? 0,
+        description || null,
+        status || "active"
+      ]
     );
 
     const registry = await queryOne<RegistryItem>("SELECT * FROM RegistryItem WHERE id = ?", [id]);
