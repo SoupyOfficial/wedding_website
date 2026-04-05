@@ -135,13 +135,16 @@ async function main() {
       name: "Amazon",
       url: "https://www.amazon.com/wedding/registry",
       sortOrder: 1,
+      itemType: "store",
+      description: null as string | null,
+      status: "active",
     },
   ];
 
   for (const item of registryItems) {
     await client.execute({
-      sql: `INSERT OR IGNORE INTO RegistryItem (id, name, url, sortOrder)
-            SELECT ?, ?, ?, ?
+      sql: `INSERT OR IGNORE INTO RegistryItem (id, name, url, sortOrder, itemType, description, status)
+            SELECT ?, ?, ?, ?, ?, ?, ?
             WHERE NOT EXISTS (
               SELECT 1 FROM RegistryItem WHERE name = ?
             )`,
@@ -150,6 +153,9 @@ async function main() {
         item.name,
         item.url,
         item.sortOrder,
+        item.itemType,
+        item.description,
+        item.status,
         item.name,
       ],
     });
@@ -500,6 +506,11 @@ async function main() {
       key: "massEmailEnabled",
       enabled: 1,
       description: "Enable mass email campaigns",
+    },
+    {
+      key: "registryPageEnabled",
+      enabled: 1,
+      description: "Show the Registry page with gift registry links",
     },
   ];
 
