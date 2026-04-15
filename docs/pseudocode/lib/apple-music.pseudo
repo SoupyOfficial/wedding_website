@@ -1,0 +1,46 @@
+// lib/apple-music.ts
+// Purpose: Apple Music API integration for playlist import to DJ list
+
+CACHED TOKEN: module-level variable, regenerated when expired
+
+getAppleMusicToken() → string (JWT)
+  IF cached token not expired (6 months - 5 min buffer) → return cached
+  ELSE:
+    Sign JWT with ES256 algorithm:
+      iss: APPLE_MUSIC_TEAM_ID
+      iat: now
+      exp: now + 6 months
+      key: APPLE_MUSIC_PRIVATE_KEY (PEM, replace \\n with newlines)
+      kid: APPLE_MUSIC_KEY_ID header
+    Cache token + expiry
+    return token
+
+parsePlaylistUrl(url) → { storefront, playlistId } | null
+  Regex match: https://music.apple.com/{storefront}/playlist/{name}/pl.{id}
+  Return extracted parts or null if no match
+
+fetchPlaylist(storefront, playlistId) → PlaylistInfo
+  token = getAppleMusicToken()
+  url = https://api.music.apple.com/v1/catalog/{storefront}/playlists/{playlistId}?include=tracks
+
+  LOOP (pagination):
+    fetch url with Authorization: Bearer {token}
+    extract playlist name, description, curator from first response
+    map each track → PlaylistTrack via formatTrack()
+    IF response has data.relationships.tracks.next → fetch next page
+    ELSE → break
+
+  return { name, description, curatorName, tracks[] }
+
+formatTrack(trackData) → PlaylistTrack
+  Extract: songName (name), artist (artistName), album (albumName)
+  artworkUrl: replace {w}x{h} template with "200x200" 
+  previewUrl: first preview URL if available
+  durationMs: from attributes.durationInMillis
+
+isAppleMusicConfigured() → boolean
+  return all 3 env vars present: TEAM_ID, KEY_ID, PRIVATE_KEY
+
+TYPES:
+  PlaylistTrack = { songName, artist, album, durationMs, artworkUrl?, previewUrl? }
+  PlaylistInfo  = { name, description?, curatorName?, tracks: PlaylistTrack[] }

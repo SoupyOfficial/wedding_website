@@ -13,7 +13,8 @@
     "hooks:install": "cp scripts/git-hooks/pre-push .git/hooks/pre-push && chmod +x .git/hooks/pre-push",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "generate:types": "tsx scripts/generate-db-types.ts"
   },
   "dependencies": {
     "@libsql/client": "^0.17.0",

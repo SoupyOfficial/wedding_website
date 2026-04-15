@@ -1,0 +1,89 @@
+// lib/db.ts
+// Purpose: SQLite/Turso connection singleton + query helpers
+
+CONNECTION:
+  singleton client in dev (reused across hot reloads via globalThis)
+  new client per request in prod (serverless-safe)
+  URL priority: TURSO_DATABASE_URL → DATABASE_URL → "file:local.db"
+  optional authToken for Turso cloud
+
+EXPORTS:
+
+  query<T>(sql, args?) → T[]
+    Execute SELECT, map result.rows to plain objects using column names
+    // COMPLEXITY: manual column→property mapping because libsql returns Row objects
+
+  queryOne<T>(sql, args?) → T | null
+    Call query<T>, return first row or null
+
+  execute(sql, args?) → { rowsAffected, lastInsertRowid }
+    Execute INSERT/UPDATE/DELETE mutations
+
+  generateId() → string
+    crypto.randomUUID() — replaces Prisma's cuid() auto-generation
+
+  now() → string
+    new Date().toISOString() — replaces Prisma's @default(now())
+
+  toBool<T>(row, ...fieldNames) → T
+    For each field: convert 0/1 integer to JS boolean
+    // COMPLEXITY FLAG: needed because SQLite has no boolean type
+    // Every query result must call this with the right field list
+    // Error-prone: wrong field list = wrong booleans, no compile-time check
+
+  toBoolAll<T>(rows, ...fieldNames) → T[]
+    Apply toBool to every row in array
+
+  isUniqueViolation(error) → boolean
+    Check error.message contains "UNIQUE constraint failed"
+
+
+// ─── lib/db-types.ts ────────────────────────────────────────────────
+// Purpose: TypeScript interfaces for all 20 DB models
+// ~300 lines manually maintained — mirrors prisma/schema.prisma
+
+INTERFACES:
+  SiteSettings    // 49 fields — singleton config for entire site
+  Guest           // RSVP attendee with meal, dietary, plus-one, song request
+  WeddingPartyMember  // bridal party: name, role, side, bio, photo
+  TimelineEvent   // wedding day schedule items
+  Hotel           // accommodation options
+  RegistryItem    // store links, product tracking, fund goals
+  FAQ             // question/answer pairs
+  Photo           // uploaded images with approval workflow
+  PhotoTag        // categorization tags (many-to-many with Photo)
+  Entertainment   // event activities
+  GuestBookEntry  // signed messages
+  MealOption      // meal choices with dietary flags
+  SongRequest     // music requests with artwork
+  DJList          // must-play / do-not-play tracks
+  FeatureFlag     // runtime toggles
+  ContactMessage  // form submissions
+  EmailTemplate, EmailCampaign, EmailLog  // email system (partially implemented)
+  RegistryContribution  // fund/product contributions
+  WebhookLog, IntegrationConfig, AdminActivityLog  // system logging
+
+BOOLEAN FIELD CONSTANTS:
+  SETTINGS_BOOLS  = [rsvpEnabled, sitePasswordEnabled, notifyOnRsvp, bannerActive, ...]
+  GUEST_BOOLS     = [isPlusOneAllowed, hasPlusOne]
+  FAQ_BOOLS       = [isVisible]
+  MEAL_BOOLS      = [isVegetarian, isVegan, isGlutenFree, isAvailable]
+  SONG_BOOLS      = [approved, isVisible]
+  GUESTBOOK_BOOLS = [isVisible]
+  MESSAGE_BOOLS   = [isRead]
+  PHOTO_BOOLS     = [approved]
+
+// SIMPLIFICATION: These constants + interfaces duplicate schema.prisma
+// Could auto-generate from Prisma schema to eliminate drift risk
+
+
+// ─── lib/constants.ts ───────────────────────────────────────────────
+// Purpose: Shared enum-like constants for forms and validation
+
+PLAY_TIME_OPTIONS = [Anytime, Ceremony, Cocktail Hour, Dinner, First Dance,
+                     Father-Daughter, Mother-Son, Bouquet Toss, Garter Toss,
+                     Cake Cutting, Party Time, Last Song, Send Off]
+
+DJ_LIST_TYPES      = ["must-play", "do-not-play"]
+RSVP_STATUSES      = ["pending", "attending", "declined"]
+TIMELINE_EVENT_TYPES = ["wedding-day", "pre-wedding", "post-wedding"]

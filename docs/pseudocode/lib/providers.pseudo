@@ -1,0 +1,71 @@
+// lib/providers/
+// Purpose: Swappable backend implementations for storage and email
+
+// ─── Factory & Registry (index.ts) ─────────────────────────────────
+
+providers = Map { storage → instance, email → instance }
+
+createStorageProvider():
+  IF env.STORAGE_PROVIDER === "cloudinary" → new CloudinaryStorageProvider()
+  ELSE → new LocalStorageProvider()
+
+getProvider(key) → provider instance from map
+registerProvider(key, provider) → override in map (used for testing)
+
+
+// ─── IStorageProvider (interface) ───────────────────────────────────
+
+  upload(file: Buffer, filename, options?) → { key, url, size, contentType }
+  delete(key) → void
+  getUrl(key) → string
+  list(prefix?) → StorageResult[]
+
+
+// ─── LocalStorageProvider ───────────────────────────────────────────
+// Writes to: public/uploads/{category}/{filename-timestamp}.ext
+
+  constructor: checks fs.accessSync for write permission
+    // Throws if read-only filesystem (e.g., Vercel serverless)
+
+  upload(file, filename, opts):
+    dir = public/uploads/{opts.category || "general"}
+    ensure directory exists (mkdirSync recursive)
+    write file (writeFileSync)
+    return { key: relative path, url: /uploads/..., size, contentType }
+
+  delete(key): fs.unlinkSync(public/{key})
+  getUrl(key): return /{key}
+  list(prefix): fs.readdirSync, map to StorageResult[]
+
+
+// ─── CloudinaryStorageProvider ──────────────────────────────────────
+// Requires: CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET
+
+  constructor: cloudinary.config() with env vars
+
+  upload(file, filename, opts):
+    folder = "wedding/{opts.category || 'general'}"
+    stream upload with transforms: { width: 2048 max, quality: auto, format: auto }
+    return { key: public_id, url: secure_url, size, contentType }
+
+  delete(key): cloudinary.uploader.destroy(key)
+  getUrl(key): cloudinary URL with auto transforms
+  list(prefix): cloudinary.api.resources({ prefix })
+
+
+// ─── IEmailProvider (interface) ──────────────────────────────────────
+
+  send({ to, subject, html, text?, from?, replyTo? }) → { success, messageId?, error? }
+  sendBatch(options[]) → results[]
+  isConfigured() → boolean
+
+
+// ─── NoopEmailProvider ──────────────────────────────────────────────
+// Dev/placeholder — logs to console, never actually sends
+
+  send(options): console.log the email, return { success: true, messageId: "noop-{ts}" }
+  sendBatch(options): map each through send()
+  isConfigured(): return false
+
+// SIMPLIFICATION: No real email provider exists. If mass email isn't planned,
+// the entire email provider system + EmailTemplate/Campaign models could be removed.

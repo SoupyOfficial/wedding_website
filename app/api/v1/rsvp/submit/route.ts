@@ -1,6 +1,5 @@
 import { NextRequest } from "next/server";
 import { queryOne, execute, generateId, now, toBool } from "@/lib/db";
-import { eventBus } from "@/lib/events/event-bus";
 import { rateLimit } from "@/lib/api/middleware";
 import { successResponse, errorResponse } from "@/lib/api";
 import { getFeatureFlag } from "@/lib/config/feature-flags";
@@ -72,13 +71,6 @@ export async function POST(req: NextRequest) {
         [generateId(), songRequest, songArtist || "", `${guest.firstName} ${guest.lastName}`, now()]
       );
     }
-
-    // Emit event
-    eventBus.emit("rsvp:submitted", {
-      guestId: guest.id,
-      status: rsvpStatus,
-      guestName: `${guest.firstName} ${guest.lastName}`,
-    });
 
     return successResponse({
       guest: {

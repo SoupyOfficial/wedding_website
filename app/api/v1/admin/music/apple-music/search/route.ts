@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { successResponse, errorResponse } from "@/lib/api";
+import { searchItunes } from "@/lib/itunes-search";
 
 export const dynamic = "force-dynamic";
 
@@ -9,55 +9,10 @@ export const dynamic = "force-dynamic";
  * No Apple Developer credentials needed — this is a free public API.
  */
 export async function GET(req: NextRequest) {
-  const q = req.nextUrl.searchParams.get("q");
-  const limit = req.nextUrl.searchParams.get("limit") || "10";
-
-  if (!q || q.trim().length < 2) {
-    return successResponse([]);
-  }
-
-  try {
-    const params = new URLSearchParams({
-      term: q.trim(),
-      media: "music",
-      entity: "song",
-      limit,
-    });
-
-    const res = await fetch(
-      `https://itunes.apple.com/search?${params.toString()}`,
-      { next: { revalidate: 300 } } // Cache for 5 minutes
-    );
-
-    if (!res.ok) {
-      return errorResponse("iTunes API error", 502);
-    }
-
-    const data = await res.json();
-
-    const results = (data.results || []).map(
-      (item: {
-        trackId: number;
-        trackName: string;
-        artistName: string;
-        collectionName: string;
-        trackTimeMillis: number;
-        artworkUrl100: string;
-        previewUrl: string;
-      }) => ({
-        id: item.trackId,
-        songName: item.trackName,
-        artist: item.artistName,
-        album: item.collectionName,
-        durationMs: item.trackTimeMillis,
-        artworkUrl: item.artworkUrl100,
-        previewUrl: item.previewUrl,
-      })
-    );
-
-    return successResponse(results);
-  } catch (error) {
-    console.error("Failed to search iTunes:", error);
-    return errorResponse("Failed to search iTunes", 500);
-  }
+  return searchItunes({
+    query: req.nextUrl.searchParams.get("q"),
+    limit: req.nextUrl.searchParams.get("limit") || undefined,
+    defaultLimit: "10",
+    errorLabel: "iTunes",
+  });
 }

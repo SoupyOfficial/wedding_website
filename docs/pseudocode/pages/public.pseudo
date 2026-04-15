@@ -1,0 +1,272 @@
+// app/(public)/ — Public Pages
+// Purpose: Guest-facing pages, mix of server components (data fetch) and client components (interactivity)
+
+// ═══════════════════════════════════════════════════════════════════
+// LAYOUTS
+// ═══════════════════════════════════════════════════════════════════
+
+// Root Layout (app/layout.tsx):
+//   Fonts: Playfair Display (serif headings), Inter (sans body)
+//   Metadata: SEO title template, OG/Twitter cards
+//   Vercel Analytics
+//   Children wrapped in <html> with font CSS variables
+
+// Public Layout (app/(public)/layout.tsx):
+//   Server component: parallel fetch SiteSettings + FeatureFlags
+//   Renders: StarrySky → AnnouncementBanner → Navigation → {children} → Footer
+//   force-dynamic: no static caching (settings can change anytime)
+
+// Error Page (app/error.tsx):
+//   Client error boundary: starry background, error message, Try Again + Home buttons
+//   Logs error to console
+
+// 404 (app/not-found.tsx):
+//   "Lost Among the Stars" themed 404 with links to Home + RSVP
+
+
+// ═══════════════════════════════════════════════════════════════════
+// HOME PAGE — app/(public)/page.tsx (Server)
+// ═══════════════════════════════════════════════════════════════════
+
+LOAD:
+  settings = queryOne SiteSettings
+  isPostWedding = parse(weddingDate) < now
+
+RENDER:
+  Hero section:
+    Moon decoration (gradient circle)
+    Split coupleName by "&" → two styled names
+    Venue name + location
+    Hero tagline from settings
+
+  SectionDivider
+
+  IF pre-wedding:
+    CountdownTimer targeting weddingDate
+    preWebContent from settings
+    CTA: "RSVP Now" button → /rsvp
+  
+  IF post-wedding:
+    postWeddingMessage from settings
+    postWebContent from settings  
+    CTA: "View Photos" button → /gallery
+
+  Hashtag display (#{hashtag})
+  "Explore" CTA → /our-story
+  Scroll indicator arrow
+
+
+// ═══════════════════════════════════════════════════════════════════
+// RSVP — app/(public)/rsvp/ (Server gate + Client form)
+// ═══════════════════════════════════════════════════════════════════
+
+page.tsx (Server):
+  gate = checkFeatureFlag("rsvpEnabled") → return <PageDisabled /> if off
+  render <RsvpClient />
+
+RsvpClient.tsx (Client):
+  STEPS: lookup → review → submit → confirmation
+
+  Step 1 — LOOKUP:
+    Input: full name
+    Submit → GET /api/v1/rsvp/lookup?name={name}
+    Result: guest object + mealOptions[]
+
+  Step 2 — REVIEW & FORM:
+    Display: guest name, current status
+    Form: attending (yes/no), email, phone, dietary notes
+    IF attending:
+      meal selection (from mealOptions)
+      plus-one name (if isPlusOneAllowed)
+      song request + artist (optional)
+
+  Step 3 — SUBMIT:
+    POST /api/v1/rsvp/submit with form data
+    Show confirmation: "Thank you for your RSVP"
+    Display submitted details summary
+
+
+// ═══════════════════════════════════════════════════════════════════
+// MUSIC — app/(public)/music/ (Server gate + Client)
+// ═══════════════════════════════════════════════════════════════════
+
+page.tsx: gate musicPageEnabled → render <MusicClient />
+
+MusicClient.tsx (Client):
+  STATE: searchQuery, searchResults, songRequests, loading
+
+  SECTIONS:
+    1. Song Request Form:
+       Search input → GET /api/v1/music/search?q={query}
+       Results list: click to select → auto-fill title + artist + artwork
+       Guest name input
+       Submit → POST /api/v1/music/requests
+
+    2. Approved Requests Display:
+       Fetch GET /api/v1/music/requests on mount
+       Grid of approved songs with artwork, title, artist, guest name
+
+    3. DJ Playlist Display:
+       Fetch GET /api/v1/music/dj-playlist
+       Two sections: must-play, do-not-play
+
+
+// ═══════════════════════════════════════════════════════════════════
+// GALLERY — app/(public)/gallery/ (Server data + Client filter)
+// ═══════════════════════════════════════════════════════════════════
+
+page.tsx (Server):
+  gate: galleryPageEnabled
+  photos = query Photo WHERE approved = 1 ORDER BY createdAt DESC
+  tags = query PhotoTag with photo counts (LEFT JOIN aggregation)
+  Build tagsMap: photoId → tag[] from junction table
+  render <GalleryClient photos={photos} tags={tags} />
+
+GalleryClient.tsx (Client):
+  STATE: activeFilter, lightboxPhoto
+
+  FilterBar: "All" + each tag name with photo count
+  Photo grid: masonry-style, filtered by active tag
+  Click photo → lightbox modal (full size, caption, navigation)
+  Upload CTA card → links to /photos-of-us
+
+
+// ═══════════════════════════════════════════════════════════════════
+// OUR STORY — app/(public)/our-story/ (Server)
+// ═══════════════════════════════════════════════════════════════════
+
+page.tsx (Server):
+  gate: ourStoryPageEnabled
+  settings = query ourStoryContent from SiteSettings
+  photos = query Photo WHERE category = "our-story" ORDER BY sortOrder
+
+  RENDER:
+    PageHeader
+    Rich HTML content from ourStoryContent (sanitizeHtml applied)
+    Photo timeline: alternating left/right layout with centered timeline dots
+    Each photo: image + caption, connected by vertical timeline line
+
+
+// ═══════════════════════════════════════════════════════════════════
+// EVENT DETAILS — app/(public)/event-details/ (Server)
+// ═══════════════════════════════════════════════════════════════════
+
+page.tsx (Server):
+  gate: eventDetailsPageEnabled
+  settings = query SiteSettings (venue, time, dress code, etc.)
+  events = query TimelineEvent WHERE eventType = "wedding-day" ORDER BY sortOrder, time
+
+  RENDER:
+    Ceremony card: venue name, address, time, map link
+    Reception card: if different venue
+    
+    Day-of timeline:
+      Vertical line with icons and times
+      Each event: icon → time → title → description
+    
+    Info cards grid:
+      RSVP deadline
+      Dress code
+      Parking / transportation
+      Children policy
+      "Unplugged ceremony" notice
+      Weather preview (link to travel page)
+
+
+// ═══════════════════════════════════════════════════════════════════
+// TRAVEL & STAY — app/(public)/travel/ (Server)
+// COMPLEXITY: Largest page, ~500 lines of venue-specific hardcoded content
+// ═══════════════════════════════════════════════════════════════════
+
+page.tsx (Server):
+  gate: travelPageEnabled
+  hotels = query Hotel ORDER BY sortOrder
+  settings = query SiteSettings (raffleTicketCount)
+
+  RENDER:
+    Hotels grid:
+      Each: name, address, phone, website, booking link
+      Block code + deadline display
+      Amenities list, price range, distance from venue
+
+    Getting There section (HARDCODED for Orlando, FL):
+      Airports: MCO (primary), SFB (secondary) with descriptions
+      Ground transport: rental car, rideshare, shuttle, SunRail
+      Driving directions to venue
+
+    Weather Forecast:
+      <WeatherForecast /> component
+
+    Things To Do (HARDCODED for Central FL):
+      Theme parks: Universal (featured), Disney, SeaWorld, LEGOLAND
+      Activities: TopGolf, outlets, springs, kayaking
+      Dining: local restaurant recommendations
+      Attractions: museums, gardens, wine bars, Winter Park
+
+    Raffle section:
+      IF raffleTicketCount > 0 → display Universal tickets giveaway notice
+
+// SIMPLIFICATION: The hardcoded Orlando content should be either:
+// 1. Moved to SiteSettings/DB as configurable content
+// 2. Extracted to a separate config/content file
+// 3. Made admin-editable via rich text fields
+
+
+// ═══════════════════════════════════════════════════════════════════
+// WEDDING PARTY — app/(public)/wedding-party/ (Server)
+// ═══════════════════════════════════════════════════════════════════
+
+page.tsx (Server):
+  gate: weddingPartyPageEnabled
+  members = query WeddingPartyMember ORDER BY side, sortOrder
+
+  GROUP BY:
+    bride main party (side=bride, role NOT junior)
+    bride juniors (side=bride, role=junior)
+    groom main party (side=groom, role NOT junior)
+    groom juniors (side=groom, role=junior)
+    special members (side=special)
+
+  Combined juniors = bride juniors + groom juniors + special juniors
+  Label: "Flower Girls & Ring Bearers"
+
+  RENDER per group:
+    Section header with pluralized role name
+    Card grid: photo (or emoji fallback), name, role, relationship, spouse, bio
+
+
+// ═══════════════════════════════════════════════════════════════════
+// REMAINING PAGES (simpler pattern)
+// ═══════════════════════════════════════════════════════════════════
+
+// FAQ (Server):
+//   gate: faqPageEnabled
+//   faqs = query FAQ WHERE isVisible = 1 ORDER BY sortOrder
+//   Render <details> accordion for each Q&A
+
+// Contact (Server gate + Client form):
+//   gate: contactPageEnabled
+//   ContactClient: name, email, subject, message form → POST /api/v1/contact
+
+// Registry (Server + Client):
+//   items = query RegistryItem WHERE status = "active" ORDER BY sortOrder
+//   Render <RegistryList items={items} /> (handles modal + contribution)
+
+// Entertainment (Server):
+//   gate: entertainmentPageEnabled
+//   items = query Entertainment ORDER BY sortOrder
+//   Grid cards with icon (emoji lookup) + name + description
+
+// Photos of Us (Server gate + Client upload):
+//   gate: photosOfUsPageEnabled
+//   PhotosOfUsClient: file input, caption, name → POST multipart /api/v1/photos/upload
+//   Shows upload progress, success/error states
+
+// Guest Book (Server gate + Client):
+//   gate: guestBookEnabled
+//   GuestBookClient: fetch entries (GET), entry form (POST /api/v1/guestbook)
+//   Real-time display of approved entries + "pending review" notice for new
+
+// Site Password (standalone, not in public layout):
+//   Password input form → POST /api/v1/site-password
+//   On success: sets cookie, redirects to home

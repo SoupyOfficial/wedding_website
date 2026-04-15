@@ -1,0 +1,71 @@
+// lib/events/
+// Purpose: In-process pub/sub event bus for decoupled side effects
+
+// ─── EventBus (singleton) ──────────────────────────────────────────
+
+CLASS EventBus:
+  handlers = Map<string, Set<handler>>
+
+  on<T>(event, handler) → unsubscribe function
+    add handler to set for event
+    return () => set.delete(handler)
+
+  emit<T>(event, payload) → void
+    get all handlers for event
+    Promise.all(handlers.map(h => h(payload)))
+    catch: log error per handler, don't propagate
+
+  off(event): delete all handlers for event
+  listenerCount(event): return handler set size
+
+SINGLETON: export const eventBus = new EventBus()
+
+// ─── Event Payload Types ────────────────────────────────────────────
+
+RsvpSubmittedPayload  = { guestId, status, guestName, details }
+GuestCreatedPayload   = { guestId, firstName, lastName }
+PhotoUploadedPayload  = { photoId, category, url }
+SettingsUpdatedPayload = { changedFields: string[] }
+GuestBookSignedPayload = { entryId, name, message }
+
+// COMPLEXITY FLAG: Events are emitted from API routes but it's unclear
+// where subscribers are registered. On serverless (Vercel), the singleton
+// may not persist between requests, making subscribers unreliable.
+
+
+// ─── lib/hooks/ ─────────────────────────────────────────────────────
+// Purpose: React hooks for client-side data fetching
+
+useAdminFetch<T>(url) → { data: T[], loading, error, refetch, setData }
+  useState for data, loading, error
+  refetch = async fetch(url) → parse response.data as T[]
+  useEffect on mount: call refetch
+  // Pattern: all admin pages use this for initial data load
+
+useAdminFetchRaw<T>(url) → { data: T | null, loading, error, refetch, setData }
+  Same as above but expects single object instead of array
+  // Used for: settings, single-entity fetches
+
+useAdminMultiFetch<T>(endpoints: Record<key, url>) → { data: Record<key, T[]>, loading, refetch }
+  Promise.all to fetch multiple endpoints in parallel
+  // Used for: dashboard stats, pages needing multiple data sources
+
+usePublicSettings() → { settings: PublicSettings | null, loading }
+  Fetches /api/v1/settings/public on mount
+  Caches in state, doesn't refetch unless remount
+  // Used by: client components needing couple name, venue, hashtag, etc.
+
+
+// ─── lib/api/ ───────────────────────────────────────────────────────
+// Purpose: Shared API route utilities
+
+successResponse<T>(data, meta?, status=200) → NextResponse.json({ success: true, data, meta? })
+errorResponse(error, status=400, code?) → NextResponse.json({ success: false, error, code? })
+
+rateLimit({ windowMs, maxRequests }) → middleware function
+  Track requests per IP+path in Map<string, { count, resetTime }>
+  IF count > maxRequests AND within window → return 429 error response
+  IF window expired → reset counter
+  ELSE → increment count, return null (proceed)
+  // COMPLEXITY: In-memory map — resets on serverless cold start.
+  // Fine for basic abuse prevention, not a real rate limiter.

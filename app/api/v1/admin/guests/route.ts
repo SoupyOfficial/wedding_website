@@ -1,47 +1,35 @@
-import { NextRequest } from "next/server";
-import { query, queryOne, execute, generateId, now, toBoolAll, toBool } from "@/lib/db";
-import { successResponse, errorResponse } from "@/lib/api";
-import type { Guest } from "@/lib/db-types";
+import { createListHandlers, T } from "@/lib/api/crud-handler";
 import { GUEST_BOOLS } from "@/lib/db-types";
 
+const config = {
+  table: "Guest",
+  label: "Guest",
+  orderBy: "createdAt DESC",
+  boolFields: GUEST_BOOLS,
+  fields: {
+    firstName: { toSql: T.trim },
+    lastName: { toSql: T.trim },
+    email: { toSql: T.nullable },
+    group: { column: '"group"', toSql: T.nullable },
+    plusOneAllowed: { toSql: T.boolInt },
+    phone: { toSql: T.nullable },
+    rsvpStatus: {},
+    plusOneName: { toSql: T.nullable },
+    plusOneAttending: { toSql: T.boolInt },
+    mealPreference: { toSql: T.nullable },
+    dietaryNeeds: { toSql: T.nullable },
+    songRequest: { toSql: T.nullable },
+    childrenCount: {},
+    childrenNames: { toSql: T.nullable },
+    tableNumber: { toSql: T.nullable },
+    notes: { toSql: T.nullable },
+  },
+  postFields: ["firstName", "lastName", "email", "group", "plusOneAllowed"],
+  postDefaults: { rsvpStatus: "pending", plusOneAttending: 0, childrenCount: 0 },
+  required: { fields: ["firstName", "lastName"], message: "Name is required." },
+  timestamps: true,
+};
+
 export const dynamic = "force-dynamic";
-
-export async function GET() {
-  try {
-    const guests = await query<Guest>(
-      "SELECT * FROM Guest ORDER BY createdAt DESC"
-    );
-    toBoolAll(guests, ...GUEST_BOOLS);
-    return successResponse(guests);
-  } catch (error) {
-    console.error("Failed to fetch guests:", error);
-    return errorResponse("Internal server error.", 500);
-  }
-}
-
-export async function POST(req: NextRequest) {
-  try {
-    const body = await req.json();
-    const { firstName, lastName, email, group, plusOneAllowed } = body;
-
-    if (!firstName?.trim() || !lastName?.trim()) {
-      return errorResponse("Name is required.", 400);
-    }
-
-    const id = generateId();
-    const timestamp = now();
-    await execute(
-      `INSERT INTO Guest (id, firstName, lastName, email, "group", rsvpStatus, plusOneAllowed, plusOneAttending, childrenCount, createdAt, updatedAt)
-       VALUES (?, ?, ?, ?, ?, 'pending', ?, 0, 0, ?, ?)`,
-      [id, firstName.trim(), lastName.trim(), email || null, group || null, plusOneAllowed ? 1 : 0, timestamp, timestamp]
-    );
-
-    const guest = await queryOne<Guest>("SELECT * FROM Guest WHERE id = ?", [id]);
-    if (guest) toBool(guest, ...GUEST_BOOLS);
-
-    return successResponse(guest, undefined, 201);
-  } catch (error) {
-    console.error("Failed to create guest:", error);
-    return errorResponse("Internal server error.", 500);
-  }
-}
+const { GET, POST } = createListHandlers(config);
+export { GET, POST };

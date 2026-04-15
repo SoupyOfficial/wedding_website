@@ -5,6 +5,16 @@ import { checkFeatureFlag } from "@/lib/feature-gate";
 import SectionDivider from "@/components/SectionDivider";
 import { PageHeader } from "@/components/ui";
 import WeatherForecast from "@/components/WeatherForecast";
+import {
+  airports,
+  groundTransport,
+  railAndDriving,
+  DEFAULT_PARKING_INFO,
+  featuredPark,
+  themeParks,
+  restaurants,
+  localActivities,
+} from "@/lib/config/travel-content";
 
 export const metadata = {
   title: "Travel & Stay",
@@ -25,6 +35,7 @@ export default async function TravelPage() {
   );
 
   const raffleTicketCount = settings?.raffleTicketCount ?? 2;
+  const parkingInfo = settings?.parkingInfo || DEFAULT_PARKING_INFO;
 
   return (
     <div className="pt-8 pb-16">
@@ -150,36 +161,19 @@ export default async function TravelPage() {
           <div className="mb-8">
             <h3 className="text-gold font-serif text-xl text-center mb-4">✈️ Airports</h3>
             <div className="grid md:grid-cols-2 gap-6">
-              <div className="card-celestial">
-                <h4 className="text-gold font-serif text-lg mb-2">
-                  Orlando International Airport (MCO)
-                </h4>
-                <p className="text-ivory/50 text-xs uppercase tracking-wider mb-2">
-                  Recommended — Most Flights
-                </p>
-                <ul className="text-ivory/70 space-y-1.5 text-sm">
-                  <li>• ~35 minutes from the venue</li>
-                  <li>• Major hub with direct flights from most U.S. cities</li>
-                  <li>• All major airlines (Delta, United, American, Southwest, JetBlue, Spirit, Frontier)</li>
-                  <li>• Car rental counters on-site at the terminal</li>
-                  <li>• Rideshare pickup at Level 2 of the terminal garages</li>
-                </ul>
-              </div>
-              <div className="card-celestial">
-                <h4 className="text-gold font-serif text-lg mb-2">
-                  Orlando Sanford International (SFB)
-                </h4>
-                <p className="text-ivory/50 text-xs uppercase tracking-wider mb-2">
-                  Budget-Friendly Alternative
-                </p>
-                <ul className="text-ivory/70 space-y-1.5 text-sm">
-                  <li>• ~40 minutes from the venue</li>
-                  <li>• Smaller, less crowded airport</li>
-                  <li>• Budget carriers (Allegiant Air, international charters)</li>
-                  <li>• Fewer rental car options — book in advance</li>
-                  <li>• Good option if coming from smaller regional airports</li>
-                </ul>
-              </div>
+              {airports.map((airport) => (
+                <div key={airport.code} className="card-celestial">
+                  <h4 className="text-gold font-serif text-lg mb-2">{airport.name}</h4>
+                  <p className="text-ivory/50 text-xs uppercase tracking-wider mb-2">
+                    {airport.subtitle}
+                  </p>
+                  <ul className="text-ivory/70 space-y-1.5 text-sm">
+                    {airport.details.map((d, i) => (
+                      <li key={i}>• {d}</li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
             </div>
           </div>
 
@@ -187,39 +181,17 @@ export default async function TravelPage() {
           <div className="mb-8">
             <h3 className="text-gold font-serif text-xl text-center mb-4">🚗 Ground Transportation</h3>
             <div className="grid md:grid-cols-3 gap-6">
-              <div className="card-celestial">
-                <h4 className="text-gold font-serif text-lg mb-2">Rental Cars</h4>
-                <p className="text-ivory/70 text-sm mb-2">
-                  Highly recommended for getting around Orlando. The venue and most attractions require driving.
-                </p>
-                <ul className="text-ivory/60 space-y-1 text-sm">
-                  <li>• Available at both airports</li>
-                  <li>• Enterprise, Hertz, National, Budget, Avis</li>
-                  <li>• Free parking available at the venue</li>
-                </ul>
-              </div>
-              <div className="card-celestial">
-                <h4 className="text-gold font-serif text-lg mb-2">Rideshare</h4>
-                <p className="text-ivory/70 text-sm mb-2">
-                  Uber and Lyft are widely available throughout Orlando and surrounding areas.
-                </p>
-                <ul className="text-ivory/60 space-y-1 text-sm">
-                  <li>• Airport to venue: ~$25–40</li>
-                  <li>• Available 24/7</li>
-                  <li>• Great for evenings out or the wedding itself</li>
-                </ul>
-              </div>
-              <div className="card-celestial">
-                <h4 className="text-gold font-serif text-lg mb-2">Shuttle & Taxi</h4>
-                <p className="text-ivory/70 text-sm mb-2">
-                  Hotel shuttles and taxi services are also available options.
-                </p>
-                <ul className="text-ivory/60 space-y-1 text-sm">
-                  <li>• Many hotels offer complimentary airport shuttles</li>
-                  <li>• Mears Transportation for pre-booked shuttles</li>
-                  <li>• Taxis available at airport taxi stands</li>
-                </ul>
-              </div>
+              {groundTransport.map((opt) => (
+                <div key={opt.name} className="card-celestial">
+                  <h4 className="text-gold font-serif text-lg mb-2">{opt.name}</h4>
+                  <p className="text-ivory/70 text-sm mb-2">{opt.description}</p>
+                  <ul className="text-ivory/60 space-y-1 text-sm">
+                    {opt.details.map((d, i) => (
+                      <li key={i}>• {d}</li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
             </div>
           </div>
 
@@ -227,32 +199,22 @@ export default async function TravelPage() {
           <div>
             <h3 className="text-gold font-serif text-xl text-center mb-4">🚄 Rail & Driving</h3>
             <div className="grid md:grid-cols-2 gap-6">
-              <div className="card-celestial">
-                <h4 className="text-gold font-serif text-lg mb-2">Brightline High-Speed Rail</h4>
-                <p className="text-ivory/70 text-sm mb-2">
-                  Florida&apos;s high-speed rail service connects South Florida to Orlando in comfort and style.
-                </p>
-                <ul className="text-ivory/60 space-y-1 text-sm">
-                  <li>• Stations: Miami, Fort Lauderdale, Aventura, Boca Raton, West Palm Beach → Orlando</li>
-                  <li>• Orlando station at the airport (MCO)</li>
-                  <li>• Travel time: ~3–3.5 hours from Miami</li>
-                  <li>• Smart (economy) and Premium class seating</li>
-                  <li>• Book at <span className="text-gold/80">gobrightline.com</span></li>
-                </ul>
-              </div>
-              <div className="card-celestial">
-                <h4 className="text-gold font-serif text-lg mb-2">Driving Directions</h4>
-                <p className="text-ivory/70 text-sm mb-2">
-                  Orlando is centrally located in Florida and easily accessible by car.
-                </p>
-                <ul className="text-ivory/60 space-y-1 text-sm">
-                  <li>• From Miami: ~3.5 hours via Florida&apos;s Turnpike</li>
-                  <li>• From Tampa: ~1.5 hours via I-4 East</li>
-                  <li>• From Jacksonville: ~2 hours via I-95 South → I-4 West</li>
-                  <li>• Key highways near the venue: I-4, FL-429, US-441</li>
-                  <li>• {settings?.parkingInfo || "Free parking is available on-site at the venue"}</li>
-                </ul>
-              </div>
+              {railAndDriving.map((opt) => (
+                <div key={opt.name} className="card-celestial">
+                  <h4 className="text-gold font-serif text-lg mb-2">{opt.name}</h4>
+                  <p className="text-ivory/70 text-sm mb-2">{opt.description}</p>
+                  <ul className="text-ivory/60 space-y-1 text-sm">
+                    {opt.details.map((d, i) => (
+                      <li key={i}>• {d.replace("{{parkingInfo}}", parkingInfo)}</li>
+                    ))}
+                  </ul>
+                  {opt.name === "Brightline High-Speed Rail" && (
+                    <p className="text-ivory/60 space-y-1 text-sm mt-1">
+                      • Book at <span className="text-gold/80">gobrightline.com</span>
+                    </p>
+                  )}
+                </div>
+              ))}
             </div>
           </div>
         </div>
@@ -290,34 +252,25 @@ export default async function TravelPage() {
               </div>
               <div className="flex flex-col md:flex-row gap-6">
                 <div className="flex-1">
-                  <div className="text-4xl mb-3">🎢</div>
+                  <div className="text-4xl mb-3">{featuredPark.icon}</div>
                   <h3 className="text-gold font-serif text-2xl mb-2">
-                    Universal Orlando Resort
+                    {featuredPark.name}
                   </h3>
                   <p className="text-ivory/70 text-sm mb-4">
-                    Home to some of the most thrilling rides and immersive experiences in the world.
-                    With three incredible theme parks, there&apos;s something for everyone — from
-                    The Wizarding World of Harry Potter to epic roller coasters and brand-new worlds to explore.
+                    {featuredPark.description}
                   </p>
                   <div className="grid sm:grid-cols-3 gap-3 mb-4">
-                    <div className="bg-royal/30 rounded-lg p-3 text-center">
-                      <p className="text-gold font-serif text-sm font-bold">Universal Studios</p>
-                      <p className="text-ivory/50 text-xs mt-1">Movies come to life — rides, shows, & Diagon Alley</p>
-                    </div>
-                    <div className="bg-royal/30 rounded-lg p-3 text-center">
-                      <p className="text-gold font-serif text-sm font-bold">Islands of Adventure</p>
-                      <p className="text-ivory/50 text-xs mt-1">Hogwarts, Jurassic World, & thrill rides</p>
-                    </div>
-                    <div className="bg-royal/30 rounded-lg p-3 text-center">
-                      <p className="text-gold font-serif text-sm font-bold">Epic Universe</p>
-                      <p className="text-ivory/50 text-xs mt-1">Brand new park — How to Train Your Dragon, Super Nintendo World, & more</p>
-                    </div>
+                    {featuredPark.subParks.map((sp) => (
+                      <div key={sp.name} className="bg-royal/30 rounded-lg p-3 text-center">
+                        <p className="text-gold font-serif text-sm font-bold">{sp.name}</p>
+                        <p className="text-ivory/50 text-xs mt-1">{sp.description}</p>
+                      </div>
+                    ))}
                   </div>
                   <ul className="text-ivory/60 space-y-1 text-sm mb-4">
-                    <li>• ~30 minutes from the venue</li>
-                    <li>• Multi-day and park-to-park tickets available</li>
-                    <li>• On-site resort hotels with Early Park Admission perks</li>
-                    <li>• CityWalk dining & nightlife included with park admission</li>
+                    {featuredPark.details.map((d, i) => (
+                      <li key={i}>• {d}</li>
+                    ))}
                   </ul>
                 </div>
               </div>
@@ -343,69 +296,14 @@ export default async function TravelPage() {
 
           {/* Other Theme Parks */}
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-            <div className="card-celestial text-center">
-              <div className="text-3xl mb-3">🏰</div>
-              <h3 className="text-gold font-serif text-lg mb-2">
-                Walt Disney World
-              </h3>
-              <p className="text-ivory/60 text-sm mb-2">~30 min from venue</p>
-              <p className="text-ivory/50 text-xs">
-                Four theme parks — Magic Kingdom, EPCOT, Hollywood Studios, and Animal Kingdom.
-                Plus Disney Springs for shopping & dining.
-              </p>
-            </div>
-            <div className="card-celestial text-center">
-              <div className="text-3xl mb-3">🐬</div>
-              <h3 className="text-gold font-serif text-lg mb-2">
-                SeaWorld Orlando
-              </h3>
-              <p className="text-ivory/60 text-sm mb-2">~35 min from venue</p>
-              <p className="text-ivory/50 text-xs">
-                Marine life encounters, roller coasters, and shows.
-                Also check out Aquatica water park nearby.
-              </p>
-            </div>
-            <div className="card-celestial text-center">
-              <div className="text-3xl mb-3">🌊</div>
-              <h3 className="text-gold font-serif text-lg mb-2">
-                LEGOLAND Florida
-              </h3>
-              <p className="text-ivory/60 text-sm mb-2">~45 min from venue</p>
-              <p className="text-ivory/50 text-xs">
-                Perfect for families with younger kids.
-                Interactive rides, building experiences, and a water park.
-              </p>
-            </div>
-            <div className="card-celestial text-center">
-              <div className="text-3xl mb-3">🏌️</div>
-              <h3 className="text-gold font-serif text-lg mb-2">
-                TopGolf Orlando
-              </h3>
-              <p className="text-ivory/60 text-sm mb-2">~25 min from venue</p>
-              <p className="text-ivory/50 text-xs">
-                High-tech driving range with games, food, drinks, and entertainment for groups.
-              </p>
-            </div>
-            <div className="card-celestial text-center">
-              <div className="text-3xl mb-3">🛍️</div>
-              <h3 className="text-gold font-serif text-lg mb-2">
-                Orlando Premium Outlets
-              </h3>
-              <p className="text-ivory/60 text-sm mb-2">~30 min from venue</p>
-              <p className="text-ivory/50 text-xs">
-                Two locations with 150+ designer and name-brand stores at discounted prices.
-              </p>
-            </div>
-            <div className="card-celestial text-center">
-              <div className="text-3xl mb-3">🌿</div>
-              <h3 className="text-gold font-serif text-lg mb-2">
-                Wekiwa Springs State Park
-              </h3>
-              <p className="text-ivory/60 text-sm mb-2">~15 min from venue</p>
-              <p className="text-ivory/50 text-xs">
-                Natural Florida at its best — crystal-clear springs, kayaking, hiking trails, and wildlife.
-              </p>
-            </div>
+            {themeParks.map((park) => (
+              <div key={park.name} className="card-celestial text-center">
+                <div className="text-3xl mb-3">{park.icon}</div>
+                <h3 className="text-gold font-serif text-lg mb-2">{park.name}</h3>
+                <p className="text-ivory/60 text-sm mb-2">{park.distance}</p>
+                <p className="text-ivory/50 text-xs">{park.description}</p>
+              </div>
+            ))}
           </div>
 
           {/* Dining Near the Venue */}
@@ -415,36 +313,13 @@ export default async function TravelPage() {
               Apopka and the surrounding area have a variety of great restaurants — perfect for pre-wedding dinners, day-after brunch, or a casual bite.
             </p>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <div className="card-celestial">
-                <h4 className="text-gold font-serif text-base mb-1">🥩 The Catfish Place</h4>
-                <p className="text-ivory/50 text-xs mb-1">~10 min · Casual · $$</p>
-                <p className="text-ivory/60 text-xs">A beloved local spot for Southern comfort food — catfish, gator bites, and hush puppies.</p>
-              </div>
-              <div className="card-celestial">
-                <h4 className="text-gold font-serif text-base mb-1">🍕 Ciao Italian Grill</h4>
-                <p className="text-ivory/50 text-xs mb-1">~15 min · Italian · $$</p>
-                <p className="text-ivory/60 text-xs">Cozy Italian restaurant with homemade pastas, wood-fired pizzas, and great wine selections.</p>
-              </div>
-              <div className="card-celestial">
-                <h4 className="text-gold font-serif text-base mb-1">🌮 Hunger Street Tacos</h4>
-                <p className="text-ivory/50 text-xs mb-1">~20 min · Mexican · $</p>
-                <p className="text-ivory/60 text-xs">Trendy taqueria with creative street tacos, fresh guac, and craft margaritas.</p>
-              </div>
-              <div className="card-celestial">
-                <h4 className="text-gold font-serif text-base mb-1">🍳 First Watch</h4>
-                <p className="text-ivory/50 text-xs mb-1">~15 min · Brunch · $$</p>
-                <p className="text-ivory/60 text-xs">Perfect for a morning-after brunch — fresh juices, avocado toast, and egg specialties.</p>
-              </div>
-              <div className="card-celestial">
-                <h4 className="text-gold font-serif text-base mb-1">🍔 4 Rivers Smokehouse</h4>
-                <p className="text-ivory/50 text-xs mb-1">~20 min · BBQ · $$</p>
-                <p className="text-ivory/60 text-xs">Award-winning Central Florida BBQ — brisket, burnt ends, and legendary sides.</p>
-              </div>
-              <div className="card-celestial">
-                <h4 className="text-gold font-serif text-base mb-1">🍣 Dragonfly Robata Grill</h4>
-                <p className="text-ivory/50 text-xs mb-1">~25 min · Sushi/Japanese · $$$</p>
-                <p className="text-ivory/60 text-xs">Upscale Japanese izakaya experience with inventive sushi rolls, small plates, and craft cocktails.</p>
-              </div>
+              {restaurants.map((r) => (
+                <div key={r.name} className="card-celestial">
+                  <h4 className="text-gold font-serif text-base mb-1">{r.icon} {r.name}</h4>
+                  <p className="text-ivory/50 text-xs mb-1">{r.meta}</p>
+                  <p className="text-ivory/60 text-xs">{r.description}</p>
+                </div>
+              ))}
             </div>
           </div>
 
@@ -455,36 +330,13 @@ export default async function TravelPage() {
               Looking for something beyond the parks? Central Florida has plenty to offer.
             </p>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <div className="card-celestial text-center">
-                <div className="text-3xl mb-2">🚣</div>
-                <h4 className="text-gold font-serif text-base mb-1">Kayaking & Paddleboarding</h4>
-                <p className="text-ivory/50 text-xs">Explore the Wekiva River, Rock Springs Run, or King&apos;s Landing — all within 20 minutes of the venue.</p>
-              </div>
-              <div className="card-celestial text-center">
-                <div className="text-3xl mb-2">🏖️</div>
-                <h4 className="text-gold font-serif text-base mb-1">Beach Day Trips</h4>
-                <p className="text-ivory/50 text-xs">New Smyrna Beach and Cocoa Beach are about an hour away — perfect for a quick beach escape.</p>
-              </div>
-              <div className="card-celestial text-center">
-                <div className="text-3xl mb-2">🎨</div>
-                <h4 className="text-gold font-serif text-base mb-1">Orlando Museum of Art</h4>
-                <p className="text-ivory/50 text-xs">Beautiful galleries showcasing American art, plus rotating exhibitions in Loch Haven Park.</p>
-              </div>
-              <div className="card-celestial text-center">
-                <div className="text-3xl mb-2">🌺</div>
-                <h4 className="text-gold font-serif text-base mb-1">Harry P. Leu Gardens</h4>
-                <p className="text-ivory/50 text-xs">50 acres of stunning botanical gardens — a peaceful escape and great for photos.</p>
-              </div>
-              <div className="card-celestial text-center">
-                <div className="text-3xl mb-2">🍷</div>
-                <h4 className="text-gold font-serif text-base mb-1">Wine & Cocktail Bars</h4>
-                <p className="text-ivory/50 text-xs">Check out the bars on Park Avenue in Winter Park or downtown Orlando&apos;s cocktail scene.</p>
-              </div>
-              <div className="card-celestial text-center">
-                <div className="text-3xl mb-2">🏬</div>
-                <h4 className="text-gold font-serif text-base mb-1">Winter Park</h4>
-                <p className="text-ivory/50 text-xs">Charming town with boutique shopping on Park Ave, scenic boat tours, and excellent restaurants.</p>
-              </div>
+              {localActivities.map((a) => (
+                <div key={a.name} className="card-celestial text-center">
+                  <div className="text-3xl mb-2">{a.icon}</div>
+                  <h4 className="text-gold font-serif text-base mb-1">{a.name}</h4>
+                  <p className="text-ivory/50 text-xs">{a.description}</p>
+                </div>
+              ))}
             </div>
           </div>
 

@@ -1,0 +1,224 @@
+// app/admin/ — Admin Dashboard & Management Pages
+// Purpose: Content management for all wedding data
+// All pages are client components (interactivity-heavy CRUD interfaces)
+// Auth enforced at middleware level — all /admin/* requires session
+
+// ═══════════════════════════════════════════════════════════════════
+// ADMIN LAYOUT — app/admin/layout.tsx (Client)
+// ═══════════════════════════════════════════════════════════════════
+
+STATE: isSidebarOpen (mobile), pathname
+
+SIDEBAR (15 nav items):
+  Dashboard       → /admin
+  Guests          → /admin/guests
+  Content         → /admin/content        // Timeline events
+  FAQs            → /admin/faqs
+  Wedding Party   → /admin/wedding-party
+  Photos          → /admin/photos
+  Registry        → /admin/registry
+  Hotels          → /admin/hotels
+  Entertainment   → /admin/entertainment   // labeled "Restaurants" in route
+  Music & DJ      → /admin/music
+  Meals           → /admin/meals
+  Guest Book      → /admin/guest-book
+  Communications  → /admin/communications
+  Features        → /admin/features
+  Settings        → /admin/settings
+
+LAYOUT:
+  IF pathname === "/admin/login" → render children only (no chrome)
+  Desktop: fixed sidebar (w-64) + scrollable main
+  Mobile: hamburger → overlay sidebar
+  Top bar: "Welcome, Admin" + mobile menu toggle
+  Footer: Sign Out button + "View Site →" link
+
+ACTIVE LINK: gold text + tinted background
+
+
+// ═══════════════════════════════════════════════════════════════════
+// DASHBOARD — app/admin/page.tsx (Server)
+// ═══════════════════════════════════════════════════════════════════
+
+QUERIES (parallel):
+  totalGuests     = COUNT(*) from Guest
+  attending       = COUNT(*) WHERE rsvpStatus = "attending"
+  declined        = COUNT(*) WHERE rsvpStatus = "declined"
+  pending         = total - attending - declined
+  photoCount      = COUNT(*) from Photo
+  pendingPhotos   = COUNT(*) WHERE approved = 0
+  guestBookCount  = COUNT(*) from GuestBookEntry
+  pendingGB       = COUNT(*) WHERE isVisible = 0
+  songRequests    = COUNT(*) from SongRequest
+  contactMessages = COUNT(*) from ContactMessage
+  unreadMessages  = COUNT(*) WHERE isRead = 0
+  daysUntilWedding = diff(weddingDate, now)
+
+RENDER:
+  Stats grid (4 cards): Total Guests, Attending ✓, Declined ✗, Pending ⏳
+  
+  RSVP progress bar:
+    Green section (attending%), Red section (declined%), Gray (pending%)
+    Percentage labels
+
+  Quick action cards (4):
+    Photos → /admin/photos (badge: {pendingPhotos} pending)
+    Guest Book → /admin/guest-book
+    Messages → /admin/messages (badge: {unreadMessages} unread)
+    Song Requests → /admin/music
+
+  Overview section:
+    Additional stats (photos, guestbook entries, song requests)
+    Days until wedding countdown
+
+
+// ═══════════════════════════════════════════════════════════════════
+// ADMIN CRUD PAGES — Common Pattern
+// ═══════════════════════════════════════════════════════════════════
+//
+// Nearly all admin sub-pages follow this same structure:
+//
+// 1. useAdminFetch(url) to load data on mount
+// 2. AdminPageHeader with title + "Add New" button
+// 3. Table or card grid displaying items
+// 4. Modal form for create/edit (shared between add + edit)
+// 5. ConfirmButton for delete actions
+// 6. State: editingItem, showForm, formData
+//
+// SIMPLIFICATION: These could share a generic AdminCrudPage component
+// parameterized by: endpoint, columns, form fields, display template
+// ═══════════════════════════════════════════════════════════════════
+
+
+// ─── Guests — app/admin/guests/page.tsx ────────────────────────────
+
+FETCH: useAdminFetch("/api/v1/admin/guests")
+
+FEATURES:
+  Search/filter by name, email, RSVP status, group
+  Table columns: name, group, RSVP status, meal, email, phone
+  Status badges: colored by attending/declined/pending
+  Row actions: edit, delete
+  
+  Add/Edit Modal:
+    firstName, lastName, email, phone, group
+    rsvpStatus dropdown
+    isPlusOneAllowed toggle, plusOneName
+    mealOptionId dropdown
+    dietaryNeeds, songRequest, notes
+    childrenCount, tableNumber
+
+  Bulk stats header: showing counts per status
+
+
+// ─── Content (Timeline) — app/admin/content/page.tsx ───────────────
+
+FETCH: useAdminFetch("/api/v1/admin/content")
+
+DISPLAY: Grouped by eventType (wedding-day, pre, post)
+  Each event: icon, time, title, description
+  Sortable by sortOrder
+
+FORM: title, time, description, icon (emoji picker?), eventType dropdown, sortOrder
+
+
+// ─── Photos — app/admin/photos/page.tsx ────────────────────────────
+
+FETCH: useAdminFetch("/api/v1/admin/photos")
+
+FEATURES:
+  Filter by: approved/pending, category, tag
+  Photo grid with thumbnails
+  Approve/reject toggles (PUT approved field)
+  Edit caption, category
+  Delete with storage cleanup
+  Tag management: create, assign to photos
+
+  Photo Tags sub-section:
+    List tags with photo counts
+    Add new tag: name, type dropdown, color picker
+
+
+// ─── Music & DJ — app/admin/music/page.tsx ─────────────────────────
+
+FETCH: useAdminMultiFetch({ songs: "/admin/music" })
+  // Returns { songRequests[], djList[] }
+
+SECTIONS:
+  Song Requests tab:
+    Table: songTitle, artist, guestName, approved/visible toggles
+    Approve/hide/delete actions
+
+  DJ List tab:
+    FilterBar: must-play, do-not-play
+    Table: songName, artist, playTime
+    Add manually: songName, artist, listType, playTime
+    
+  Apple Music Import:
+    Check configured status (GET ?check=true)
+    URL input → import playlist (POST)
+    Results: playlist name, tracks added/skipped
+
+  Apple Music Search:
+    Search input → GET apple-music/search
+    Results → click to add to DJ list
+
+
+// ─── Settings — app/admin/settings/page.tsx ────────────────────────
+
+FETCH: useAdminFetchRaw("/api/v1/admin/settings")
+
+FORM SECTIONS (tabbed or collapsible):
+  Basic: coupleName, weddingDate, weddingTime
+  Venue: venueName, venueAddress, venueCity, venueState, venueZip, ceremonyVenue
+  Content: heroTagline, preWebContent, postWebContent, postWeddingMessage
+  Our Story: ourStoryContent (rich text editor)
+  Contacts: contactEmail, rsvpContactEmail, accommodationsEmail
+  Social: instagramUrl, facebookUrl, tiktokUrl, hashtag
+  RSVP: rsvpEnabled toggle, rsvpDeadline, childrenPolicy
+  Ceremony: ceremonyType, dressCode
+  Notes: registryNote, entertainmentNote, faqContent
+  Password: sitePasswordEnabled toggle, sitePassword (masked)
+  Banner: bannerActive, bannerText, bannerColor, bannerUrl
+  OG/SEO: ogTitle, ogDescription, ogImageUrl
+  Misc: raffleTicketCount
+
+  Submit → PUT /api/v1/admin/settings
+
+// COMPLEXITY: Single massive form for ~49 fields. Could benefit from
+// splitting into focused sub-pages (General, Content, SEO, Security)
+
+
+// ─── Features — app/admin/features/page.tsx ──────────────────────
+
+FETCH: useAdminFetch("/api/v1/admin/features")
+
+DISPLAY: List of all feature flags with toggle switches
+  Each row: flag key (humanized label), description, enabled toggle
+  Toggle → PUT /api/v1/admin/features { key, enabled }
+
+
+// ─── Remaining CRUD pages (standard pattern) ───────────────────────
+
+// FAQs:         question, answer, isVisible, sortOrder
+// Hotels:       name, address, phone, website, bookingLink, blockCode, blockDeadline,
+//               amenities, priceRange, distance, sortOrder
+// Entertainment: name, description, icon, sortOrder
+// Wedding Party: name, role, side, relation, bio, photoUrl, spouse, sortOrder
+// Meals:        name, description, isVegetarian/Vegan/GlutenFree, isAvailable, sortOrder
+// Registry:     name, url, iconUrl, itemType, price, quantity fields, goalAmount, status, sortOrder
+// Guest Book:   read-only list with approve/hide toggles + delete
+// Communications: email templates + campaigns (partially implemented)
+// Messages:     read-only list with read/unread toggle + delete
+
+
+// ═══════════════════════════════════════════════════════════════════
+// LOGIN — app/admin/login/page.tsx
+// ═══════════════════════════════════════════════════════════════════
+
+RENDER:
+  Standalone page (no admin layout chrome)
+  Email + password form
+  Submit → NextAuth signIn("credentials", { email, password })
+  Redirect to /admin on success
+  Error display on failure

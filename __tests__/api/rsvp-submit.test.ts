@@ -17,13 +17,8 @@ vi.mock("@/lib/api/middleware", () => ({
   rateLimit: () => vi.fn().mockResolvedValue(null),
 }));
 
-vi.mock("@/lib/events/event-bus", () => ({
-  eventBus: { emit: vi.fn() },
-}));
-
 import { queryOne, execute } from "@/lib/db";
 import { getFeatureFlag } from "@/lib/config/feature-flags";
-import { eventBus } from "@/lib/events/event-bus";
 import { POST } from "@/app/api/v1/rsvp/submit/route";
 
 const mockQueryOne = vi.mocked(queryOne);
@@ -60,7 +55,6 @@ describe("POST /api/v1/rsvp/submit", () => {
     const body = await res.json();
     expect(res.status).toBe(200);
     expect(body.data.guest.rsvpStatus).toBe("attending");
-    expect(eventBus.emit).toHaveBeenCalledWith("rsvp:submitted", expect.objectContaining({ guestId: "g1" }));
   });
 
   it("submits RSVP with all optional fields", async () => {

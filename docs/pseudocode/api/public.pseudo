@@ -1,0 +1,278 @@
+// app/api/v1/ — Public API Routes
+// Purpose: Guest-facing endpoints with rate limiting and feature gates
+
+// ═══════════════════════════════════════════════════════════════════
+// GET /api/v1/settings/public
+// Returns non-sensitive site settings for client components
+// ═══════════════════════════════════════════════════════════════════
+
+GET settings/public:
+  row = queryOne("SELECT coupleName, weddingDate, weddingTime, hashtag, venue*,
+                   contactEmail*, socialLinks, tagline, ceremonyType,
+                   registryNote, entertainmentNote, rsvpDeadline, childrenPolicy,
+                   ... FROM SiteSettings LIMIT 1")
+  IF not found → 404
+  toBool(row, ...SETTINGS_BOOLS)
+  return successResponse(row)
+
+
+// ═══════════════════════════════════════════════════════════════════
+// GET /api/v1/rsvp/lookup?name=First+Last
+// Fuzzy guest search by name for RSVP flow
+// Rate limit: 10 req/min
+// ═══════════════════════════════════════════════════════════════════
+
+GET rsvp/lookup:
+  gate: rsvpEnabled feature flag
+  rate limit: 10/min
+
+  name = searchParams.get("name")
+  split into firstName, lastName
+  
+  query Guest WHERE firstName LIKE %first% AND lastName LIKE %last%
+  IF no match → try swapped order (lastName LIKE %first%, firstName LIKE %last%)
+  IF still no match → 404 "Guest not found"
+
+  mealOptions = query all MealOption WHERE isAvailable = 1
+  toBool each meal option (MEAL_BOOLS)
+  
+  return { guest (sanitized), mealOptions }
+
+
+// ═══════════════════════════════════════════════════════════════════
+// POST /api/v1/rsvp/submit
+// Submit RSVP response for a guest
+// Rate limit: 5 req/min
+// ═══════════════════════════════════════════════════════════════════
+
+POST rsvp/submit:
+  gate: rsvpEnabled
+  rate limit: 5/min
+
+  body = { guestId, attending, email?, phone?, dietaryNotes?,
+           plusOneName?, mealOptionId?, songRequest?, songArtist? }
+
+  validate: guestId required, attending is boolean
+  guest = queryOne Guest WHERE id = guestId → 404 if missing
+
+  IF mealOptionId → validate meal option exists
+
+  // Dynamic UPDATE — build SET clause from provided fields
+  UPDATE Guest SET
+    rsvpStatus = attending ? "attending" : "declined"
+    email, phone, dietaryNotes, plusOneName, mealOptionId (if provided)
+    rsvpSubmittedAt = now()
+
+  // Side effect: create song request if attending + song provided
+  IF attending AND songRequest:
+    check duplicate (songTitle + artist case-insensitive)
+    IF new → INSERT SongRequest (approved=0, isVisible=0)
+
+  emit eventBus "rsvp:submitted"
+  return updated guest
+
+
+// ═══════════════════════════════════════════════════════════════════
+// POST /api/v1/contact
+// Submit contact form message
+// Rate limit: 5 req/min
+// ═══════════════════════════════════════════════════════════════════
+
+POST contact:
+  gate: contactPageEnabled
+  rate limit: 5/min
+
+  body = { name, email, subject, message } — all required
+  validate lengths: name(100), email(100), subject(200), message(2000)
+  
+  INSERT ContactMessage { id, name, email, subject, message, isRead=0, createdAt }
+  return 201 "Message sent successfully"
+
+
+// ═══════════════════════════════════════════════════════════════════
+// /api/v1/guestbook — GET list + POST new entry
+// ═══════════════════════════════════════════════════════════════════
+
+GET guestbook:
+  gate: guestBookEnabled
+  query GuestBookEntry WHERE isVisible = 1, ORDER BY createdAt DESC
+  toBoolAll (GUESTBOOK_BOOLS)
+  return entries[]
+
+POST guestbook:
+  gate: guestBookEnabled
+  rate limit: 3/min
+
+  body = { name, message } — required
+  validate lengths: name(100), message(500)
+
+  INSERT GuestBookEntry { id, name, message, isVisible=0, createdAt }
+  // isVisible=0 → requires admin approval before public display
+  emit eventBus "guestbook:signed"
+  return 201 "Thank you for signing"
+
+
+// ═══════════════════════════════════════════════════════════════════
+// GET /api/v1/music/search?q=term&limit=8
+// iTunes search proxy — public song search
+// ═══════════════════════════════════════════════════════════════════
+
+GET music/search:
+  q = searchParams.get("q")
+  limit = searchParams.get("limit") || 8
+
+  fetch https://itunes.apple.com/search?term={q}&media=music&entity=song&limit={limit}
+  
+  normalize results → { id (trackId), songName, artist, album, durationMs, artworkUrl, previewUrl }
+  return results[]
+  // Error: 502 if iTunes unreachable
+
+// DUPLICATION FLAG: This endpoint is nearly identical to admin/music/apple-music/search
+
+
+// ═══════════════════════════════════════════════════════════════════
+// /api/v1/music/requests — GET approved + POST new request
+// ═══════════════════════════════════════════════════════════════════
+
+GET music/requests:
+  gate: songRequestsEnabled
+  query SongRequest WHERE approved = 1 AND isVisible = 1
+  return subset fields: { id, songTitle, artist, artworkUrl, guestName }
+
+POST music/requests:
+  body = { guestName, songTitle, artist?, artworkUrl?, previewUrl? }
+  validate: guestName + songTitle required
+
+  // Duplicate check — case-insensitive title+artist match
+  existing = query WHERE LOWER(songTitle) = LOWER(input) AND LOWER(artist) = LOWER(input)
+  IF exists → 409 "Song already requested"
+
+  INSERT SongRequest { id, guestName, songTitle, artist, artworkUrl, previewUrl,
+                       approved=0, isVisible=0, createdAt }
+  return 201 song request
+
+
+// ═══════════════════════════════════════════════════════════════════
+// GET /api/v1/music/dj-playlist
+// Public DJ playlist display
+// ═══════════════════════════════════════════════════════════════════
+
+GET music/dj-playlist:
+  query DJList ORDER BY listType ASC, songName ASC
+  return { id, songName, artist, listType }
+
+
+// ═══════════════════════════════════════════════════════════════════
+// POST /api/v1/photos/upload
+// Guest photo upload with approval queue
+// Rate limit: 5 req/min
+// ═══════════════════════════════════════════════════════════════════
+
+POST photos/upload:
+  gate: photoUploadEnabled
+  rate limit: 5/min
+
+  formData = await request.formData()
+  file = formData.get("file")
+  caption = formData.get("caption")
+  uploaderName = formData.get("uploaderName")
+  category = formData.get("category") || "guest-uploads"
+
+  VALIDATE:
+    file exists + is File type
+    file.type starts with "image/"
+    file.size <= 10MB
+    extension in [jpg, jpeg, png, gif, webp]
+
+  buffer = Buffer.from(await file.arrayBuffer())
+  provider = getProvider("storage")
+  result = provider.upload(buffer, filename, { category, contentType: file.type })
+
+  INSERT Photo { id, url: result.url, storageKey: result.key, caption,
+                 category, uploadedBy: uploaderName, approved=0, createdAt }
+  // approved=0 → admin must approve before public display
+  return 201 { id, url }
+
+
+// ═══════════════════════════════════════════════════════════════════
+// POST /api/v1/registry/contribute
+// Record a contribution to a registry item
+// ═══════════════════════════════════════════════════════════════════
+
+POST registry/contribute:
+  body = { id, amount, guestName, guestEmail? }
+
+  item = queryOne RegistryItem WHERE id
+  IF not found → 404
+  IF item.status !== "active" → 400 "Item not available"
+
+  TYPE-SPECIFIC VALIDATION:
+    IF fund:
+      remaining = goalAmount - raisedAmount
+      IF amount > remaining → cap to remaining
+      UPDATE RegistryItem SET raisedAmount += amount
+      IF raisedAmount >= goalAmount → SET status = "fulfilled"
+
+    IF product:
+      IF totalBought >= totalNeeded → 400 "Already fulfilled"
+      UPDATE RegistryItem SET totalBought += 1
+      IF totalBought >= totalNeeded → SET status = "fulfilled"
+
+    IF store → 400 "Cannot contribute to store links"
+
+  INSERT RegistryContribution { id, registryItemId, guestName, guestEmail, amount, createdAt }
+  return { success: true }
+
+
+// ═══════════════════════════════════════════════════════════════════
+// GET /api/v1/weather
+// Weather forecast for wedding venue
+// COMPLEXITY: dual-mode (forecast vs historical), WMO codes, hour parsing
+// ═══════════════════════════════════════════════════════════════════
+
+GET weather:
+  HARDCODED: venue = Apopka, FL (lat: 28.6934, lng: -81.5323)
+  weddingDate from SiteSettings
+
+  IF wedding date within 16 days:
+    source = "forecast"
+    fetch Open-Meteo forecast API (hourly + daily)
+    cache: 30 min
+  ELSE:
+    source = "historical"
+    fetch Open-Meteo historical climate API (same day-of-year, last 5 years average)
+    cache: 24 hours
+
+  BUILD hourly[] for 6 AM–11 PM:
+    { time, hour (formatted "3 PM"), temp (°F), feelsLike, humidity, precipProb,
+      precipitation, weatherCode, windSpeed, windGusts, cloudCover, uvIndex }
+
+  BUILD daily:
+    { tempMax, tempMin, precipProbMax, sunrise, sunset, uvIndexMax, weatherCode }
+
+  return { source, weddingDate, venueName, hourly[], daily, lastUpdated }
+
+  HELPERS: weatherCodeToDescription(), weatherCodeToEmoji(), uvLabel()
+  // These map WMO standard codes → human-readable strings + emoji
+
+
+// ═══════════════════════════════════════════════════════════════════
+// POST /api/v1/site-password
+// Validate site-wide access password
+// Rate limit: 5 req/min
+// ═══════════════════════════════════════════════════════════════════
+
+POST site-password:
+  rate limit: 5/min
+
+  body = { password }
+  settings = queryOne SiteSettings
+
+  IF sitePasswordEnabled is false OR sitePassword is empty:
+    → return { verified: true }  // no gate active
+
+  IF password !== settings.sitePassword:
+    → 401 "Incorrect password"
+
+  Set cookie: "site-password" = "verified", httpOnly, secure, sameSite=lax, maxAge=30 days
+  return { verified: true }

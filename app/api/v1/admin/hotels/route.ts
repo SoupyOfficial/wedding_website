@@ -1,54 +1,26 @@
-import { NextRequest } from "next/server";
-import { query, queryOne, execute, generateId } from "@/lib/db";
-import { successResponse, errorResponse } from "@/lib/api";
-import type { Hotel } from "@/lib/db-types";
+import { createListHandlers, T } from "@/lib/api/crud-handler";
+
+const config = {
+  table: "Hotel",
+  label: "Hotel",
+  orderBy: "sortOrder ASC",
+  fields: {
+    name: { toSql: T.trim },
+    address: { toSqlCreate: T.str },
+    phone: { toSqlCreate: T.str },
+    website: { toSqlCreate: T.str },
+    bookingLink: { toSqlCreate: T.str },
+    blockCode: { toSqlCreate: T.str },
+    blockDeadline: { toSql: T.date },
+    notes: { toSqlCreate: T.str },
+    distanceFromVenue: { toSqlCreate: T.str },
+    priceRange: { toSqlCreate: T.str },
+    amenities: { toSqlCreate: T.str },
+    sortOrder: { toSqlCreate: T.numDefault(0) },
+  },
+  required: { fields: ["name"], message: "Hotel name is required." },
+};
 
 export const dynamic = "force-dynamic";
-
-export async function GET() {
-  try {
-    const hotels = await query<Hotel>(
-      "SELECT * FROM Hotel ORDER BY sortOrder ASC"
-    );
-    return successResponse(hotels);
-  } catch (error) {
-    console.error("Failed to fetch hotels:", error);
-    return errorResponse("Internal server error.", 500);
-  }
-}
-
-export async function POST(req: NextRequest) {
-  try {
-    const body = await req.json();
-    const { name, address, phone, website, bookingLink, blockCode, blockDeadline, notes, distanceFromVenue, priceRange, amenities, sortOrder } = body;
-
-    if (!name?.trim()) return errorResponse("Hotel name is required.", 400);
-
-    const id = generateId();
-    await execute(
-      `INSERT INTO Hotel (id, name, address, phone, website, bookingLink, blockCode, blockDeadline, notes, distanceFromVenue, priceRange, amenities, sortOrder)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [
-        id,
-        name.trim(),
-        address || "",
-        phone || "",
-        website || "",
-        bookingLink || "",
-        blockCode || "",
-        blockDeadline ? new Date(blockDeadline).toISOString() : null,
-        notes || "",
-        distanceFromVenue || "",
-        priceRange || "",
-        amenities || "",
-        sortOrder ?? 0,
-      ]
-    );
-
-    const hotel = await queryOne<Hotel>("SELECT * FROM Hotel WHERE id = ?", [id]);
-    return successResponse(hotel, undefined, 201);
-  } catch (error) {
-    console.error("Failed to create hotel:", error);
-    return errorResponse("Internal server error.", 500);
-  }
-}
+const { GET, POST } = createListHandlers(config);
+export { GET, POST };

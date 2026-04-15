@@ -1,0 +1,225 @@
+// components/ — Shared Components
+// Purpose: Reusable layout, feature, and UI primitive components
+
+// ═══════════════════════════════════════════════════════════════════
+// LAYOUT COMPONENTS
+// ═══════════════════════════════════════════════════════════════════
+
+// ─── Navigation.tsx (Client) ────────────────────────────────────────
+// Responsive nav bar with feature-flag-aware links
+
+STATE: isScrolled, isMobileMenuOpen, pathname
+
+NAV_LINKS = [
+  { label: "Home",          href: "/" }
+  { label: "RSVP",          href: "/rsvp",          flag: "rsvpEnabled",          hidePostWedding: true }
+  { label: "Our Story",     href: "/our-story",     flag: "ourStoryPageEnabled" }
+  { label: "Event Details",  href: "/event-details", flag: "eventDetailsPageEnabled" }
+  { label: "Wedding Party", href: "/wedding-party", flag: "weddingPartyPageEnabled" }
+  { label: "Travel & Stay", href: "/travel",         flag: "travelPageEnabled" }
+  { label: "Gallery",       href: "/gallery",        flag: "galleryPageEnabled" }
+  { label: "Music",         href: "/music",          flag: "musicPageEnabled" }
+  { label: "Entertainment", href: "/entertainment",  flag: "entertainmentPageEnabled" }
+  { label: "Registry",      href: "/registry",       flag: "registryPageEnabled" }
+  { label: "Guest Book",    href: "/guest-book",     flag: "guestBookEnabled" }
+  { label: "Photos of Us",  href: "/photos-of-us",   flag: "photosOfUsPageEnabled" }
+  { label: "FAQ",           href: "/faq",            flag: "faqPageEnabled" }
+  { label: "Contact",       href: "/contact",         flag: "contactPageEnabled" }
+]
+
+RENDER:
+  Fixed top nav bar
+  IF scrolled → add backdrop blur + shadow
+  Logo: "J & A" (hardcoded)
+  Desktop: horizontal link row, active link = gold text
+  Mobile: hamburger → slide-out drawer overlay
+  Filter links: skip if featureFlag[flag] === false, skip if hidePostWedding && isPostWedding
+
+EFFECTS:
+  onScroll → update isScrolled (throttled via scroll event)
+  onRouteChange → close mobile menu
+
+PROPS: weddingDate?: string, featureFlags?: Record<string, boolean>
+
+
+// ─── Footer.tsx (Server) ────────────────────────────────────────────
+
+RENDER (async):
+  settings = queryOne SiteSettings
+  
+  3-column grid:
+    Column 1: couple name, hashtag, venue name
+    Column 2: Quick Links (RSVP, Event Details, Registry, FAQ)
+    Column 3: Get in Touch (Contact, Photo Share) + social icons
+
+  Social icons: Instagram, Facebook, TikTok (inline SVG paths)
+  Copyright: "© {year} {coupleName}"
+
+
+// ─── AnnouncementBanner.tsx (Server) ─────────────────────────────────
+
+PROPS: settings? (optional — fetches from DB if not provided)
+
+RENDER:
+  IF not bannerActive OR bannerText empty → return null
+  
+  Color theme: "gold" → gold background, "forest" → green background
+  Optional: wrap in <a> if bannerUrl provided
+  Content: bannerText centered
+
+
+// ─── StarrySky.tsx (Client, Canvas) ──────────────────────────────────
+// Animated starfield background — pure canvas rendering
+
+STATE: canvasRef
+
+ON MOUNT:
+  IF prefers-reduced-motion → render static stars, no animation
+  
+  Generate 60-80 stars: random x/y, size (1-3px), opacity, twinkle speed
+  
+  ANIMATION LOOP (requestAnimationFrame):
+    Clear canvas
+    FOR each star:
+      opacity = base + sin(time * twinkleSpeed) * 0.3  // sinusoidal twinkle
+      draw filled circle at (x, y) with computed opacity
+
+    Shooting star every ~8 seconds:
+      random start position, diagonal trajectory
+      draw line with gradient fade (bright → transparent)
+      advance position each frame, remove when off-screen
+
+  ON RESIZE: update canvas dimensions
+
+RENDER: <canvas> with pointer-events: none, fixed position, full viewport
+
+
+// ═══════════════════════════════════════════════════════════════════
+// FEATURE COMPONENTS
+// ═══════════════════════════════════════════════════════════════════
+
+// ─── CountdownTimer.tsx (Client) ─────────────────────────────────────
+
+PROPS: targetDate, postWeddingMessage?
+
+STATE: timeLeft = { days, hours, minutes, seconds }
+
+EFFECT (1s interval):
+  diff = targetDate - now
+  IF diff <= 0 → show postWeddingMessage
+  ELSE → compute days/hours/minutes/seconds from diff
+
+RENDER:
+  4 cards in grid: each shows padded number + label (Days, Hours, Minutes, Seconds)
+  OR: post-wedding message text
+
+
+// ─── WeatherForecast.tsx (Client) ────────────────────────────────────
+// COMPLEXITY: most complex component — dual data source, interactive chart
+
+STATE: weather (API data), loading, selectedHour, error
+
+ON MOUNT:
+  fetch /api/v1/weather
+  auto-refresh every 30 minutes
+
+RENDER:
+  Source badge: "Live Forecast" (green) or "Historical Averages" (amber)
+  Florida weather warning callout
+
+  Daily overview card:
+    weatherEmoji, tempMax/Min, precipProb, uvIndex + label, sunrise/sunset
+
+  Event weather cards:
+    For each timeline event → find matching hour → show temp, weather, rain chance
+    Clickable → sets selectedHour
+
+  Hourly chart:
+    Mini bar graph: height = normalized temp, color = weather condition
+    Clickable bars → set selectedHour
+    Horizontal scroll on mobile
+
+  Detail panel (when hour selected):
+    Full breakdown: temp, feels like, humidity, wind, gusts, cloud cover, UV, precip
+
+HELPERS:
+  weatherCodeToEmoji(code) → emoji string
+  uvLabel(index) → "Low" / "Moderate" / "High" / "Very High" / "Extreme"
+  parseTimeToHour(timeString) → number (e.g., "4 PM" → 16)
+
+
+// ─── RegistryList.tsx (Client) ────────────────────────────────────────
+
+PROPS: items: RegistryItem[]
+
+STATE: selectedItem, amount, guestName, guestEmail, loading, success, error
+
+RENDER:
+  Group items by type: stores[], funds[], products[]
+  
+  FOR EACH group:
+    Grid of cards:
+      icon/image, name, link
+      IF fund → progress bar (raisedAmount / goalAmount)
+      IF product → "X of Y purchased"
+      IF fulfilled → "Fully Funded" / "All Purchased" badge
+      Click → open contribution modal
+
+  MODAL (when selectedItem):
+    Guest name input (required)
+    Guest email input (optional)
+    IF fund → amount input (max = remaining goal)
+    Submit → POST /api/v1/registry/contribute
+    Success → thank you message, link to store if applicable
+    Error → Alert component
+
+
+// ─── SectionDivider.tsx ──────────────────────────────────────────────
+// Decorative: horizontal line + moon SVG icon + horizontal line
+// Pure presentation, no logic
+
+
+// ─── PageDisabled.tsx ────────────────────────────────────────────────
+// Shown when feature flag disables a page
+// ✨ icon + "Page Not Available" + "Back to Home" link
+
+
+// ═══════════════════════════════════════════════════════════════════
+// UI PRIMITIVES (components/ui/)
+// ═══════════════════════════════════════════════════════════════════
+
+// ─── PageHeader ─────────────────────────────────────────────────────
+// Props: title, subtitle?, className?
+// Renders: H1 + SectionDivider + optional subtitle paragraph
+// Used on all public pages
+
+// ─── AdminPageHeader ────────────────────────────────────────────────
+// Props: title, subtitle?, actions? (JSX)
+// Renders: H1 + subtitle + action buttons row
+// Admin-themed, used on all admin pages
+
+// ─── Alert ──────────────────────────────────────────────────────────
+// Props: type (success|error|warning|info), message, className?
+// Color-coded background/border/text by type
+
+// ─── Modal ──────────────────────────────────────────────────────────
+// Props: title, children, onClose, maxWidth?
+// Dark overlay + centered white box + close button (×) + scrollable children
+
+// ─── LoadingState ───────────────────────────────────────────────────
+// Props: message?
+// Centered "Loading..." or custom message text
+
+// ─── EmptyState ─────────────────────────────────────────────────────
+// Props: icon?, title, subtitle?
+// Centered icon + heading + description for empty lists
+
+// ─── ConfirmButton ──────────────────────────────────────────────────
+// Props: onConfirm, message, className, children
+// Wraps browser window.confirm() — shows confirmation dialog before action
+
+// ─── FilterBar<T> ───────────────────────────────────────────────────
+// Props: filters: { label, value }[], active: T, onChange(T), variant?
+// Generic typed filter UI: renders pill buttons or larger buttons
+// Active state: gold highlight, inactive: transparent
+// Used for: photo categories, DJ list types, guest filters

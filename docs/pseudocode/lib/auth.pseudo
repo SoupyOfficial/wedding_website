@@ -1,0 +1,38 @@
+// lib/auth.ts
+// Purpose: NextAuth v5 config — single admin user, credentials provider, JWT sessions
+
+NEXTAUTH CONFIG:
+  provider: Credentials
+    name: "Admin Login"
+    fields: email, password
+
+    authorize(credentials):
+      adminEmail = env.ADMIN_EMAIL
+      adminPassword = env.ADMIN_PASSWORD
+      IF either missing → return null (no admin configured)
+      IF email !== adminEmail → return null
+
+      // Support both plain text (dev) and bcrypt-hashed passwords
+      IF adminPassword starts with "$2" → bcrypt.compare()
+      ELSE → plain string comparison
+      
+      IF valid → return { id: "admin", email: adminEmail, name: "Admin" }
+      ELSE → return null
+
+  pages:
+    signIn: "/admin/login"
+
+  callbacks:
+    authorized({ auth, request }):
+      // Admin page protection (not API — that's in middleware.ts)
+      IF path starts with /admin AND not /admin/login AND not logged in:
+        → redirect to /admin/login
+      IF on /admin/login AND already logged in:
+        → redirect to /admin/dashboard
+      ELSE → allow
+
+  session: JWT strategy (no server-side session store)
+
+EXPORTS: { handlers, signIn, signOut, auth }
+  // handlers → mounted at app/api/auth/[...nextauth]/route.ts
+  // auth → used in middleware.ts as wrapper

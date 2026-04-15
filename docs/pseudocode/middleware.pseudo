@@ -1,0 +1,26 @@
+// middleware.ts
+// Purpose: Request interceptor — auth gate for admin, site password gate for public
+
+MIDDLEWARE(request):
+  path = request.url.pathname
+
+  // Admin API: return 401 JSON if not authenticated
+  IF path starts with "/api/v1/admin":
+    IF no session user → return JSON { success: false, error: "Unauthorized" } 401
+    ELSE → pass through
+
+  // Admin pages: handled by NextAuth authorized callback (see lib/auth.pseudo)
+
+  // Site password gate for all non-admin pages
+  IF path does NOT start with "/admin":
+    sitePasswordEnabled = cookie "site-password-enabled" === "true"
+    IF sitePasswordEnabled:
+      hasAccess = cookie "site-access" === "granted"
+      IF no access AND path !== "/site-password":
+        → redirect to /site-password
+  
+  → pass through
+
+MATCHER:
+  "/api/v1/admin/:path*"                              // admin API
+  "/((?!api|_next/static|_next/image|favicon.ico).*)"  // all non-static pages

@@ -1,0 +1,246 @@
+// app/api/v1/admin/ — Admin API Routes
+// Purpose: CRUD operations for all content types, protected by auth middleware
+// All routes require authenticated session (enforced in middleware.ts)
+
+// ═══════════════════════════════════════════════════════════════════
+// PATTERN: Nearly all admin routes follow this identical structure
+// ═══════════════════════════════════════════════════════════════════
+//
+// GET  /admin/{resource}      → SELECT * FROM {table} ORDER BY {sort} → successResponse
+// POST /admin/{resource}      → validate body → INSERT → return 201
+// GET  /admin/{resource}/[id] → SELECT WHERE id → 404 or return
+// PUT  /admin/{resource}/[id] → validate body → dynamic UPDATE → return updated
+// DELETE /admin/{resource}/[id] → DELETE WHERE id → return { deleted: true }
+//
+// SIMPLIFICATION: 80%+ of admin routes share this pattern.
+// A generic CRUD handler could eliminate ~10 nearly-identical route files.
+// ═══════════════════════════════════════════════════════════════════
+
+
+// ─── Guests ────────────────────────────────────────────────────────
+// /admin/guests + /admin/guests/[id]
+
+GET guests:
+  query all Guest ORDER BY lastName, firstName
+  toBoolAll(rows, ...GUEST_BOOLS)
+  return guests[]
+
+POST guests:
+  body = { firstName, lastName, email?, group?, ... }
+  INSERT Guest { id: generateId(), ...body, rsvpStatus: "pending", createdAt, updatedAt }
+  emit "guest:created"
+  return 201 guest
+
+PUT guests/[id]:
+  find guest → 404 if missing
+  dynamic UPDATE: only SET fields present in body
+  return updated guest
+
+DELETE guests/[id]:
+  DELETE WHERE id
+  IF rowsAffected = 0 → 404
+  return { deleted: true }
+
+
+// ─── Settings (Singleton) ──────────────────────────────────────────
+// /admin/settings — no [id] route, always operates on single row
+
+GET settings:
+  row = queryOne SiteSettings LIMIT 1
+  toBool(row, ...SETTINGS_BOOLS)
+  mask sitePassword → "••••••••" (never expose actual password)
+  return settings
+
+PUT settings:
+  body = { ...up to 49 fields }
+
+  // Dynamic UPDATE with ~30 conditional fields
+  Build SET clause: for each provided field, add to update list
+  Special handling:
+    - weddingDate → parse to ISO 8601
+    - sitePassword → only update if value !== "••••••••" (skip masked value)
+
+  IF no SiteSettings row exists → INSERT (first-run initialization)
+  ELSE → UPDATE
+
+  emit "settings:updated" { changedFields }
+  return updated settings
+
+// COMPLEXITY: 49-field singleton with masked password, date parsing,
+// and conditional first-run INSERT makes this the most complex PUT handler
+
+
+// ─── Content / Timeline Events ─────────────────────────────────────
+// /admin/content + /admin/content/[id]
+
+GET content:
+  query TimelineEvent ORDER BY eventType, sortOrder, time
+  return events[]
+
+POST content:
+  body = { title, time, description?, icon?, sortOrder?, eventType? }
+  defaults: sortOrder=0, eventType="wedding-day"
+  INSERT → return 201
+
+PUT content/[id]:
+  dynamic UPDATE on provided fields
+  return updated event
+
+
+// ─── FAQs ──────────────────────────────────────────────────────────
+// /admin/faqs + /admin/faqs/[id]
+
+GET faqs:
+  query FAQ ORDER BY sortOrder
+  toBoolAll(rows, ...FAQ_BOOLS)
+  // Migration guard: try with isVisible column, fallback without
+  return faqs[]
+
+POST/PUT/DELETE: standard CRUD pattern
+
+
+// ─── Hotels ────────────────────────────────────────────────────────
+// /admin/hotels + /admin/hotels/[id]
+// Standard CRUD with fields: name, address, phone, website, bookingLink,
+// blockCode, blockDeadline, amenities, priceRange, distance, sortOrder
+
+
+// ─── Entertainment ─────────────────────────────────────────────────
+// /admin/entertainment + /admin/entertainment/[id]
+// Standard CRUD: name, description, icon, sortOrder
+
+
+// ─── Wedding Party ─────────────────────────────────────────────────
+// /admin/wedding-party + /admin/wedding-party/[id]
+// CRUD: name, role, side (bride/groom/special), relation, bio, photoUrl, sortOrder
+
+
+// ─── Meals ─────────────────────────────────────────────────────────
+// /admin/meals + /admin/meals/[id]
+// CRUD: name, description, isVegetarian, isVegan, isGlutenFree, isAvailable, sortOrder
+// toBool on dietary flags
+
+
+// ─── Registry ──────────────────────────────────────────────────────
+// /admin/registry + /admin/registry/[id]
+// CRUD: name, url, iconUrl, itemType, price, totalNeeded, totalBought,
+//       goalAmount, raisedAmount, status, sortOrder
+
+
+// ─── Photos ────────────────────────────────────────────────────────
+// /admin/photos
+
+GET photos:
+  query all Photo + LEFT JOIN _PhotoToPhotoTag + PhotoTag
+  Group tags by photo ID into tagsMap
+  Attach tags[] to each photo
+  return photos with tags
+
+PUT photos/[id]:
+  UPDATE caption, category, approved
+  return updated photo
+
+DELETE photos/[id]:
+  IF photo has storageKey → provider.delete(storageKey)
+  DELETE from _PhotoToPhotoTag junction WHERE photoId
+  DELETE from Photo WHERE id
+  return { deleted: true }
+
+// Photo Tags:
+GET photos/tags:
+  query PhotoTag + LEFT JOIN count of photos per tag
+  return tags with photoCount
+
+POST photos/tags:
+  body = { name, type, color?, sortOrder? }
+  validate type in [event, person, date, location, custom]
+  INSERT → catch unique violation → 409
+  return 201 tag
+
+
+// ─── Music / DJ ────────────────────────────────────────────────────
+// /admin/music
+
+GET music:
+  Parallel fetch: songRequests[], djList[]
+  toBoolAll on songRequests (SONG_BOOLS)
+  return { songRequests, djList }
+
+PUT music/songs/[id]:
+  UPDATE SongRequest: approved, isVisible fields
+  return updated request
+
+DELETE music/songs/[id]:
+  DELETE SongRequest WHERE id
+
+POST music/dj:
+  body = { songName, artist, listType, playTime? }
+  validate listType in DJ_LIST_TYPES
+  INSERT DJList
+  return 201
+
+PUT music/dj/[id]:
+  dynamic UPDATE on DJList
+  return updated
+
+DELETE music/dj/[id]:
+  DELETE DJList WHERE id
+
+// Apple Music Import (admin only):
+GET music/apple-music/import?check=true:
+  return { configured: isAppleMusicConfigured() }
+
+POST music/apple-music/import:
+  body = { url, listType?, playTime?, skipDuplicates? }
+  playlist = parsePlaylistUrl(url) → fetchPlaylist()
+  IF skipDuplicates: load existing DJList, filter out matches
+  bulk INSERT new tracks
+  return { playlistName, totalTracks, addedCount, skippedCount, tracks[] }
+
+// Apple Music Search (admin):
+GET music/apple-music/search?q=term:
+  // DUPLICATE: identical to public /music/search — same iTunes proxy
+  fetch iTunes API, normalize, return results
+
+
+// ─── Guest Book (Admin moderation) ─────────────────────────────────
+
+GET admin/guest-book:
+  query ALL GuestBookEntry (including isVisible=0)
+  toBoolAll (GUESTBOOK_BOOLS)
+  return entries[]  // admin sees all for moderation
+
+PUT admin/guest-book/[id]:
+  UPDATE isVisible field (approve/hide)
+  return updated entry
+
+DELETE admin/guest-book/[id]:
+  DELETE WHERE id
+
+
+// ─── Messages ──────────────────────────────────────────────────────
+// /admin/messages — read-only (entries created via public /contact)
+
+GET messages:
+  query all ContactMessage ORDER BY createdAt DESC
+  toBoolAll (MESSAGE_BOOLS)
+  return messages[]
+
+PUT messages/[id]:
+  UPDATE isRead = 1 (mark as read)
+  return updated message
+
+DELETE messages/[id]:
+  DELETE WHERE id
+
+
+// ─── Features ──────────────────────────────────────────────────────
+// /admin/features
+
+GET features:
+  return getFeatureFlags()  // merged DB + defaults
+
+PUT features:
+  body = { key, enabled }
+  setFeatureFlag(key, enabled)
+  return { success: true }

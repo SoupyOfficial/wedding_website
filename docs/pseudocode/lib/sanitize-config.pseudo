@@ -1,0 +1,53 @@
+// lib/sanitize.ts
+// Purpose: XSS prevention for user-submitted content
+
+escapeHtml(str) → string
+  Replace & < > " ' with HTML entities
+  Used for: guest book entries, music requests, contact messages
+
+sanitizeHtml(html) → string
+  For rich text content (ourStoryContent from admin)
+  1. Remove <script> tags and contents
+  2. Remove on* event handler attributes (onclick, onerror, etc.)
+  3. Neutralize javascript: and data: URLs in href/src
+  4. Strip disallowed tags (keep text content)
+  5. Strip disallowed attributes from allowed tags
+  6. Force rel="noopener noreferrer" on all <a> tags
+
+  ALLOWED_TAGS: p, br, b, i, em, strong, u, a, ul, ol, li, h1-h6, blockquote, span, div
+  ALLOWED_ATTRS: href/title/target/rel on <a>, class on <span>/<div>
+
+isValidUrl(url) → boolean
+  Parse URL, check protocol is http: / https: / mailto:
+
+safeUrl(url, fallback="#") → string
+  Return url if valid, fallback otherwise
+
+
+// ─── lib/feature-gate.tsx ─────────────────────────────────────────
+// Purpose: Server component helper for page-level feature gating
+
+checkFeatureFlag(flagName) → JSX | null
+  flags = await getFeatureFlag(flagName)
+  IF disabled → return <PageDisabled />     // renders "Page Not Available"
+  ELSE → return null                        // caller continues rendering
+
+
+// ─── lib/config/feature-flags.ts ──────────────────────────────────
+// Purpose: Feature flag CRUD with hardcoded defaults
+
+DEFAULT_FLAGS = { rsvpEnabled: true, guestBookEnabled: true, ... }  // 19 flags
+
+getFeatureFlags() → Record<string, boolean>
+  rows = query all from FeatureFlag table
+  merge: start with DEFAULT_FLAGS, override with DB values
+  return merged object
+
+getFeatureFlag(key) → boolean
+  row = query FeatureFlag WHERE key
+  IF found → return toBool(row).enabled
+  ELSE → return DEFAULT_FLAGS[key] ?? false
+
+setFeatureFlag(key, enabled) → void
+  Try INSERT new flag
+  Catch unique violation → UPDATE existing flag

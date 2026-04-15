@@ -1,53 +1,26 @@
-import { NextRequest } from "next/server";
-import { query, queryOne, execute, generateId } from "@/lib/db";
-import { successResponse, errorResponse } from "@/lib/api";
-import type { RegistryItem } from "@/lib/db-types";
+import { createListHandlers, T } from "@/lib/api/crud-handler";
+
+const config = {
+  table: "RegistryItem",
+  label: "Registry item",
+  orderBy: "sortOrder ASC",
+  fields: {
+    name: { toSql: T.trim },
+    url: { toSql: T.trim },
+    iconUrl: { toSql: T.nullable },
+    sortOrder: { toSqlCreate: T.numDefault(0) },
+    itemType: { toSqlCreate: T.strDefault("store") },
+    price: { toSqlCreate: T.nullish },
+    totalNeeded: { toSqlCreate: T.nullish },
+    totalBought: { toSqlCreate: T.numDefault(0) },
+    goalAmount: { toSqlCreate: T.nullish },
+    raisedAmount: { toSqlCreate: T.numDefault(0) },
+    description: { toSql: T.nullable },
+    status: { toSqlCreate: T.strDefault("active") },
+  },
+  required: { fields: ["name"], message: "Name is required." },
+};
 
 export const dynamic = "force-dynamic";
-
-export async function GET() {
-  try {
-    const registries = await query<RegistryItem>(
-      "SELECT * FROM RegistryItem ORDER BY sortOrder ASC"
-    );
-    return successResponse(registries);
-  } catch (error) {
-    console.error("Failed to fetch registry:", error);
-    return errorResponse("Internal server error.", 500);
-  }
-}
-
-export async function POST(req: NextRequest) {
-  try {
-    const body = await req.json();
-    const { name, url, iconUrl, sortOrder, itemType, price, totalNeeded, totalBought, goalAmount, raisedAmount, description, status } = body;
-
-    if (!name?.trim()) return errorResponse("Name is required.", 400);
-
-    const id = generateId();
-    await execute(
-      "INSERT INTO RegistryItem (id, name, url, iconUrl, sortOrder, itemType, price, totalNeeded, totalBought, goalAmount, raisedAmount, description, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-      [
-        id, 
-        name.trim(), 
-        url?.trim() || "", 
-        iconUrl || null, 
-        sortOrder ?? 0,
-        itemType || "store",
-        price ?? null,
-        totalNeeded ?? null,
-        totalBought ?? 0,
-        goalAmount ?? null,
-        raisedAmount ?? 0,
-        description || null,
-        status || "active"
-      ]
-    );
-
-    const registry = await queryOne<RegistryItem>("SELECT * FROM RegistryItem WHERE id = ?", [id]);
-    return successResponse(registry, undefined, 201);
-  } catch (error) {
-    console.error("Failed to create registry item:", error);
-    return errorResponse("Internal server error.", 500);
-  }
-}
+const { GET, POST } = createListHandlers(config);
+export { GET, POST };

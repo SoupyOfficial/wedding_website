@@ -1,40 +1,22 @@
-import { NextRequest } from "next/server";
-import { query, queryOne, execute, generateId, toBoolAll, toBool } from "@/lib/db";
-import { successResponse, errorResponse } from "@/lib/api";
-import type { MealOption } from "@/lib/db-types";
+import { createListHandlers, T } from "@/lib/api/crud-handler";
 import { MEAL_BOOLS } from "@/lib/db-types";
 
+const config = {
+  table: "MealOption",
+  label: "Meal option",
+  orderBy: "name ASC",
+  boolFields: MEAL_BOOLS,
+  fields: {
+    name: { toSql: T.trim },
+    description: { toSqlCreate: T.str },
+    isVegetarian: { toSql: T.boolInt },
+    isVegan: { toSql: T.boolInt },
+    isGlutenFree: { toSql: T.boolInt },
+  },
+  postDefaults: { isAvailable: 1, sortOrder: 0 },
+  required: { fields: ["name"], message: "Name is required." },
+};
+
 export const dynamic = "force-dynamic";
-
-export async function GET() {
-  try {
-    const meals = await query<MealOption>("SELECT * FROM MealOption ORDER BY name ASC");
-    toBoolAll(meals, ...MEAL_BOOLS);
-    return successResponse(meals);
-  } catch (error) {
-    console.error("Failed to fetch meals:", error);
-    return errorResponse("Internal server error.", 500);
-  }
-}
-
-export async function POST(req: NextRequest) {
-  try {
-    const body = await req.json();
-    const { name, description, isVegetarian, isVegan, isGlutenFree } = body;
-
-    if (!name?.trim()) return errorResponse("Name is required.", 400);
-
-    const id = generateId();
-    await execute(
-      "INSERT INTO MealOption (id, name, description, isVegetarian, isVegan, isGlutenFree, isAvailable, sortOrder) VALUES (?, ?, ?, ?, ?, ?, 1, 0)",
-      [id, name.trim(), description || "", isVegetarian ? 1 : 0, isVegan ? 1 : 0, isGlutenFree ? 1 : 0]
-    );
-
-    const meal = await queryOne<MealOption>("SELECT * FROM MealOption WHERE id = ?", [id]);
-    if (meal) toBool(meal, ...MEAL_BOOLS);
-    return successResponse(meal, undefined, 201);
-  } catch (error) {
-    console.error("Failed to create meal:", error);
-    return errorResponse("Internal server error.", 500);
-  }
-}
+const { GET, POST } = createListHandlers(config);
+export { GET, POST };

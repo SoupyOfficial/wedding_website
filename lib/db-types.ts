@@ -1,6 +1,6 @@
 // ─────────────────────────────────────────────────────────────────────
-// TypeScript types for all database models.
-// Derived from prisma/schema.prisma — used with raw @libsql/client queries.
+// AUTO-GENERATED from prisma/schema.prisma — do not edit by hand.
+// Run: npx tsx scripts/generate-db-types.ts
 // Date fields are ISO 8601 strings (as stored by Prisma in SQLite).
 // Boolean fields are converted to JS booleans via toBool().
 // ─────────────────────────────────────────────────────────────────────
@@ -50,7 +50,6 @@ export interface SiteSettings {
   updatedAt: string;
 }
 
-/** Boolean fields on SiteSettings that need toBool() conversion. */
 export const SETTINGS_BOOLS = [
   "rsvpEnabled",
   "sitePasswordEnabled",
@@ -81,7 +80,10 @@ export interface Guest {
   updatedAt: string;
 }
 
-export const GUEST_BOOLS = ["plusOneAllowed", "plusOneAttending"] as const;
+export const GUEST_BOOLS = [
+  "plusOneAllowed",
+  "plusOneAttending",
+] as const;
 
 export interface WeddingPartyMember {
   id: string;
@@ -149,7 +151,9 @@ export interface FAQ {
   isVisible: boolean;
 }
 
-export const FAQ_BOOLS = ["isVisible"] as const;
+export const FAQ_BOOLS = [
+  "isVisible",
+] as const;
 
 export interface Photo {
   id: string;
@@ -164,7 +168,9 @@ export interface Photo {
   createdAt: string;
 }
 
-export const PHOTO_BOOLS = ["approved"] as const;
+export const PHOTO_BOOLS = [
+  "approved",
+] as const;
 
 export interface PhotoTag {
   id: string;
@@ -173,16 +179,6 @@ export interface PhotoTag {
   color: string;
   sortOrder: number;
   createdAt: string;
-}
-
-/** Photo with its related tags (joined manually via _PhotoToPhotoTag). */
-export interface PhotoWithTags extends Photo {
-  tags: PhotoTag[];
-}
-
-/** PhotoTag with the count of associated photos. */
-export interface PhotoTagWithCount extends PhotoTag {
-  _count: { photos: number };
 }
 
 export interface Entertainment {
@@ -201,7 +197,9 @@ export interface GuestBookEntry {
   createdAt: string;
 }
 
-export const GUESTBOOK_BOOLS = ["isVisible"] as const;
+export const GUESTBOOK_BOOLS = [
+  "isVisible",
+] as const;
 
 export interface MealOption {
   id: string;
@@ -233,7 +231,10 @@ export interface SongRequest {
   createdAt: string;
 }
 
-export const SONG_BOOLS = ["approved", "isVisible"] as const;
+export const SONG_BOOLS = [
+  "approved",
+  "isVisible",
+] as const;
 
 export interface DJList {
   id: string;
@@ -244,9 +245,11 @@ export interface DJList {
 }
 
 export interface FeatureFlag {
+  id: string;
   key: string;
   enabled: number | boolean;
   description: string;
+  updatedAt: string;
 }
 
 export interface WebhookLog {
@@ -293,49 +296,9 @@ export interface ContactMessage {
   createdAt: string;
 }
 
-export const MESSAGE_BOOLS = ["isRead"] as const;
-
-export interface EmailTemplate {
-  id: string;
-  slug: string;
-  name: string;
-  subject: string;
-  body: string;
-  category: string;
-  variables: string;
-  isDefault: boolean;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface EmailCampaign {
-  id: string;
-  name: string;
-  templateId: string | null;
-  subject: string;
-  body: string;
-  audienceFilter: string;
-  recipientCount: number;
-  status: string;
-  scheduledAt: string | null;
-  sentAt: string | null;
-  completedAt: string | null;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface EmailLog {
-  id: string;
-  campaignId: string;
-  guestId: string;
-  email: string;
-  status: string;
-  error: string | null;
-  sentAt: string | null;
-  deliveredAt: string | null;
-  openedAt: string | null;
-  createdAt: string;
-}
+export const MESSAGE_BOOLS = [
+  "isRead",
+] as const;
 
 export interface RegistryContribution {
   id: string;
@@ -345,4 +308,16 @@ export interface RegistryContribution {
   amount: number | null;
   status: string;
   createdAt: string;
+}
+
+// ─── Manual additions (derived types) ────────────────────────────────
+
+/** Photo with its related tags (joined manually via _PhotoToPhotoTag). */
+export interface PhotoWithTags extends Photo {
+  tags: PhotoTag[];
+}
+
+/** PhotoTag with the count of associated photos. */
+export interface PhotoTagWithCount extends PhotoTag {
+  _count: { photos: number };
 }
