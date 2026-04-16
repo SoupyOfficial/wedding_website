@@ -49,6 +49,21 @@ export interface LocalActivity {
   description: string;
 }
 
+export interface TrafficTip {
+  icon: string;
+  title: string;
+  description: string;
+}
+
+export interface KeyDestination {
+  name: string;
+  address: string;
+  icon: string;
+  estimatedTime: string;
+  note?: string;
+  trafficWarning?: string;
+}
+
 // ─── Airports ────────────────────────────────────────────────────────
 
 export const airports: Airport[] = [
@@ -307,5 +322,125 @@ export const localActivities: LocalActivity[] = [
     icon: "\uD83C\uDFEC",
     description:
       "Charming town with boutique shopping on Park Ave, scenic boat tours, and excellent restaurants.",
+  },
+];
+
+// ─── Orlando Traffic Tips ───────────────────────────────────────────
+
+export const trafficTips: TrafficTip[] = [
+  {
+    icon: "⚠️",
+    title: "Check Travel Times, Not Miles",
+    description:
+      "Orlando traffic can easily double your drive time. A location 20 miles away might " +
+      "take 45+ minutes during peak hours. Always check real-time travel times on Google Maps " +
+      "or Waze before heading out.",
+  },
+  {
+    icon: "🚗",
+    title: "I-4 Is Notoriously Congested",
+    description:
+      "Interstate 4 runs through the heart of Orlando and is one of the busiest highways in " +
+      "the country. Avoid it during rush hours (7\u20139 AM and 4\u20137 PM). " +
+      "Consider FL-429 (toll road) as a faster alternative to reach Apopka.",
+  },
+  {
+    icon: "🏰",
+    title: "Theme Park Traffic Is Real",
+    description:
+      "If you\u2019re staying near the theme parks (International Drive, Kissimmee, Lake Buena Vista), " +
+      "expect 40\u201360+ minutes to the venue despite being only ~25 miles away. " +
+      "Park traffic peaks 9\u201311 AM and 5\u20138 PM.",
+  },
+  {
+    icon: "✅",
+    title: "Apopka Itself Is Low-Traffic",
+    description:
+      "The good news: once you\u2019re in the Apopka area, traffic is minimal. The congestion " +
+      "is on the highways getting here. If you\u2019re staying nearby, getting around will be easy.",
+  },
+  {
+    icon: "🛣️",
+    title: "Pro Tip: Use FL-429",
+    description:
+      "FL-429 (Western Beltway) is a toll road that bypasses most of Orlando\u2019s congestion. " +
+      "From MCO airport or South Florida, taking FL-429 north is significantly faster than " +
+      "fighting through I-4.",
+  },
+  {
+    icon: "⏰",
+    title: "Wedding Day: Leave Extra Time",
+    description:
+      "On the wedding day, add 15\u201320 minutes to whatever Google Maps estimates. " +
+      "Weekend traffic near theme parks can be unpredictable, and you don\u2019t want to " +
+      "be stressed about being late!",
+  },
+];
+
+// ─── Key Destinations (for travel time checker) ─────────────────────
+
+export const keyDestinations: KeyDestination[] = [
+  {
+    name: "Orlando Int'l Airport (MCO)",
+    address: "Orlando International Airport, Orlando, FL",
+    icon: "✈️",
+    estimatedTime: "~35 min",
+    note: "Take FL-429 N to avoid I-4",
+  },
+  {
+    name: "Sanford Airport (SFB)",
+    address: "Orlando Sanford International Airport, Sanford, FL",
+    icon: "✈️",
+    estimatedTime: "~40 min",
+  },
+  {
+    name: "Downtown Orlando",
+    address: "Downtown Orlando, FL",
+    icon: "🏙️",
+    estimatedTime: "~25\u201335 min",
+    note: "US-441 N or FL-429",
+  },
+  {
+    name: "Universal Orlando",
+    address: "Universal Orlando Resort, Orlando, FL",
+    icon: "🎢",
+    estimatedTime: "~30 min",
+  },
+  {
+    name: "Walt Disney World",
+    address: "Walt Disney World, Orlando, FL",
+    icon: "🏰",
+    estimatedTime: "~40\u201350 min",
+    trafficWarning:
+      "The Walt Disney World area typically has heavy tourist traffic. " +
+      "Your actual drive time could be 50\u201370 minutes during peak hours. " +
+      "Consider taking FL-429 (toll road) for a faster route to the venue.",
+  },
+  {
+    name: "International Drive",
+    address: "International Drive, Orlando, FL",
+    icon: "🌴",
+    estimatedTime: "~35\u201345 min",
+    trafficWarning:
+      "International Drive is in the heart of the tourist corridor. " +
+      "Traffic can be very heavy, especially on weekends. " +
+      "Consider staying closer to Apopka for a smoother drive to the venue.",
+  },
+  {
+    name: "Kissimmee / US-192",
+    address: "Kissimmee, FL",
+    icon: "🏠",
+    estimatedTime: "~45\u201360 min",
+    trafficWarning:
+      "Kissimmee is popular for vacation rentals but is far from the venue. " +
+      "Expect 45\u201360+ minutes in traffic. If you haven\u2019t booked yet, " +
+      "consider staying closer to Apopka or along the FL-429 corridor.",
+  },
+  {
+    name: "Tampa",
+    address: "Tampa, FL",
+    icon: "🌉",
+    estimatedTime: "~1.5 hours",
+    note: "I-4 East \u2192 FL-429 North",
   },
 ];
