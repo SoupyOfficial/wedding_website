@@ -202,7 +202,7 @@ export default async function EventDetailsPage() {
             </p>
           </div>
 
-          {/* Children Policy */}
+          {/* Children Policy
           {settings?.childrenPolicy && (
             <div className="card-celestial text-center">
               <div className="text-3xl mb-3">👶</div>
@@ -211,7 +211,7 @@ export default async function EventDetailsPage() {
                 {settings.childrenPolicy}
               </p>
             </div>
-          )}
+          )} */}
 
           {/* Weather Info */}
           {settings?.weatherInfo && (
