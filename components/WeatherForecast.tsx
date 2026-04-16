@@ -179,11 +179,35 @@ export default function WeatherForecast({
         <h2 className="heading-gold text-3xl text-center mb-4">
           🌤️ Wedding Day Weather
         </h2>
-        <div className="card-celestial text-center py-12">
-          <div className="animate-pulse flex flex-col items-center gap-3">
-            <div className="text-4xl">🌤️</div>
-            <div className="h-4 bg-gold/20 rounded w-48" />
-            <div className="h-3 bg-gold/10 rounded w-64" />
+        <div className="space-y-6">
+          <div className="card-celestial animate-pulse">
+            <div className="flex flex-col md:flex-row gap-4">
+              <div className="flex-1 space-y-3">
+                <div className="h-6 bg-gold/20 rounded w-32" />
+                <div className="h-10 bg-gold/10 rounded w-24" />
+                <div className="h-3 bg-gold/10 rounded w-48" />
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 flex-1">
+                {[1, 2, 3, 4].map((i) => (
+                  <div key={i} className="text-center space-y-2">
+                    <div className="h-3 bg-gold/10 rounded w-12 mx-auto" />
+                    <div className="h-5 bg-gold/15 rounded w-8 mx-auto" />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+          <div className="card-celestial animate-pulse">
+            <div className="h-4 bg-gold/15 rounded w-36 mb-4" />
+            <div className="flex gap-2 overflow-hidden">
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <div key={i} className="min-w-[3rem] space-y-2 flex flex-col items-center">
+                  <div className="h-2 bg-gold/10 rounded w-8" />
+                  <div className="h-6 bg-gold/10 rounded w-4" />
+                  <div className="h-3 bg-gold/15 rounded w-6" />
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
@@ -234,7 +258,7 @@ export default function WeatherForecast({
       </p>
 
       {/* Source badge */}
-      <div className="flex justify-center gap-2 mb-6">
+      <div className="flex justify-center gap-2 mb-2">
         {weather.source === "forecast" ? (
           <span className="text-xs bg-green-500/20 text-green-400 px-3 py-1 rounded-full border border-green-500/30 flex items-center gap-1.5">
             <span className="relative flex h-2 w-2">
@@ -254,6 +278,22 @@ export default function WeatherForecast({
           </span>
         )}
       </div>
+      {/* Data source explanation */}
+      <p className="text-ivory/40 text-xs text-center max-w-2xl mx-auto mb-6">
+        {weather.source === "forecast" ? (
+          <>
+            This is a <span className="text-green-400/80">real-time weather forecast</span> for the wedding date,
+            updated every 30 minutes. Accuracy improves as the date gets closer.
+          </>
+        ) : (
+          <>
+            Since the wedding is still {daysUntil} days away (forecasts only go out ~16 days),
+            this shows <span className="text-amber-400/80">averaged weather data from the past 5 years</span> for
+            this same date to give you an idea of what to expect. A live forecast will appear
+            once we&apos;re within 16 days of the wedding.
+          </>
+        )}
+      </p>
 
       {/* Florida volatility warning */}
       <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-4 max-w-3xl mx-auto mb-8">
@@ -390,7 +430,8 @@ export default function WeatherForecast({
             {refreshing ? "Updating…" : "↻ Refresh"}
           </button>
         </div>
-        <div className="overflow-x-auto -mx-4 px-4 pb-2">
+        <div className="overflow-x-auto -mx-4 px-4 pb-2 relative" style={{ WebkitOverflowScrolling: 'touch' }}>
+          <div className="md:hidden text-center text-ivory/30 text-xs mb-2">← Swipe to see more →</div>
           <div className="flex gap-1 min-w-max">
             {relevantHours.map((h, i) => {
               const actualHour = i + 6;

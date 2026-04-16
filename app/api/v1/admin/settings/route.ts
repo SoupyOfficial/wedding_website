@@ -70,6 +70,7 @@ export async function PUT(req: NextRequest) {
       ["registryNote", body.registryNote ?? ""],
       ["entertainmentNote", body.entertainmentNote ?? ""],
       ["raffleTicketCount", body.raffleTicketCount ?? 2],
+      ["hideUnconfirmedWeddingParty", (body.hideUnconfirmedWeddingParty ?? false) ? 1 : 0],
     ];
 
     // Only update password if a real value was sent

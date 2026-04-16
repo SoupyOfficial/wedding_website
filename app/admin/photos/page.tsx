@@ -332,8 +332,8 @@ export default function AdminPhotosPage() {
                 </div>
               )}
 
-              {/* Hover Overlay */}
-              <div className="absolute inset-0 bg-midnight/80 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2 p-2">
+              {/* Action Overlay — visible on hover (desktop) and always visible on touch (mobile) */}
+              <div className="absolute inset-0 bg-midnight/80 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2 p-2">
                 {photo.caption && (
                   <p className="text-ivory text-xs text-center mb-1">{photo.caption}</p>
                 )}

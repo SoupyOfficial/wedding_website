@@ -134,7 +134,52 @@ async function main() {
     }
   }
 
-  console.log(`\n✅ Synced ${totalRows} rows to e2e/test.db\n`);
+  console.log(`\n✅ Synced ${totalRows} rows to e2e/test.db`);
+
+  // Apply any pending migrations that may not be on the remote DB yet.
+  // This ensures the test DB always matches the schema expected by the code.
+  const migrationsDir = path.resolve(__dirname, "..", "prisma", "migrations");
+  if (fs.existsSync(migrationsDir)) {
+    const migrationFolders = fs
+      .readdirSync(migrationsDir, { withFileTypes: true })
+      .filter((d) => d.isDirectory())
+      .map((d) => d.name)
+      .sort();
+
+    let applied = 0;
+    for (const folder of migrationFolders) {
+      const sqlFile = path.join(migrationsDir, folder, "migration.sql");
+      if (!fs.existsSync(sqlFile)) continue;
+
+      const sql = fs.readFileSync(sqlFile, "utf-8");
+      const statements = sql
+        .split(";")
+        .map((s) => s.trim())
+        .filter((s) => s.length > 0);
+
+      for (const stmt of statements) {
+        try {
+          await local.execute(stmt);
+          applied++;
+        } catch (e: unknown) {
+          const msg = e instanceof Error ? e.message : String(e);
+          // Ignore "already exists" / "duplicate column" — means the remote already had it
+          if (
+            msg.includes("already exists") ||
+            msg.includes("duplicate column")
+          ) {
+            continue;
+          }
+          console.warn(`  ⚠ Migration warning (${folder}): ${msg}`);
+        }
+      }
+    }
+    if (applied > 0) {
+      console.log(`  📋 Applied ${applied} migration statement(s) to local DB`);
+    }
+  }
+
+  console.log("");
 
   remote.close();
   local.close();

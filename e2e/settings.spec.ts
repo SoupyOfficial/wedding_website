@@ -61,9 +61,9 @@ interface FieldDef {
 const TEXT_FIELDS: FieldDef[] = [
   { label: "Couple Name", testValue: "E2E Test Couple" },
   { label: "Hashtag", testValue: "#E2ETest" },
-  { label: "Contact Email (Joint)", testValue: "e2e-joint@test.dev" },
-  { label: "Contact Email (Bride)", testValue: "e2e-bride@test.dev" },
-  { label: "Contact Email (Groom)", testValue: "e2e-groom@test.dev" },
+  { label: "Joint Email", testValue: "e2e-joint@test.dev" },
+  { label: "Bride Email", testValue: "e2e-bride@test.dev" },
+  { label: "Groom Email", testValue: "e2e-groom@test.dev" },
   { label: "Hero Tagline", testValue: "E2E Test Tagline" },
   { label: "Hero Tagline (Post-Wedding)", testValue: "E2E Post-Wedding" },
   { label: "Wedding Time", testValue: "5:00 PM" },
@@ -89,7 +89,7 @@ const TEXT_FIELDS: FieldDef[] = [
 const TEXTAREA_FIELDS: FieldDef[] = [
   { label: "Our Story Content", testValue: "E2E Our Story Content" },
   { label: "Travel Content", testValue: "E2E Travel Content" },
-  { label: "FAQ Content", testValue: "E2E FAQ Content" },
+  { label: "FAQ Page Intro", testValue: "E2E FAQ Content" },
   { label: "Pre-Wedding Content", testValue: "E2E Pre-Wedding" },
   { label: "Post-Wedding Content", testValue: "E2E Post-Wedding Content" },
   { label: "Registry Note", testValue: "E2E Registry Note" },
@@ -97,7 +97,6 @@ const TEXTAREA_FIELDS: FieldDef[] = [
 ];
 
 const CHECKBOX_FIELDS: FieldDef[] = [
-  { label: "RSVP Enabled", testValue: true },
   { label: "Notify on RSVP", testValue: false },
   { label: "Password Protection Enabled", testValue: false },
   { label: "Banner Active", testValue: true },

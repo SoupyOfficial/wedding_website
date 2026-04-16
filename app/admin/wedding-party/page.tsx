@@ -14,6 +14,7 @@ interface WeddingPartyMember {
   relationToBrideOrGroom: string;
   spouseOrPartner: string;
   sortOrder: number;
+  confirmed: boolean;
 }
 
 const EMPTY_MEMBER: Omit<WeddingPartyMember, "id"> = {
@@ -25,6 +26,7 @@ const EMPTY_MEMBER: Omit<WeddingPartyMember, "id"> = {
   relationToBrideOrGroom: "",
   spouseOrPartner: "",
   sortOrder: 0,
+  confirmed: false,
 };
 
 export default function AdminWeddingPartyPage() {
@@ -67,6 +69,7 @@ export default function AdminWeddingPartyPage() {
           relationToBrideOrGroom: editing.relationToBrideOrGroom || undefined,
           spouseOrPartner: editing.spouseOrPartner || undefined,
           sortOrder: editing.sortOrder,
+          confirmed: editing.confirmed,
         }),
       });
       closeEditor();
@@ -143,6 +146,7 @@ export default function AdminWeddingPartyPage() {
                             {member.relationToBrideOrGroom && ` \u2022 ${member.relationToBrideOrGroom}`}
                             {member.bio && " \u2022 Has bio"}
                             {member.photoUrl && " \u2022 Has photo"}
+                            {!member.confirmed && " \u2022 Unconfirmed"}
                           </p>
                         </div>
                       </div>
@@ -218,6 +222,10 @@ export default function AdminWeddingPartyPage() {
               <div>
                 <label className="block text-ivory/70 text-xs mb-1">Sort Order</label>
                 <input type="number" value={editing.sortOrder} onChange={(e) => setEditing({ ...editing, sortOrder: parseInt(e.target.value) || 0 })} className="input-celestial w-24" />
+              </div>
+              <div className="flex items-center gap-2">
+                <input type="checkbox" id="confirmed" checked={editing.confirmed} onChange={(e) => setEditing({ ...editing, confirmed: e.target.checked })} className="accent-gold" />
+                <label htmlFor="confirmed" className="text-ivory/70 text-xs">Confirmed</label>
               </div>
               <div className="flex gap-3 justify-end pt-2">
                 <button type="button" onClick={closeEditor} className="btn-outline px-4 py-2 text-sm">Cancel</button>

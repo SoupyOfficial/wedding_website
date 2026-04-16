@@ -47,6 +47,7 @@ export interface SiteSettings {
   registryNote: string;
   entertainmentNote: string;
   raffleTicketCount: number;
+  hideUnconfirmedWeddingParty: boolean;
   updatedAt: string;
 }
 
@@ -55,6 +56,7 @@ export const SETTINGS_BOOLS = [
   "sitePasswordEnabled",
   "notifyOnRsvp",
   "bannerActive",
+  "hideUnconfirmedWeddingParty",
 ] as const;
 
 export interface Guest {
@@ -95,6 +97,7 @@ export interface WeddingPartyMember {
   bio: string;
   photoUrl: string | null;
   sortOrder: number;
+  confirmed: boolean;
   createdAt: string;
   updatedAt: string;
 }

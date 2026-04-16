@@ -184,15 +184,17 @@ export default function RsvpClient({ rsvpDeadline }: { rsvpDeadline: string | nu
               </h2>
               <form onSubmit={handleLookup}>
                 <div className="mb-4">
-                  <label className="block text-ivory/70 text-sm mb-2">
+                  <label htmlFor="rsvp-lookup-name" className="block text-ivory/70 text-sm mb-2">
                     Enter your name as it appears on your invitation
                   </label>
                   <input
+                    id="rsvp-lookup-name"
                     type="text"
                     value={lookupName}
                     onChange={(e) => setLookupName(e.target.value)}
                     placeholder="First and Last Name"
                     className="input-celestial w-full"
+                    autoComplete="name"
                     required
                   />
                 </div>
@@ -223,14 +225,14 @@ export default function RsvpClient({ rsvpDeadline }: { rsvpDeadline: string | nu
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-ivory/70 text-sm mb-2">
+                  <label htmlFor="rsvp-attending" className="block text-ivory/70 text-sm mb-2">
                     Will you be attending?
                   </label>
-                  <div className="flex gap-3">
+                  <div id="rsvp-attending" className="flex gap-3">
                     <button
                       type="button"
                       onClick={() => setAttending(true)}
-                      className={`flex-1 py-3 rounded-lg border transition-colors ${
+                      className={`flex-1 py-3 rounded-lg border transition-colors focus:outline-none focus:ring-2 focus:ring-gold/50 ${
                         attending === true
                           ? "bg-gold/20 border-gold text-gold"
                           : "border-gold/20 text-ivory/50 hover:border-gold/40"
@@ -241,7 +243,7 @@ export default function RsvpClient({ rsvpDeadline }: { rsvpDeadline: string | nu
                     <button
                       type="button"
                       onClick={() => setAttending(false)}
-                      className={`flex-1 py-3 rounded-lg border transition-colors ${
+                      className={`flex-1 py-3 rounded-lg border transition-colors focus:outline-none focus:ring-2 focus:ring-gold/50 ${
                         attending === false
                           ? "bg-red-900/20 border-red-500/50 text-red-300"
                           : "border-gold/20 text-ivory/50 hover:border-gold/40"
@@ -253,42 +255,48 @@ export default function RsvpClient({ rsvpDeadline }: { rsvpDeadline: string | nu
                 </div>
 
                 <div>
-                  <label className="block text-ivory/70 text-sm mb-2">
+                  <label htmlFor="rsvp-email" className="block text-ivory/70 text-sm mb-2">
                     Email (optional)
                   </label>
                   <input
+                    id="rsvp-email"
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="input-celestial w-full"
                     placeholder="your@email.com"
+                    autoComplete="email"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-ivory/70 text-sm mb-2">
+                  <label htmlFor="rsvp-phone" className="block text-ivory/70 text-sm mb-2">
                     Phone (optional)
                   </label>
                   <input
+                    id="rsvp-phone"
                     type="tel"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     className="input-celestial w-full"
                     placeholder="(555) 123-4567"
+                    autoComplete="tel"
                   />
                 </div>
 
                 {guest.plusOneAllowed && (
                   <div>
-                    <label className="block text-ivory/70 text-sm mb-2">
+                    <label htmlFor="rsvp-plusone" className="block text-ivory/70 text-sm mb-2">
                       Plus One Name
                     </label>
                     <input
+                      id="rsvp-plusone"
                       type="text"
                       value={plusOneName}
                       onChange={(e) => setPlusOneName(e.target.value)}
                       className="input-celestial w-full"
                       placeholder="Guest name"
+                      autoComplete="name"
                     />
                   </div>
                 )}
@@ -338,7 +346,7 @@ export default function RsvpClient({ rsvpDeadline }: { rsvpDeadline: string | nu
                     key={meal.id}
                     type="button"
                     onClick={() => setSelectedMeal(meal.id)}
-                    className={`w-full text-left p-4 rounded-lg border transition-colors ${
+                    className={`w-full text-left p-4 rounded-lg border transition-colors focus:outline-none focus:ring-2 focus:ring-gold/50 ${
                       selectedMeal === meal.id
                         ? "bg-gold/20 border-gold"
                         : "border-gold/20 hover:border-gold/40"

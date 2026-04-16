@@ -55,6 +55,7 @@ model SiteSettings {
   registryNote           String    @default("Truly, your love and support mean the most to us. We are just grateful to have you celebrate this special day with us. If you do choose to give a gift, please know that it is cherished deeply.")
   entertainmentNote      String    @default("Our reception will be a celebration filled with music, dancing, games, and memories! We want everyone to have an incredible time.")
   raffleTicketCount      Int       @default(2)
+  hideUnconfirmedWeddingParty Boolean @default(false)
   updatedAt              DateTime  @updatedAt
 }
 
@@ -97,6 +98,7 @@ model WeddingPartyMember {
   bio                    String   @default("")
   photoUrl               String?
   sortOrder              Int      @default(0)
+  confirmed              Boolean  @default(false)
   createdAt              DateTime @default(now())
   updatedAt              DateTime @updatedAt
 }

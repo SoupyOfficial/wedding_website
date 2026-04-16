@@ -178,7 +178,36 @@ export default function AdminGuestsPage() {
       {loading ? (
         <LoadingState message="Loading guests..." />
       ) : (
-        <div className="overflow-x-auto rounded-lg border border-gold/10">
+        <>
+        {/* Mobile Card View */}
+        <div className="lg:hidden space-y-3">
+          {filteredGuests.map((guest) => (
+            <div key={guest.id} className="card-celestial">
+              <div className="flex items-start justify-between gap-3 mb-2">
+                <div>
+                  <p className="text-ivory font-medium">{guest.firstName} {guest.lastName}</p>
+                  {guest.email && <p className="text-ivory/50 text-xs">{guest.email}</p>}
+                </div>
+                <span className={`text-xs px-2 py-1 rounded flex-shrink-0 ${guest.rsvpStatus === "attending" ? "text-green-400 bg-green-900/30" : guest.rsvpStatus === "declined" ? "text-red-400 bg-red-900/30" : "text-yellow-400 bg-yellow-900/30"}`}>
+                  {guest.rsvpStatus.charAt(0).toUpperCase() + guest.rsvpStatus.slice(1)}
+                </span>
+              </div>
+              <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-ivory/50 mb-3">
+                {guest.group && <span>Group: {guest.group}</span>}
+                <span>Plus One: {guest.plusOneAllowed ? guest.plusOneName || "Allowed" : "—"}</span>
+                {guest.tableNumber && <span>Table: {guest.tableNumber}</span>}
+              </div>
+              <div className="flex gap-3 border-t border-gold/10 pt-2">
+                <button onClick={() => openEdit(guest)} className="text-gold/70 hover:text-gold text-xs transition-colors">Edit</button>
+                <ConfirmButton onConfirm={() => handleDelete(guest.id)} message="Are you sure you want to remove this guest?" className="text-red-400/60 hover:text-red-400 text-xs transition-colors">Remove</ConfirmButton>
+              </div>
+            </div>
+          ))}
+          {filteredGuests.length === 0 && <EmptyState title="No guests found." />}
+        </div>
+
+        {/* Desktop Table View */}
+        <div className="hidden lg:block overflow-x-auto rounded-lg border border-gold/10">
           <table className="w-full text-sm">
             <thead>
               <tr className="bg-royal/30 text-gold/80 text-left text-xs uppercase tracking-wider">
@@ -214,6 +243,7 @@ export default function AdminGuestsPage() {
           </table>
           {filteredGuests.length === 0 && <EmptyState title="No guests found." />}
         </div>
+        </>
       )}
 
       {editing && (

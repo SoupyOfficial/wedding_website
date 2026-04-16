@@ -75,7 +75,7 @@ export default function GuestBookClient() {
       <div className="section-padding">
         <PageHeader title="Sign a Star" subtitle="Leave us a message and add your star to our constellation of love" />
 
-        <div className="grid lg:grid-cols-2 gap-12 max-w-6xl mx-auto">
+        <div className="grid lg:grid-cols-2 gap-12 max-w-5xl mx-auto">
           {/* Sign Form */}
           <div>
             <div className="card-celestial">
@@ -93,24 +93,27 @@ export default function GuestBookClient() {
 
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <label className="block text-ivory/70 text-sm mb-2">
+                  <label htmlFor="guestbook-name" className="block text-ivory/70 text-sm mb-2">
                     Your Name
                   </label>
                   <input
+                    id="guestbook-name"
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     className="input-celestial w-full"
                     placeholder="Your name"
+                    autoComplete="name"
                     required
                     maxLength={100}
                   />
                 </div>
                 <div>
-                  <label className="block text-ivory/70 text-sm mb-2">
+                  <label htmlFor="guestbook-message" className="block text-ivory/70 text-sm mb-2">
                     Your Message
                   </label>
                   <textarea
+                    id="guestbook-message"
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
                     className="input-celestial w-full h-32 resize-none"
@@ -139,10 +142,19 @@ export default function GuestBookClient() {
               Our Constellation
             </h2>
             {loading ? (
-              <div className="text-center py-8">
-                <div className="animate-pulse text-gold/50">
-                  Loading messages...
-                </div>
+              <div className="space-y-4">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="card-celestial border-gold/10 animate-pulse">
+                    <div className="flex items-start gap-3">
+                      <div className="w-6 h-6 bg-gold/20 rounded-full flex-shrink-0 mt-1" />
+                      <div className="flex-1 space-y-2">
+                        <div className="h-3 bg-gold/10 rounded w-full" />
+                        <div className="h-3 bg-gold/10 rounded w-3/4" />
+                        <div className="h-2 bg-gold/5 rounded w-1/3 mt-3" />
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
             ) : entries.length > 0 ? (
               <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">

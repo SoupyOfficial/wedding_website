@@ -13,7 +13,9 @@ const config = {
     relationToBrideOrGroom: { toSql: T.str },
     spouseOrPartner: { toSql: T.str },
     sortOrder: {},
+    confirmed: { toSql: T.boolInt },
   },
+  boolFields: ["confirmed"] as const,
   timestamps: true,
 };
 

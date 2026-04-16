@@ -140,27 +140,31 @@ export default function PhotosOfUsClient() {
                   accept="image/*"
                   onChange={handleFileSelect}
                   className="hidden"
+                  aria-label="Choose a photo to upload"
                 />
               </div>
 
               <div>
-                <label className="block text-ivory/70 text-sm mb-2">
+                <label htmlFor="photos-uploader" className="block text-ivory/70 text-sm mb-2">
                   Your Name
                 </label>
                 <input
+                  id="photos-uploader"
                   type="text"
                   value={uploaderName}
                   onChange={(e) => setUploaderName(e.target.value)}
                   className="input-celestial w-full"
                   placeholder="Who's uploading?"
+                  autoComplete="name"
                 />
               </div>
 
               <div>
-                <label className="block text-ivory/70 text-sm mb-2">
+                <label htmlFor="photos-caption" className="block text-ivory/70 text-sm mb-2">
                   Caption (optional)
                 </label>
                 <input
+                  id="photos-caption"
                   type="text"
                   value={caption}
                   onChange={(e) => setCaption(e.target.value)}

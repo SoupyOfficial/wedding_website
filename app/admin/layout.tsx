@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { adminNavItems } from "@/lib/config/navigation";
 
 export default function AdminLayout({
@@ -13,6 +13,15 @@ export default function AdminLayout({
 }) {
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  useEffect(() => {
+    if (!sidebarOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setSidebarOpen(false);
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [sidebarOpen]);
 
   if (pathname === "/admin/login") {
     return <>{children}</>;
@@ -96,6 +105,7 @@ export default function AdminLayout({
         <header className="bg-midnight/50 backdrop-blur border-b border-gold/10 px-6 py-4 flex items-center justify-between lg:justify-end">
           <button
             onClick={() => setSidebarOpen(true)}
+            aria-label="Open sidebar navigation"
             className="lg:hidden text-ivory/60 hover:text-ivory"
           >
             <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">

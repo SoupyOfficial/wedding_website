@@ -80,7 +80,7 @@ export default function RegistryList({ items }: { items: RegistryItem[] }) {
       {stores.length > 0 && (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-4xl mx-auto">
           {stores.map((registry) => (
-            <div key={registry.id} className="card-celestial text-center group hover:scale-105 transition-all duration-300">
+            <div key={registry.id} className="card-celestial text-center group hover:scale-[1.03] transition-all duration-300">
               <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-royal/50 border-2 border-gold/20 flex items-center justify-center overflow-hidden">
                 {registry.iconUrl ? (
                   <img src={registry.iconUrl} alt={registry.name} className="w-12 h-12 object-contain" />

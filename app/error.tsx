@@ -40,7 +40,7 @@ export default function GlobalError({
           <span className="text-6xl">✨</span>
         </div>
 
-        <h1 className="font-display text-4xl text-gold mb-4">
+        <h1 className="font-serif text-4xl text-gold mb-4">
           Something Went Wrong
         </h1>
         <p className="text-ivory/70 mb-8 leading-relaxed">

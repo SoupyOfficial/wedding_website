@@ -73,36 +73,41 @@ export default function ContactClient() {
 
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <label className="block text-ivory/70 text-sm mb-2">
+                  <label htmlFor="contact-name" className="block text-ivory/70 text-sm mb-2">
                     Name
                   </label>
                   <input
+                    id="contact-name"
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     className="input-celestial w-full"
                     placeholder="Your name"
+                    autoComplete="name"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-ivory/70 text-sm mb-2">
+                  <label htmlFor="contact-email" className="block text-ivory/70 text-sm mb-2">
                     Email
                   </label>
                   <input
+                    id="contact-email"
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="input-celestial w-full"
                     placeholder="your@email.com"
+                    autoComplete="email"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-ivory/70 text-sm mb-2">
+                  <label htmlFor="contact-subject" className="block text-ivory/70 text-sm mb-2">
                     Subject
                   </label>
                   <input
+                    id="contact-subject"
                     type="text"
                     value={subject}
                     onChange={(e) => setSubject(e.target.value)}
@@ -112,10 +117,11 @@ export default function ContactClient() {
                   />
                 </div>
                 <div>
-                  <label className="block text-ivory/70 text-sm mb-2">
+                  <label htmlFor="contact-message" className="block text-ivory/70 text-sm mb-2">
                     Message
                   </label>
                   <textarea
+                    id="contact-message"
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
                     className="input-celestial w-full h-32 resize-none"

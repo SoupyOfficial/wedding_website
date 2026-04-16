@@ -19,7 +19,6 @@ interface Settings {
   sitePassword: string;
   sitePasswordEnabled: boolean;
   rsvpDeadline: string | null;
-  rsvpEnabled: boolean;
   heroTagline: string;
   heroTaglinePostWedding: string;
   ourStoryContent: string;
@@ -45,6 +44,7 @@ interface Settings {
   bannerUrl: string;
   bannerActive: boolean;
   bannerColor: string;
+  hideUnconfirmedWeddingParty: boolean;
 }
 
 export default function AdminSettingsPage() {
@@ -120,9 +120,9 @@ export default function AdminSettingsPage() {
       {error && <Alert type="error" message={error} />}
 
       <form onSubmit={handleSave} className="space-y-8">
-        {/* Couple Info */}
+        {/* Couple & Homepage */}
         <section className="bg-royal/20 border border-gold/10 rounded-lg p-6">
-          <h2 className="text-gold font-serif text-xl mb-4">Couple Info</h2>
+          <h2 className="text-gold font-serif text-xl mb-4">Couple & Homepage</h2>
           <div className="grid md:grid-cols-2 gap-4">
             <div>
               <label className="block text-ivory/70 text-sm mb-1">Couple Name</label>
@@ -142,33 +142,6 @@ export default function AdminSettingsPage() {
                 onChange={(e) => updateField("weddingHashtag", e.target.value)}
                 className="input-celestial w-full"
                 placeholder="#ForeverCampbells"
-              />
-            </div>
-            <div>
-              <label className="block text-ivory/70 text-sm mb-1">Contact Email (Joint)</label>
-              <input
-                type="email"
-                value={settings.contactEmailJoint}
-                onChange={(e) => updateField("contactEmailJoint", e.target.value)}
-                className="input-celestial w-full"
-              />
-            </div>
-            <div>
-              <label className="block text-ivory/70 text-sm mb-1">Contact Email (Bride)</label>
-              <input
-                type="email"
-                value={settings.contactEmailBride}
-                onChange={(e) => updateField("contactEmailBride", e.target.value)}
-                className="input-celestial w-full"
-              />
-            </div>
-            <div>
-              <label className="block text-ivory/70 text-sm mb-1">Contact Email (Groom)</label>
-              <input
-                type="email"
-                value={settings.contactEmailGroom}
-                onChange={(e) => updateField("contactEmailGroom", e.target.value)}
-                className="input-celestial w-full"
               />
             </div>
             <div>
@@ -284,21 +257,47 @@ export default function AdminSettingsPage() {
           </div>
         </section>
 
-        {/* RSVP Settings */}
+        {/* Contact Emails */}
         <section className="bg-royal/20 border border-gold/10 rounded-lg p-6">
-          <h2 className="text-gold font-serif text-xl mb-4">RSVP Settings</h2>
-          <div className="grid md:grid-cols-2 gap-4">
+          <h2 className="text-gold font-serif text-xl mb-4">Contact Emails</h2>
+          <div className="grid md:grid-cols-3 gap-4">
             <div>
-              <label className="flex items-center gap-2 text-ivory/70 text-sm">
-                <input
-                  type="checkbox"
-                  checked={settings.rsvpEnabled}
-                  onChange={(e) => updateField("rsvpEnabled", e.target.checked)}
-                  className="w-4 h-4"
-                />
-                RSVP Enabled
-              </label>
+              <label className="block text-ivory/70 text-sm mb-1">Joint Email</label>
+              <input
+                type="email"
+                value={settings.contactEmailJoint}
+                onChange={(e) => updateField("contactEmailJoint", e.target.value)}
+                className="input-celestial w-full"
+              />
             </div>
+            <div>
+              <label className="block text-ivory/70 text-sm mb-1">Bride Email</label>
+              <input
+                type="email"
+                value={settings.contactEmailBride}
+                onChange={(e) => updateField("contactEmailBride", e.target.value)}
+                className="input-celestial w-full"
+              />
+            </div>
+            <div>
+              <label className="block text-ivory/70 text-sm mb-1">Groom Email</label>
+              <input
+                type="email"
+                value={settings.contactEmailGroom}
+                onChange={(e) => updateField("contactEmailGroom", e.target.value)}
+                className="input-celestial w-full"
+              />
+            </div>
+          </div>
+        </section>
+
+        {/* RSVP */}
+        <section className="bg-royal/20 border border-gold/10 rounded-lg p-6">
+          <h2 className="text-gold font-serif text-xl mb-4">RSVP</h2>
+          <p className="text-ivory/50 text-xs mb-4">
+            To enable or disable RSVP, use the <a href="/admin/features" className="text-gold hover:underline">Feature Management</a> page.
+          </p>
+          <div className="grid md:grid-cols-2 gap-4">
             <div>
               <label className="block text-ivory/70 text-sm mb-1">RSVP Deadline</label>
               <input
@@ -307,6 +306,17 @@ export default function AdminSettingsPage() {
                 onChange={(e) => updateField("rsvpDeadline", new Date(e.target.value).toISOString())}
                 className="input-celestial w-full"
               />
+            </div>
+            <div>
+              <label className="block text-ivory/70 text-sm mb-1">Notification Email</label>
+              <input
+                type="email"
+                value={settings.notificationEmail}
+                onChange={(e) => updateField("notificationEmail", e.target.value)}
+                className="input-celestial w-full"
+                placeholder="Email for RSVP notifications"
+              />
+              <p className="text-ivory/40 text-xs mt-1">Coming soon — email notifications are not yet active.</p>
             </div>
             <div>
               <label className="flex items-center gap-2 text-ivory/70 text-sm">
@@ -318,16 +328,7 @@ export default function AdminSettingsPage() {
                 />
                 Notify on RSVP
               </label>
-            </div>
-            <div>
-              <label className="block text-ivory/70 text-sm mb-1">Notification Email</label>
-              <input
-                type="email"
-                value={settings.notificationEmail}
-                onChange={(e) => updateField("notificationEmail", e.target.value)}
-                className="input-celestial w-full"
-                placeholder="Email for RSVP notifications"
-              />
+              <p className="text-ivory/40 text-xs mt-1">Coming soon — email notifications are not yet active.</p>
             </div>
           </div>
         </section>
@@ -431,13 +432,14 @@ export default function AdminSettingsPage() {
               />
             </div>
             <div>
-              <label className="block text-ivory/70 text-sm mb-1">FAQ Content</label>
+              <label className="block text-ivory/70 text-sm mb-1">FAQ Page Intro</label>
               <textarea
                 value={settings.faqContent}
                 onChange={(e) => updateField("faqContent", e.target.value)}
                 className="input-celestial w-full h-24 resize-none"
-                placeholder="Frequently asked questions..."
+                placeholder="Introductory text shown above the FAQ list..."
               />
+              <p className="text-ivory/40 text-xs mt-1">Shown above the individual FAQ entries managed on the <a href="/admin/faqs" className="text-gold hover:underline">FAQs</a> page.</p>
             </div>
             <div>
               <label className="block text-ivory/70 text-sm mb-1">Pre-Wedding Content</label>
@@ -478,9 +480,28 @@ export default function AdminSettingsPage() {
           </div>
         </section>
 
-        {/* Travel & Raffle */}
+        {/* Wedding Party */}
         <section className="bg-royal/20 border border-gold/10 rounded-lg p-6">
-          <h2 className="text-gold font-serif text-xl mb-4">Travel & Raffle</h2>
+          <h2 className="text-gold font-serif text-xl mb-4">Wedding Party</h2>
+          <div>
+            <label className="flex items-center gap-2 text-ivory/70 text-sm">
+              <input
+                type="checkbox"
+                checked={settings.hideUnconfirmedWeddingParty}
+                onChange={(e) => updateField("hideUnconfirmedWeddingParty", e.target.checked)}
+                className="accent-gold"
+              />
+              Hide unconfirmed members on public page
+            </label>
+            <p className="text-ivory/40 text-xs mt-1 ml-5">
+              When enabled, only wedding party members marked as &quot;Confirmed&quot; will appear on the public Wedding Party page.
+            </p>
+          </div>
+        </section>
+
+        {/* Reception Raffle */}
+        <section className="bg-royal/20 border border-gold/10 rounded-lg p-6">
+          <h2 className="text-gold font-serif text-xl mb-4">Reception Raffle</h2>
           <div className="grid md:grid-cols-2 gap-4">
             <div>
               <label className="block text-ivory/70 text-sm mb-1">
@@ -504,9 +525,9 @@ export default function AdminSettingsPage() {
           </div>
         </section>
 
-        {/* SEO & Sharing */}
+        {/* SEO & Social */}
         <section className="bg-royal/20 border border-gold/10 rounded-lg p-6">
-          <h2 className="text-gold font-serif text-xl mb-4">SEO & Sharing</h2>
+          <h2 className="text-gold font-serif text-xl mb-4">SEO & Social</h2>
           <div className="grid md:grid-cols-2 gap-4">
             <div>
               <label className="block text-ivory/70 text-sm mb-1">OG Image URL</label>
@@ -517,6 +538,7 @@ export default function AdminSettingsPage() {
                 className="input-celestial w-full"
                 placeholder="URL for social share image"
               />
+              <p className="text-ivory/40 text-xs mt-1">Used when your site is shared on social media. Leave blank for default.</p>
             </div>
             <div>
               <label className="block text-ivory/70 text-sm mb-1">Photo Share Link</label>
@@ -538,13 +560,6 @@ export default function AdminSettingsPage() {
                 placeholder="Description for social media sharing"
               />
             </div>
-          </div>
-        </section>
-
-        {/* Social */}
-        <section className="bg-royal/20 border border-gold/10 rounded-lg p-6">
-          <h2 className="text-gold font-serif text-xl mb-4">Social Media</h2>
-          <div className="grid md:grid-cols-3 gap-4">
             <div>
               <label className="block text-ivory/70 text-sm mb-1">Instagram</label>
               <input

@@ -58,22 +58,22 @@ export default async function OurStoryPage() {
             </h2>
             <div className="relative">
               {/* Timeline Line */}
-              <div className="absolute left-1/2 transform -translate-x-1/2 w-px h-full bg-gradient-to-b from-gold/40 via-gold/20 to-transparent" />
+              <div className="absolute left-4 md:left-1/2 transform md:-translate-x-1/2 w-px h-full bg-gradient-to-b from-gold/40 via-gold/20 to-transparent" />
 
               {photos.map((photo: { id: string; url: string; caption: string | null }, index: number) => (
                 <div
                   key={photo.id}
-                  className={`flex items-center mb-16 ${
-                    index % 2 === 0 ? "flex-row" : "flex-row-reverse"
+                  className={`flex items-center mb-16 flex-row ${
+                    index % 2 === 0 ? "md:flex-row" : "md:flex-row-reverse"
                   }`}
                 >
-                  <div className="w-1/2 px-8">
+                  <div className="w-full pl-12 md:pl-0 md:w-1/2 md:px-8">
                     <div className="card-celestial overflow-hidden">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={photo.url}
                         alt={photo.caption || "Our story photo"}
-                        className="w-full h-64 object-cover rounded-lg"
+                        className="w-full h-48 md:h-64 object-cover rounded-lg"
                         loading="lazy"
                       />
                       {photo.caption && (
@@ -84,8 +84,8 @@ export default async function OurStoryPage() {
                     </div>
                   </div>
                   {/* Timeline Dot */}
-                  <div className="w-4 h-4 bg-gold rounded-full border-2 border-midnight z-10 shadow-glow" />
-                  <div className="w-1/2" />
+                  <div className="absolute left-4 md:static transform -translate-x-1/2 md:translate-x-0 w-4 h-4 bg-gold rounded-full border-2 border-midnight z-10 shadow-glow" />
+                  <div className="hidden md:block w-1/2" />
                 </div>
               ))}
             </div>

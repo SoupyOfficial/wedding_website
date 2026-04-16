@@ -32,6 +32,15 @@ export default function Navigation({ weddingDate, featureFlags = {} }: Navigatio
     setIsMobileOpen(false);
   }, [pathname]);
 
+  useEffect(() => {
+    if (!isMobileOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setIsMobileOpen(false);
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [isMobileOpen]);
+
   const filteredLinks = publicNavLinks.filter((link) => {
     if (isPostWedding && link.hidePostWedding) return false;
     if (!isPostWedding && link.showPostWedding) return false;

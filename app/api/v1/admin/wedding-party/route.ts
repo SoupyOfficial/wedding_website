@@ -13,8 +13,10 @@ const config = {
     relationToBrideOrGroom: { toSql: T.str },
     spouseOrPartner: { toSql: T.str },
     sortOrder: { toSqlCreate: T.numDefault(0) },
+    confirmed: { toSql: T.boolInt, toSqlCreate: T.boolInt },
   },
   required: { fields: ["name", "role", "side"], message: "Name, role, and side are required." },
+  boolFields: ["confirmed"] as const,
   timestamps: true,
 };
 

@@ -1,6 +1,7 @@
 import { query } from "@/lib/db";
 import { getSettings } from "@/lib/services/settings.service";
 import type { FAQ } from "@/lib/db-types";
+import { sanitizeHtml } from "@/lib/sanitize";
 import { checkFeatureFlag } from "@/lib/feature-gate";
 import { PageHeader } from "@/components/ui";
 
@@ -38,7 +39,7 @@ export default async function FAQPage() {
             <div
               className="text-ivory/70 leading-relaxed text-center"
               dangerouslySetInnerHTML={{
-                __html: settings.faqContent.replace(/\n/g, "<br />"),
+                __html: sanitizeHtml(settings.faqContent.replace(/\n/g, "<br />")),
               }}
             />
           </div>

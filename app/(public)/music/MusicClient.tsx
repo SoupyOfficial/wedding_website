@@ -226,26 +226,29 @@ export default function MusicClient() {
             >
               {/* Guest Name */}
               <div>
-                <label className="block text-ivory/70 text-sm mb-1.5">
+                <label htmlFor="music-guestname" className="block text-ivory/70 text-sm mb-1.5">
                   Your Name *
                 </label>
                 <input
+                  id="music-guestname"
                   type="text"
                   value={guestName}
                   onChange={(e) => setGuestName(e.target.value)}
                   className="input-celestial w-full"
                   placeholder="Enter your name"
+                  autoComplete="name"
                   required
                 />
               </div>
 
               {/* Apple Music Search */}
               <div>
-                <label className="block text-ivory/70 text-sm mb-1.5">
+                <label htmlFor="music-search" className="block text-ivory/70 text-sm mb-1.5">
                   Search for a Song
                 </label>
                 <div className="relative">
                   <input
+                    id="music-search"
                     type="text"
                     value={searchQuery}
                     onChange={(e) => handleSearchInput(e.target.value)}
@@ -378,6 +381,7 @@ export default function MusicClient() {
               {/* Submit Message */}
               {submitMessage && (
                 <div
+                  role="alert"
                   className={`p-3 rounded-lg text-sm ${
                     submitMessage.type === "success"
                       ? "bg-green-900/20 border border-green-500/30 text-green-300"

@@ -1,6 +1,7 @@
 import { query } from "@/lib/db";
 import type { WeddingPartyMember } from "@/lib/db-types";
 import { checkFeatureFlag } from "@/lib/feature-gate";
+import { getSettings } from "@/lib/services/settings.service";
 import SectionDivider from "@/components/SectionDivider";
 import { PageHeader } from "@/components/ui";
 
@@ -112,18 +113,22 @@ export default async function WeddingPartyPage() {
   const gate = await checkFeatureFlag("weddingPartyPageEnabled");
   if (gate) return gate;
 
+  const settings = await getSettings("hideUnconfirmedWeddingParty");
+  const hideUnconfirmed = settings?.hideUnconfirmedWeddingParty ?? false;
+  const confirmedFilter = hideUnconfirmed ? " AND confirmed = 1" : "";
+
   const allBrideSide = await query<WeddingPartyMember>(
-    "SELECT * FROM WeddingPartyMember WHERE side = ? ORDER BY sortOrder ASC",
+    `SELECT * FROM WeddingPartyMember WHERE side = ?${confirmedFilter} ORDER BY sortOrder ASC`,
     ["bride"]
   );
 
   const allGroomSide = await query<WeddingPartyMember>(
-    "SELECT * FROM WeddingPartyMember WHERE side = ? ORDER BY sortOrder ASC",
+    `SELECT * FROM WeddingPartyMember WHERE side = ?${confirmedFilter} ORDER BY sortOrder ASC`,
     ["groom"]
   );
 
   const special = await query<WeddingPartyMember>(
-    "SELECT * FROM WeddingPartyMember WHERE side = ? ORDER BY sortOrder ASC",
+    `SELECT * FROM WeddingPartyMember WHERE side = ?${confirmedFilter} ORDER BY sortOrder ASC`,
     ["special"]
   );
 

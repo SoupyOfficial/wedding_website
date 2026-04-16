@@ -29,8 +29,8 @@ export default function NotFound() {
           <span className="text-6xl">🌙</span>
         </div>
 
-        <h1 className="font-display text-6xl text-gold mb-4">404</h1>
-        <h2 className="font-display text-2xl text-ivory mb-4">
+        <h1 className="font-serif text-6xl text-gold mb-4">404</h1>
+        <h2 className="font-serif text-2xl text-ivory mb-4">
           Lost Among the Stars
         </h2>
         <p className="text-ivory/70 mb-8 leading-relaxed">
