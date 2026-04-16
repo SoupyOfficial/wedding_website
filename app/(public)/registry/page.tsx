@@ -1,6 +1,6 @@
-import { query, queryOne, toBool } from "@/lib/db";
-import type { RegistryItem, SiteSettings } from "@/lib/db-types";
-import { SETTINGS_BOOLS } from "@/lib/db-types";
+import { query } from "@/lib/db";
+import { getSettings } from "@/lib/services/settings.service";
+import type { RegistryItem } from "@/lib/db-types";
 import { checkFeatureFlag } from "@/lib/feature-gate";
 import SectionDivider from "@/components/SectionDivider";
 import { PageHeader } from "@/components/ui";
@@ -15,8 +15,7 @@ export default async function RegistryPage() {
   const gate = await checkFeatureFlag("registryPageEnabled");
   if (gate) return gate;
   const registries = await query<RegistryItem>("SELECT * FROM RegistryItem ORDER BY sortOrder ASC");
-  const settings = await queryOne<SiteSettings>("SELECT * FROM SiteSettings WHERE id = ?", ["singleton"]);
-  if (settings) toBool(settings, ...SETTINGS_BOOLS);
+  const settings = await getSettings("registryNote");
 
   return (
     <div className="pt-8 pb-16">

@@ -9,6 +9,7 @@ vi.mock("@/lib/db", () => ({
 
 vi.mock("@/lib/apple-music", () => ({
   isAppleMusicConfigured: vi.fn(),
+  getConfig: vi.fn(() => ({ teamId: "T", keyId: "K", privateKey: "PK" })),
   parsePlaylistUrl: vi.fn(),
   fetchPlaylist: vi.fn(),
 }));

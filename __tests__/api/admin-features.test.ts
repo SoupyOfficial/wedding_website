@@ -11,6 +11,9 @@ vi.mock("@/lib/config/feature-flags", () => ({
   getFeatureFlags: vi.fn(),
   getFeatureFlag: vi.fn(),
   setFeatureFlag: vi.fn(),
+  isFeatureFlagKey: vi.fn((key: string) => [
+    "rsvpEnabled", "guestBookEnabled", "photoUploadEnabled", "songRequestsEnabled",
+  ].includes(key)),
 }));
 
 import { getFeatureFlags, setFeatureFlag } from "@/lib/config/feature-flags";
@@ -68,6 +71,13 @@ describe("PUT /api/v1/admin/features", () => {
   it("returns 400 when key is not a string", async () => {
     const res = await PUT(makeReq({ key: 123, enabled: true }));
     expect(res.status).toBe(400);
+  });
+
+  it("returns 400 for unknown feature flag key", async () => {
+    const res = await PUT(makeReq({ key: "unknownFlag", enabled: true }));
+    expect(res.status).toBe(400);
+    const body = await res.json();
+    expect(body.error).toContain("Unknown feature flag");
   });
 
   it("returns 400 when enabled is not boolean", async () => {

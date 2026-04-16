@@ -1,6 +1,5 @@
-import { queryOne, toBool } from "@/lib/db";
-import type { SiteSettings } from "@/lib/db-types";
-import { SETTINGS_BOOLS } from "@/lib/db-types";
+import { queryOne } from "@/lib/db";
+import { getSettings } from "@/lib/services/settings.service";
 import Link from "next/link";
 import { AdminPageHeader } from "@/components/ui";
 
@@ -49,11 +48,10 @@ export default async function AdminDashboard() {
   const contactMessages = cnt(contactMessagesR);
   const unreadMessages = cnt(unreadMessagesR);
 
-  const settings = await queryOne<SiteSettings>("SELECT * FROM SiteSettings WHERE id = ?", ["singleton"]);
-  if (settings) toBool(settings, ...SETTINGS_BOOLS);
+  const dateRow = await getSettings("weddingDate");
 
-  const weddingDate = settings?.weddingDate
-    ? new Date(settings.weddingDate)
+  const weddingDate = dateRow?.weddingDate
+    ? new Date(dateRow.weddingDate)
     : null;
   const daysUntil = weddingDate
     ? Math.ceil(

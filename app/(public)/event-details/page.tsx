@@ -1,6 +1,6 @@
-import { query, queryOne, toBool } from "@/lib/db";
-import type { SiteSettings, TimelineEvent } from "@/lib/db-types";
-import { SETTINGS_BOOLS } from "@/lib/db-types";
+import { query } from "@/lib/db";
+import { getSettings } from "@/lib/services/settings.service";
+import type { TimelineEvent } from "@/lib/db-types";
 import { checkFeatureFlag } from "@/lib/feature-gate";
 import SectionDivider from "@/components/SectionDivider";
 import { PageHeader } from "@/components/ui";
@@ -14,8 +14,11 @@ export const metadata = {
 export default async function EventDetailsPage() {
   const gate = await checkFeatureFlag("eventDetailsPageEnabled");
   if (gate) return gate;
-  const settings = await queryOne<SiteSettings>("SELECT * FROM SiteSettings WHERE id = ?", ["singleton"]);
-  if (settings) toBool(settings, ...SETTINGS_BOOLS);
+  const settings = await getSettings(
+    "ceremonyType", "venueName", "venueAddress", "weddingDate",
+    "weddingTime", "rsvpDeadline", "dressCode", "parkingInfo",
+    "childrenPolicy", "weatherInfo"
+  );
 
   const timelineEvents = await query<TimelineEvent>(
     "SELECT * FROM TimelineEvent WHERE eventType = ? ORDER BY sortOrder ASC",

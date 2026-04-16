@@ -1,50 +1,18 @@
-import { query, queryOne, execute, toBool, generateId, now } from "@/lib/db";
+import { query, queryOne, execute, generateId, now } from "@/lib/db";
 import type { FeatureFlag } from "@/lib/db-types";
+import defaults from "./feature-flag-defaults.json";
 
-export interface FeatureFlags {
-  rsvpEnabled: boolean;
-  guestBookEnabled: boolean;
-  photoUploadEnabled: boolean;
-  registrySyncEnabled: boolean;
-  songRequestsEnabled: boolean;
-  entertainmentPageEnabled: boolean;
-  guestPhotoSharingEnabled: boolean;
-  liveGuestCountEnabled: boolean;
-  massEmailEnabled: boolean;
-  ourStoryPageEnabled: boolean;
-  eventDetailsPageEnabled: boolean;
-  travelPageEnabled: boolean;
-  weddingPartyPageEnabled: boolean;
-  galleryPageEnabled: boolean;
-  registryPageEnabled: boolean;
-  faqPageEnabled: boolean;
-  contactPageEnabled: boolean;
-  musicPageEnabled: boolean;
-  photosOfUsPageEnabled: boolean;
-  [key: string]: boolean;
+/** Derived from feature-flag-defaults.json — add new flags there (OCP). */
+export type FeatureFlags = typeof defaults;
+
+export type FeatureFlagKey = keyof FeatureFlags;
+
+const defaultFlags: FeatureFlags = defaults;
+
+/** Runtime guard for untrusted input (e.g., API request bodies). */
+export function isFeatureFlagKey(key: string): key is FeatureFlagKey {
+  return key in defaultFlags;
 }
-
-const defaultFlags: FeatureFlags = {
-  rsvpEnabled: true,
-  guestBookEnabled: true,
-  photoUploadEnabled: false,
-  registrySyncEnabled: false,
-  songRequestsEnabled: true,
-  entertainmentPageEnabled: true,
-  guestPhotoSharingEnabled: false,
-  liveGuestCountEnabled: false,
-  massEmailEnabled: true,
-  ourStoryPageEnabled: true,
-  eventDetailsPageEnabled: true,
-  travelPageEnabled: true,
-  weddingPartyPageEnabled: true,
-  galleryPageEnabled: true,
-  registryPageEnabled: true,
-  faqPageEnabled: true,
-  contactPageEnabled: true,
-  musicPageEnabled: true,
-  photosOfUsPageEnabled: true,
-};
 
 export async function getFeatureFlags(): Promise<FeatureFlags> {
   try {
@@ -52,33 +20,50 @@ export async function getFeatureFlags(): Promise<FeatureFlags> {
     const result = { ...defaultFlags };
 
     for (const flag of flags) {
-      result[flag.key] = flag.enabled === 1 || flag.enabled === true;
+      if (flag.key in result) {
+        (result as Record<string, boolean>)[flag.key] =
+          flag.enabled === 1 || flag.enabled === true;
+      }
     }
 
     return result;
   } catch {
-    return defaultFlags;
+    return { ...defaultFlags };
   }
 }
 
-export async function getFeatureFlag(key: string): Promise<boolean> {
+export async function getFeatureFlag<K extends FeatureFlagKey>(
+  key: K
+): Promise<boolean> {
   try {
-    const flag = await queryOne<FeatureFlag>("SELECT * FROM FeatureFlag WHERE key = ?", [key]);
-    if (!flag) return defaultFlags[key] ?? false;
+    const flag = await queryOne<FeatureFlag>(
+      "SELECT * FROM FeatureFlag WHERE key = ?",
+      [key]
+    );
+    if (!flag) return defaultFlags[key];
     return flag.enabled === 1 || flag.enabled === true;
   } catch {
-    return defaultFlags[key] ?? false;
+    return defaultFlags[key];
   }
 }
 
-export async function setFeatureFlag(
-  key: string,
+export async function setFeatureFlag<K extends FeatureFlagKey>(
+  key: K,
   enabled: boolean
 ): Promise<void> {
-  const existing = await queryOne<FeatureFlag>("SELECT * FROM FeatureFlag WHERE key = ?", [key]);
+  const existing = await queryOne<FeatureFlag>(
+    "SELECT * FROM FeatureFlag WHERE key = ?",
+    [key]
+  );
   if (existing) {
-    await execute("UPDATE FeatureFlag SET enabled = ?, updatedAt = ? WHERE key = ?", [enabled ? 1 : 0, now(), key]);
+    await execute(
+      "UPDATE FeatureFlag SET enabled = ?, updatedAt = ? WHERE key = ?",
+      [enabled ? 1 : 0, now(), key]
+    );
   } else {
-    await execute("INSERT INTO FeatureFlag (id, key, enabled, updatedAt) VALUES (?, ?, ?, ?)", [generateId(), key, enabled ? 1 : 0, now()]);
+    await execute(
+      "INSERT INTO FeatureFlag (id, key, enabled, updatedAt) VALUES (?, ?, ?, ?)",
+      [generateId(), key, enabled ? 1 : 0, now()]
+    );
   }
 }

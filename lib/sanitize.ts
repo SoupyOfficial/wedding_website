@@ -4,6 +4,10 @@
  * For rich text content (e.g. ourStoryContent), strips dangerous tags/attributes.
  */
 
+import { defaultSanitizeRules, type SanitizeRules } from "@/lib/config/sanitize-rules";
+
+export type { SanitizeRules } from "@/lib/config/sanitize-rules";
+
 const ESCAPE_MAP: Record<string, string> = {
   "&": "&amp;",
   "<": "&lt;",
@@ -22,24 +26,13 @@ export function escapeHtml(str: string): string {
   return str.replace(ESCAPE_RE, (ch) => ESCAPE_MAP[ch]);
 }
 
-// Tags allowed in rich text content (ourStoryContent)
-const ALLOWED_TAGS = new Set([
-  "p", "br", "b", "i", "em", "strong", "u", "a", "ul", "ol", "li",
-  "h1", "h2", "h3", "h4", "h5", "h6", "blockquote", "span", "div",
-]);
-
-// Attributes allowed on tags
-const ALLOWED_ATTRS: Record<string, Set<string>> = {
-  a: new Set(["href", "title", "target", "rel"]),
-  span: new Set(["class"]),
-  div: new Set(["class"]),
-};
-
 /**
  * Sanitize rich HTML content by stripping dangerous tags and attributes.
  * Allows only a safe subset of structural + formatting tags.
+ * Pass custom rules to allow different tag/attribute sets (OCP).
  */
-export function sanitizeHtml(html: string): string {
+export function sanitizeHtml(html: string, rules: SanitizeRules = defaultSanitizeRules): string {
+  const { allowedTags, allowedAttrs } = rules;
   // Remove script tags and their contents entirely
   let cleaned = html.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "");
 
@@ -53,19 +46,19 @@ export function sanitizeHtml(html: string): string {
   // Strip disallowed tags but keep their text content
   cleaned = cleaned.replace(/<\/?([a-zA-Z][a-zA-Z0-9]*)\b[^>]*>/g, (match, tagName: string) => {
     const tag = tagName.toLowerCase();
-    if (!ALLOWED_TAGS.has(tag)) return "";
+    if (!allowedTags.has(tag)) return "";
 
     // For allowed tags, strip disallowed attributes
     if (match.startsWith("</")) return `</${tag}>`;
 
-    const allowedAttrs = ALLOWED_ATTRS[tag] || new Set<string>();
+    const tagAttrs = allowedAttrs[tag] || new Set<string>();
     // Extract attributes and filter
     const attrsMatch = match.match(/\s+([a-zA-Z-]+)\s*=\s*(?:"([^"]*)"|'([^']*)'|(\S+))/g) || [];
     const safeAttrs = attrsMatch
       .filter((attr) => {
         const nameMatch = attr.match(/^\s*([a-zA-Z-]+)/);
         if (!nameMatch) return false;
-        return allowedAttrs.has(nameMatch[1].toLowerCase());
+        return tagAttrs.has(nameMatch[1].toLowerCase());
       })
       .map((attr) => {
         // Ensure 'a' tags with href get rel="noopener noreferrer" treatment

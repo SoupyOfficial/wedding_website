@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { getFeatureFlags, setFeatureFlag } from "@/lib/config/feature-flags";
+import { getFeatureFlags, setFeatureFlag, isFeatureFlagKey } from "@/lib/config/feature-flags";
 import { successResponse, errorResponse } from "@/lib/api";
 
 export const dynamic = "force-dynamic";
@@ -21,6 +21,10 @@ export async function PUT(req: NextRequest) {
 
     if (!key || typeof key !== "string") {
       return errorResponse("Feature flag key is required.", 400);
+    }
+
+    if (!isFeatureFlagKey(key)) {
+      return errorResponse(`Unknown feature flag: ${key}`, 400);
     }
 
     if (typeof enabled !== "boolean") {

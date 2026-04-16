@@ -1,8 +1,8 @@
 import { NextRequest } from "next/server";
-import { execute, generateId, now } from "@/lib/db";
 import { rateLimit } from "@/lib/api/middleware";
 import { successResponse, errorResponse } from "@/lib/api";
 import { getFeatureFlag } from "@/lib/config/feature-flags";
+import { submitMessage } from "@/lib/services/contact.service";
 
 export const dynamic = "force-dynamic";
 
@@ -22,18 +22,7 @@ export async function POST(req: NextRequest) {
       return errorResponse("All fields are required.", 400);
     }
 
-    await execute(
-      "INSERT INTO ContactMessage (id, name, email, subject, message, isRead, createdAt) VALUES (?, ?, ?, ?, ?, 0, ?)",
-      [
-        generateId(),
-        name.trim().slice(0, 100),
-        email.trim().slice(0, 200),
-        subject.trim().slice(0, 200),
-        message.trim().slice(0, 2000),
-        now(),
-      ]
-    );
-
+    await submitMessage({ name, email, subject, message });
     return successResponse({ message: "Message sent successfully." }, undefined, 201);
   } catch (error) {
     console.error("Failed to create contact message:", error);

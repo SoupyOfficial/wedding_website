@@ -1,6 +1,6 @@
-import { query, queryOne, toBool } from "@/lib/db";
-import type { FAQ, SiteSettings } from "@/lib/db-types";
-import { SETTINGS_BOOLS } from "@/lib/db-types";
+import { query } from "@/lib/db";
+import { getSettings } from "@/lib/services/settings.service";
+import type { FAQ } from "@/lib/db-types";
 import { checkFeatureFlag } from "@/lib/feature-gate";
 import { PageHeader } from "@/components/ui";
 
@@ -21,8 +21,7 @@ export default async function FAQPage() {
     faqs = await query<FAQ>("SELECT * FROM FAQ ORDER BY sortOrder ASC");
   }
 
-  const settings = await queryOne<SiteSettings>("SELECT * FROM SiteSettings WHERE id = ?", ["singleton"]);
-  if (settings) toBool(settings, ...SETTINGS_BOOLS);
+  const settings = await getSettings("faqContent");
 
   return (
     <div className="pt-8 pb-16">

@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { query, execute, generateId } from "@/lib/db";
 import {
   isAppleMusicConfigured,
+  getConfig,
   parsePlaylistUrl,
   fetchPlaylist,
 } from "@/lib/apple-music";
@@ -53,7 +54,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Fetch playlist from Apple Music API
-    const playlist = await fetchPlaylist(parsed.storefront, parsed.playlistId);
+    const playlist = await fetchPlaylist(getConfig(), parsed.storefront, parsed.playlistId);
 
     if (playlist.tracks.length === 0) {
       return errorResponse("Playlist is empty.", 400);

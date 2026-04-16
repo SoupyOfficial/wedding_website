@@ -11,9 +11,17 @@ vi.stubGlobal("fetch", mockFetch);
 import {
   parsePlaylistUrl,
   isAppleMusicConfigured,
+  getConfig,
   getAppleMusicToken,
   fetchPlaylist,
 } from "@/lib/apple-music";
+import type { AppleMusicConfig } from "@/lib/apple-music";
+
+const validConfig: AppleMusicConfig = {
+  teamId: "TEAM123",
+  keyId: "KEY456",
+  privateKey: "-----BEGIN PRIVATE KEY-----\\ntest\\n-----END PRIVATE KEY-----",
+};
 
 describe("parsePlaylistUrl", () => {
   it("parses standard playlist URL with name segment", () => {
@@ -95,12 +103,11 @@ describe("isAppleMusicConfigured", () => {
   });
 });
 
-describe("getAppleMusicToken", () => {
+describe("getConfig", () => {
   const originalEnv = process.env;
 
   beforeEach(() => {
     process.env = { ...originalEnv };
-    vi.clearAllMocks();
   });
 
   afterEach(() => {
@@ -111,33 +118,32 @@ describe("getAppleMusicToken", () => {
     delete process.env.APPLE_MUSIC_TEAM_ID;
     delete process.env.APPLE_MUSIC_KEY_ID;
     delete process.env.APPLE_MUSIC_PRIVATE_KEY;
-    expect(() => getAppleMusicToken()).toThrow("Apple Music credentials not configured");
+    expect(() => getConfig()).toThrow("Apple Music credentials not configured");
   });
 
-  it("returns signed token when credentials are set", () => {
+  it("returns typed config when all env vars set", () => {
     process.env.APPLE_MUSIC_TEAM_ID = "TEAM123";
     process.env.APPLE_MUSIC_KEY_ID = "KEY456";
-    process.env.APPLE_MUSIC_PRIVATE_KEY = "-----BEGIN PRIVATE KEY-----\\ntest\\n-----END PRIVATE KEY-----";
-    const token = getAppleMusicToken();
+    process.env.APPLE_MUSIC_PRIVATE_KEY = "test-key";
+    const config = getConfig();
+    expect(config).toEqual({ teamId: "TEAM123", keyId: "KEY456", privateKey: "test-key" });
+  });
+});
+
+describe("getAppleMusicToken", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("returns signed token for valid config", () => {
+    const token = getAppleMusicToken(validConfig);
     expect(token).toBe("mock-jwt-token");
   });
 });
 
 describe("fetchPlaylist", () => {
-  const originalEnv = process.env;
-
   beforeEach(() => {
-    process.env = {
-      ...originalEnv,
-      APPLE_MUSIC_TEAM_ID: "TEAM123",
-      APPLE_MUSIC_KEY_ID: "KEY456",
-      APPLE_MUSIC_PRIVATE_KEY: "test-key",
-    };
     vi.clearAllMocks();
-  });
-
-  afterEach(() => {
-    process.env = originalEnv;
   });
 
   it("fetches playlist tracks successfully", async () => {
@@ -170,7 +176,7 @@ describe("fetchPlaylist", () => {
           ],
         }),
     });
-    const result = await fetchPlaylist("us", "pl.123");
+    const result = await fetchPlaylist(validConfig, "us", "pl.123");
     expect(result.name).toBe("My Playlist");
     expect(result.tracks).toHaveLength(1);
     expect(result.tracks[0].songName).toBe("Song 1");
@@ -183,7 +189,7 @@ describe("fetchPlaylist", () => {
       status: 403,
       text: () => Promise.resolve("Forbidden"),
     });
-    await expect(fetchPlaylist("us", "pl.123")).rejects.toThrow("Apple Music API error");
+    await expect(fetchPlaylist(validConfig, "us", "pl.123")).rejects.toThrow("Apple Music API error");
   });
 
   it("throws when playlist not found", async () => {
@@ -191,7 +197,7 @@ describe("fetchPlaylist", () => {
       ok: true,
       json: () => Promise.resolve({ data: [] }),
     });
-    await expect(fetchPlaylist("us", "pl.999")).rejects.toThrow("Playlist not found");
+    await expect(fetchPlaylist(validConfig, "us", "pl.999")).rejects.toThrow("Playlist not found");
   });
 
   it("handles pagination for large playlists", async () => {
@@ -244,7 +250,7 @@ describe("fetchPlaylist", () => {
             // No more pages
           }),
       });
-    const result = await fetchPlaylist("us", "pl.123");
+    const result = await fetchPlaylist(validConfig, "us", "pl.123");
     expect(result.tracks).toHaveLength(2);
     expect(result.tracks[1].songName).toBe("Song 2");
   });

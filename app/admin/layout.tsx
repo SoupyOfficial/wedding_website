@@ -4,24 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 import { useState } from "react";
-
-const navItems = [
-  { href: "/admin", label: "Dashboard", icon: "📊" },
-  { href: "/admin/guests", label: "Guests", icon: "👥" },
-  { href: "/admin/content", label: "Timeline", icon: "📝" },
-  { href: "/admin/faqs", label: "FAQs", icon: "❓" },
-  { href: "/admin/wedding-party", label: "Wedding Party", icon: "💐" },
-  { href: "/admin/photos", label: "Photos", icon: "📸" },
-  { href: "/admin/registry", label: "Registry", icon: "🎁" },
-  { href: "/admin/hotels", label: "Hotels", icon: "🏨" },
-  { href: "/admin/entertainment", label: "Entertainment", icon: "🎉" },
-  { href: "/admin/music", label: "Music & DJ", icon: "🎵" },
-  { href: "/admin/meals", label: "Meals", icon: "🍽️" },
-  { href: "/admin/guest-book", label: "Guest Book", icon: "📖" },
-  { href: "/admin/communications", label: "Communications", icon: "✉️" },
-  { href: "/admin/features", label: "Features", icon: "🔧" },
-  { href: "/admin/settings", label: "Settings", icon: "⚙️" },
-];
+import { adminNavItems } from "@/lib/config/navigation";
 
 export default function AdminLayout({
   children,
@@ -64,7 +47,7 @@ export default function AdminLayout({
 
           {/* Nav Items */}
           <nav className="flex-1 py-4 overflow-y-auto">
-            {navItems.map((item) => {
+            {adminNavItems.map((item) => {
               const isActive =
                 item.href === "/admin"
                   ? pathname === "/admin"

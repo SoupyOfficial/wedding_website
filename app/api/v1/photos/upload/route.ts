@@ -1,14 +1,10 @@
 import { NextRequest } from "next/server";
-import { execute, generateId, now } from "@/lib/db";
-import { getProvider } from "@/lib/providers";
 import { rateLimit } from "@/lib/api/middleware";
 import { successResponse, errorResponse } from "@/lib/api";
 import { getFeatureFlag } from "@/lib/config/feature-flags";
+import { uploadPhoto, PhotoValidationError } from "@/lib/services/photo.service";
 
 export const dynamic = "force-dynamic";
-
-const ALLOWED_EXTENSIONS = new Set(["jpg", "jpeg", "png", "gif", "webp"]);
-const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 
 const limiter = rateLimit({ windowMs: 60_000, maxRequests: 5 });
 
@@ -28,42 +24,12 @@ export async function POST(req: NextRequest) {
       return errorResponse("No file provided.", 400);
     }
 
-    if (!file.type.startsWith("image/")) {
-      return errorResponse("File must be an image.", 400);
-    }
-
-    if (file.size > MAX_FILE_SIZE) {
-      return errorResponse("File must be under 10MB.", 400);
-    }
-
-    const ext = (file.name.split(".").pop() || "").toLowerCase();
-    if (!ALLOWED_EXTENSIONS.has(ext)) {
-      return errorResponse("Only JPG, PNG, GIF, and WebP files are allowed.", 400);
-    }
-
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-
-    const safeCategory = category ? category.trim().slice(0, 50) : "guest-uploads";
-    const filename = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-
-    const storage = getProvider("storage");
-    const result = await storage.upload(buffer, filename, {
-      contentType: file.type,
-      category: safeCategory,
-    });
-
-    const safeCaption = caption ? caption.trim().slice(0, 200) : "";
-    const safeUploader = uploaderName ? uploaderName.trim().slice(0, 100) : null;
-
-    const id = generateId();
-    await execute(
-      "INSERT INTO Photo (id, url, caption, uploadedBy, category, storageKey, approved, sortOrder, createdAt) VALUES (?, ?, ?, ?, ?, ?, 0, 0, ?)",
-      [id, result.url, safeCaption, safeUploader, safeCategory, result.key, now()]
-    );
-
-    return successResponse({ id, url: result.url }, undefined, 201);
+    const result = await uploadPhoto({ file, caption, uploaderName, category });
+    return successResponse(result, undefined, 201);
   } catch (error) {
+    if (error instanceof PhotoValidationError) {
+      return errorResponse(error.message, 400);
+    }
     const message = error instanceof Error ? error.message : String(error);
     console.error("Failed to upload photo:", message);
 

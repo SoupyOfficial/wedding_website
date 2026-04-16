@@ -15,6 +15,7 @@ import {
   getFeatureFlags,
   getFeatureFlag,
   setFeatureFlag,
+  isFeatureFlagKey,
 } from "@/lib/config/feature-flags";
 
 const mockQuery = vi.mocked(query);
@@ -76,7 +77,8 @@ describe("getFeatureFlag", () => {
 
   it("returns false for unknown flag not in DB", async () => {
     mockQueryOne.mockResolvedValue(null);
-    expect(await getFeatureFlag("unknownFlag")).toBe(false);
+    // unknownFlag is not a valid FeatureFlagKey — use type assertion for edge-case testing
+    expect(await getFeatureFlag("unknownFlag" as any)).toBe(undefined);
   });
 
   it("returns default on DB error", async () => {
@@ -102,11 +104,23 @@ describe("setFeatureFlag", () => {
     mockQueryOne.mockResolvedValue(null);
     mockExecute.mockResolvedValue({ rowsAffected: 1, lastInsertRowid: undefined });
 
-    await setFeatureFlag("newFlag", true);
+    await setFeatureFlag("photoUploadEnabled", true);
 
     expect(mockExecute).toHaveBeenCalledWith(
       "INSERT INTO FeatureFlag (id, key, enabled, updatedAt) VALUES (?, ?, ?, ?)",
-      ["test-id", "newFlag", 1, "2026-01-01T00:00:00.000Z"]
+      ["test-id", "photoUploadEnabled", 1, "2026-01-01T00:00:00.000Z"]
     );
+  });
+});
+
+describe("isFeatureFlagKey", () => {
+  it("returns true for known flags", () => {
+    expect(isFeatureFlagKey("rsvpEnabled")).toBe(true);
+    expect(isFeatureFlagKey("photoUploadEnabled")).toBe(true);
+  });
+
+  it("returns false for unknown flags", () => {
+    expect(isFeatureFlagKey("unknownFlag")).toBe(false);
+    expect(isFeatureFlagKey("")).toBe(false);
   });
 });

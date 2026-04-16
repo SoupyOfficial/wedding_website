@@ -1,9 +1,8 @@
 import { NextRequest } from "next/server";
-import { queryOne, execute, generateId, now, toBool } from "@/lib/db";
 import { rateLimit } from "@/lib/api/middleware";
 import { successResponse, errorResponse } from "@/lib/api";
 import { getFeatureFlag } from "@/lib/config/feature-flags";
-import type { Guest } from "@/lib/db-types";
+import { submitRsvp } from "@/lib/services/rsvp.service";
 
 export const dynamic = "force-dynamic";
 
@@ -17,69 +16,20 @@ export async function POST(req: NextRequest) {
     if (!enabled) return errorResponse("RSVP is currently closed.", 403);
 
     const body = await req.json();
-    const {
-      guestId,
-      attending,
-      email,
-      phone,
-      dietaryNotes,
-      plusOneName,
-      mealOptionId,
-      songRequest,
-      songArtist,
-    } = body;
+    const { guestId, attending } = body;
 
     if (!guestId || typeof attending !== "boolean") {
       return errorResponse("Missing required fields.", 400);
     }
 
-    const rsvpStatus = attending ? "attending" : "declined";
-    const timestamp = now();
+    const result = await submitRsvp(body);
 
-    // Build dynamic UPDATE
-    const sets: string[] = ["rsvpStatus = ?", "rsvpRespondedAt = ?", "updatedAt = ?"];
-    const args: (string | number | null)[] = [rsvpStatus, timestamp, timestamp];
-
-    if (email) { sets.push("email = ?"); args.push(String(email).slice(0, 200)); }
-    if (phone) { sets.push("phone = ?"); args.push(String(phone).slice(0, 30)); }
-    if (dietaryNotes) { sets.push("dietaryNeeds = ?"); args.push(String(dietaryNotes).slice(0, 500)); }
-    if (plusOneName) { sets.push("plusOneName = ?"); args.push(String(plusOneName).slice(0, 100)); }
-    if (mealOptionId) {
-      const meal = await queryOne("SELECT id FROM MealOption WHERE id = ?", [mealOptionId]);
-      if (!meal) {
-        return errorResponse("Invalid meal option.", 400);
-      }
-      sets.push("mealPreference = ?"); args.push(mealOptionId);
+    if ("error" in result) {
+      const status = result.error === "Guest not found." ? 404 : 400;
+      return errorResponse(result.error, status);
     }
 
-    args.push(guestId);
-    await execute(
-      `UPDATE Guest SET ${sets.join(", ")} WHERE id = ?`,
-      args
-    );
-
-    const guest = await queryOne<Guest>("SELECT * FROM Guest WHERE id = ?", [guestId]);
-    if (!guest) {
-      return errorResponse("Guest not found.", 404);
-    }
-    toBool(guest, "plusOneAllowed", "plusOneAttending");
-
-    // Create song request if provided
-    if (songRequest && attending) {
-      await execute(
-        "INSERT INTO SongRequest (id, songTitle, artist, guestName, approved, isVisible, createdAt) VALUES (?, ?, ?, ?, 0, 0, ?)",
-        [generateId(), songRequest, songArtist || "", `${guest.firstName} ${guest.lastName}`, now()]
-      );
-    }
-
-    return successResponse({
-      guest: {
-        id: guest.id,
-        firstName: guest.firstName,
-        lastName: guest.lastName,
-        rsvpStatus: guest.rsvpStatus,
-      },
-    });
+    return successResponse(result);
   } catch (error) {
     console.error("Failed to submit RSVP:", error);
     return errorResponse("Internal server error.", 500);

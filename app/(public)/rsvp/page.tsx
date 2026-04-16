@@ -1,6 +1,4 @@
-import { queryOne, toBool } from "@/lib/db";
-import type { SiteSettings } from "@/lib/db-types";
-import { SETTINGS_BOOLS } from "@/lib/db-types";
+import { getSettings } from "@/lib/services/settings.service";
 import { checkFeatureFlag } from "@/lib/feature-gate";
 import RsvpClient from "./RsvpClient";
 
@@ -13,8 +11,7 @@ export default async function RSVPPage() {
   const gate = await checkFeatureFlag("rsvpEnabled");
   if (gate) return gate;
 
-  const settings = await queryOne<SiteSettings>("SELECT * FROM SiteSettings WHERE id = ?", ["singleton"]);
-  if (settings) toBool(settings, ...SETTINGS_BOOLS);
+  const settings = await getSettings("rsvpDeadline");
 
   return <RsvpClient rsvpDeadline={settings?.rsvpDeadline || null} />;
 }

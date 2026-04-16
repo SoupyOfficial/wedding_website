@@ -1,11 +1,11 @@
 import Link from "next/link";
-import { queryOne, toBool } from "@/lib/db";
-import type { SiteSettings } from "@/lib/db-types";
-import { SETTINGS_BOOLS } from "@/lib/db-types";
+import { getSettings } from "@/lib/services/settings.service";
 
 export default async function Footer() {
-  const settings = await queryOne<SiteSettings>("SELECT * FROM SiteSettings WHERE id = ?", ["singleton"]);
-  if (settings) toBool(settings, ...SETTINGS_BOOLS);
+  const settings = await getSettings(
+    "coupleName", "weddingHashtag", "venueName", "venueAddress",
+    "photoShareLink", "socialInstagram", "socialFacebook", "socialTikTok"
+  );
 
   return (
     <footer className="bg-midnight-500 border-t border-gold/10 relative overflow-hidden">

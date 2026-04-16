@@ -1,6 +1,6 @@
-import { query, queryOne, toBool } from "@/lib/db";
-import type { Entertainment, SiteSettings } from "@/lib/db-types";
-import { SETTINGS_BOOLS } from "@/lib/db-types";
+import { query } from "@/lib/db";
+import { getSettings } from "@/lib/services/settings.service";
+import type { Entertainment } from "@/lib/db-types";
 import { checkFeatureFlag } from "@/lib/feature-gate";
 import SectionDivider from "@/components/SectionDivider";
 import { PageHeader } from "@/components/ui";
@@ -16,8 +16,7 @@ export default async function EntertainmentPage() {
 
   const entertainment = await query<Entertainment>("SELECT * FROM Entertainment ORDER BY sortOrder ASC");
 
-  const settings = await queryOne<SiteSettings>("SELECT * FROM SiteSettings WHERE id = ?", ["singleton"]);
-  if (settings) toBool(settings, ...SETTINGS_BOOLS);
+  const settings = await getSettings("entertainmentNote");
 
   const iconMap: Record<string, string> = {
     dj: "🎧",

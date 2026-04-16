@@ -2,9 +2,7 @@ import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import StarrySky from "@/components/StarrySky";
 import AnnouncementBanner from "@/components/AnnouncementBanner";
-import { queryOne, toBool } from "@/lib/db";
-import type { SiteSettings } from "@/lib/db-types";
-import { SETTINGS_BOOLS } from "@/lib/db-types";
+import { getSettings } from "@/lib/services/settings.service";
 import { getFeatureFlags } from "@/lib/config/feature-flags";
 
 export const dynamic = "force-dynamic";
@@ -15,10 +13,9 @@ export default async function PublicLayout({
   children: React.ReactNode;
 }) {
   const [settings, featureFlags] = await Promise.all([
-    queryOne<SiteSettings>("SELECT * FROM SiteSettings WHERE id = ?", ["singleton"]),
+    getSettings("weddingDate", "bannerActive", "bannerText", "bannerUrl", "bannerColor"),
     getFeatureFlags(),
   ]);
-  if (settings) toBool(settings, ...SETTINGS_BOOLS);
 
   return (
     <div className="min-h-screen bg-midnight relative">

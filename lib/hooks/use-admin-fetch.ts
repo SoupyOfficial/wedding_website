@@ -2,20 +2,30 @@
 
 import { useState, useEffect, useCallback } from "react";
 
-interface UseAdminFetchResult<T> {
-  data: T[];
+// ─── Core Hook ───────────────────────────────────────────────
+
+interface UseFetchResult<T> {
+  data: T;
   loading: boolean;
   error: string | null;
   refetch: () => Promise<void>;
-  setData: React.Dispatch<React.SetStateAction<T[]>>;
+  setData: React.Dispatch<React.SetStateAction<T>>;
 }
+
+const defaultSelector = (json: Record<string, unknown>) => json.data;
 
 /**
- * Hook for fetching admin API data with loading/error state.
- * Reads from `response.data` by default (standard API response shape).
+ * Core data-fetching hook. All admin hooks delegate here.
+ * @param url       - API endpoint
+ * @param initial   - Initial data value ([] for arrays, null for objects)
+ * @param selector  - Extract data from JSON response (default: json => json.data)
  */
-export function useAdminFetch<T>(url: string): UseAdminFetchResult<T> {
-  const [data, setData] = useState<T[]>([]);
+export function useFetch<T>(
+  url: string,
+  initial: T,
+  selector: (json: Record<string, unknown>) => unknown = defaultSelector
+): UseFetchResult<T> {
+  const [data, setData] = useState<T>(initial);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -24,14 +34,15 @@ export function useAdminFetch<T>(url: string): UseAdminFetchResult<T> {
       setError(null);
       const res = await fetch(url);
       const json = await res.json();
-      if (json.data) setData(json.data);
+      const extracted = selector(json) as T;
+      if (extracted != null) setData(extracted);
     } catch (err) {
       console.error(`Failed to fetch ${url}:`, err);
       setError("Failed to load data.");
     } finally {
       setLoading(false);
     }
-  }, [url]);
+  }, [url, selector]);
 
   useEffect(() => {
     refetch();
@@ -40,39 +51,19 @@ export function useAdminFetch<T>(url: string): UseAdminFetchResult<T> {
   return { data, loading, error, refetch, setData };
 }
 
-interface UseAdminFetchRawResult<T> {
-  data: T | null;
-  loading: boolean;
-  error: string | null;
-  refetch: () => Promise<void>;
-  setData: React.Dispatch<React.SetStateAction<T | null>>;
+// ─── Backward-Compatible Wrappers ────────────────────────────
+
+/** Fetch an array of items from `response.data`. */
+export function useAdminFetch<T>(url: string) {
+  return useFetch<T[]>(url, []);
 }
 
-export function useAdminFetchRaw<T>(url: string): UseAdminFetchRawResult<T> {
-  const [data, setData] = useState<T | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const refetch = useCallback(async () => {
-    try {
-      setError(null);
-      const res = await fetch(url);
-      const json = await res.json();
-      if (json.data) setData(json.data);
-    } catch (err) {
-      console.error(`Failed to fetch ${url}:`, err);
-      setError("Failed to load data.");
-    } finally {
-      setLoading(false);
-    }
-  }, [url]);
-
-  useEffect(() => {
-    refetch();
-  }, [refetch]);
-
-  return { data, loading, error, refetch, setData };
+/** Fetch a single object from `response.data`. */
+export function useAdminFetchRaw<T>(url: string) {
+  return useFetch<T | null>(url, null);
 }
+
+// ─── Multi-Fetch ─────────────────────────────────────────────
 
 interface UseAdminMultiFetchResult<T extends Record<string, unknown[]>> {
   data: T;
@@ -81,7 +72,7 @@ interface UseAdminMultiFetchResult<T extends Record<string, unknown[]>> {
 }
 
 /**
- * Hook for fetching multiple admin API endpoints in parallel.
+ * Fetch multiple admin API endpoints in parallel.
  * Pass a map of key → URL, get back a map of key → data[].
  */
 export function useAdminMultiFetch<T extends Record<string, unknown[]>>(

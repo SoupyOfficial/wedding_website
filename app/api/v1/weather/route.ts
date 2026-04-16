@@ -1,7 +1,6 @@
 import { NextRequest } from "next/server";
-import { queryOne, toBool } from "@/lib/db";
+import { getSettings } from "@/lib/services/settings.service";
 import { successResponse, errorResponse } from "@/lib/api";
-import type { SiteSettings } from "@/lib/db-types";
 
 export const dynamic = "force-dynamic";
 
@@ -97,11 +96,7 @@ function weatherCodeToEmoji(code: number): string {
 
 export async function GET(req: NextRequest) {
   try {
-    const settings = await queryOne<SiteSettings>(
-      "SELECT * FROM SiteSettings WHERE id = ?",
-      ["singleton"]
-    );
-    if (settings) toBool(settings, "sitePasswordEnabled");
+    const settings = await getSettings("weddingDate", "venueName");
 
     if (!settings?.weddingDate) {
       return errorResponse("Wedding date not set", 400);

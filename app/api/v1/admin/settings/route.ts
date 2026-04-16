@@ -1,18 +1,13 @@
 import { NextRequest } from "next/server";
-import { queryOne, execute, now, toBool } from "@/lib/db";
+import { execute, now } from "@/lib/db";
 import { successResponse, errorResponse } from "@/lib/api";
-import type { SiteSettings } from "@/lib/db-types";
-import { SETTINGS_BOOLS } from "@/lib/db-types";
+import { getFullSettings } from "@/lib/services/settings.service";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
-    const settings = await queryOne<SiteSettings>(
-      "SELECT * FROM SiteSettings WHERE id = ?",
-      ["singleton"]
-    );
-    if (settings) toBool(settings, ...SETTINGS_BOOLS);
+    const settings = await getFullSettings();
 
     const safeSettings = settings
       ? {
@@ -98,11 +93,7 @@ export async function PUT(req: NextRequest) {
       args
     );
 
-    const settings = await queryOne<SiteSettings>(
-      "SELECT * FROM SiteSettings WHERE id = ?",
-      ["singleton"]
-    );
-    if (settings) toBool(settings, ...SETTINGS_BOOLS);
+    const settings = await getFullSettings();
 
     return successResponse(settings);
   } catch (error) {

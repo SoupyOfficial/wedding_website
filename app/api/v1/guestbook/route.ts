@@ -1,9 +1,8 @@
 import { NextRequest } from "next/server";
-import { query, execute, generateId, now, toBoolAll } from "@/lib/db";
 import { rateLimit } from "@/lib/api/middleware";
 import { successResponse, errorResponse } from "@/lib/api";
 import { getFeatureFlag } from "@/lib/config/feature-flags";
-import type { GuestBookEntry } from "@/lib/db-types";
+import { getVisibleEntries, createEntry } from "@/lib/services/guestbook.service";
 
 export const dynamic = "force-dynamic";
 
@@ -13,11 +12,7 @@ export async function GET() {
   try {
     const enabled = await getFeatureFlag("guestBookEnabled");
     if (!enabled) return errorResponse("Guest book is currently disabled.", 403);
-    const entries = await query<GuestBookEntry>(
-      "SELECT * FROM GuestBookEntry WHERE isVisible = 1 ORDER BY createdAt DESC"
-    );
-    toBoolAll(entries, "isVisible");
-
+    const entries = await getVisibleEntries();
     return successResponse(entries);
   } catch (error) {
     console.error("Failed to fetch guest book entries:", error);
@@ -39,13 +34,7 @@ export async function POST(req: NextRequest) {
       return errorResponse("Name and message are required.", 400);
     }
 
-    const id = generateId();
-    const timestamp = now();
-    await execute(
-      "INSERT INTO GuestBookEntry (id, name, message, isVisible, createdAt) VALUES (?, ?, ?, 0, ?)",
-      [id, name.trim().slice(0, 100), message.trim().slice(0, 500), timestamp]
-    );
-
+    await createEntry(name, message);
     return successResponse({ message: "Thank you for your message!" }, undefined, 201);
   } catch (error) {
     console.error("Failed to create guest book entry:", error);

@@ -1,0 +1,21 @@
+{
+  "rsvpEnabled": true,
+  "guestBookEnabled": true,
+  "photoUploadEnabled": false,
+  "registrySyncEnabled": false,
+  "songRequestsEnabled": true,
+  "entertainmentPageEnabled": true,
+  "guestPhotoSharingEnabled": false,
+  "liveGuestCountEnabled": false,
+  "massEmailEnabled": true,
+  "ourStoryPageEnabled": true,
+  "eventDetailsPageEnabled": true,
+  "travelPageEnabled": true,
+  "weddingPartyPageEnabled": true,
+  "galleryPageEnabled": true,
+  "registryPageEnabled": true,
+  "faqPageEnabled": true,
+  "contactPageEnabled": true,
+  "musicPageEnabled": true,
+  "photosOfUsPageEnabled": true
+}

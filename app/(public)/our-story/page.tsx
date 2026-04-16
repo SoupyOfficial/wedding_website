@@ -1,6 +1,6 @@
-import { query, queryOne, toBool } from "@/lib/db";
-import type { SiteSettings, Photo } from "@/lib/db-types";
-import { SETTINGS_BOOLS } from "@/lib/db-types";
+import { query } from "@/lib/db";
+import { getSettings } from "@/lib/services/settings.service";
+import type { Photo } from "@/lib/db-types";
 import { sanitizeHtml } from "@/lib/sanitize";
 import { checkFeatureFlag } from "@/lib/feature-gate";
 import SectionDivider from "@/components/SectionDivider";
@@ -14,8 +14,7 @@ export const metadata = {
 export default async function OurStoryPage() {
   const gate = await checkFeatureFlag("ourStoryPageEnabled");
   if (gate) return gate;
-  const settings = await queryOne<SiteSettings>("SELECT * FROM SiteSettings WHERE id = ?", ["singleton"]);
-  if (settings) toBool(settings, ...SETTINGS_BOOLS);
+  const settings = await getSettings("ourStoryContent");
 
   const photos = await query<Photo>(
     "SELECT * FROM Photo WHERE category = ? ORDER BY sortOrder ASC",

@@ -1,12 +1,13 @@
 import Link from "next/link";
-import { queryOne, toBool } from "@/lib/db";
-import type { SiteSettings } from "@/lib/db-types";
-import { SETTINGS_BOOLS } from "@/lib/db-types";
+import { getSettings } from "@/lib/services/settings.service";
 import CountdownTimer from "@/components/CountdownTimer";
 
 export default async function HomePage() {
-  const settings = await queryOne<SiteSettings>("SELECT * FROM SiteSettings WHERE id = ?", ["singleton"]);
-  if (settings) toBool(settings, ...SETTINGS_BOOLS);
+  const settings = await getSettings(
+    "weddingDate", "heroTagline", "heroTaglinePostWedding",
+    "coupleName", "venueName", "venueAddress",
+    "weddingHashtag", "postWeddingContent", "preWeddingContent"
+  );
 
   const weddingDate = settings?.weddingDate;
   const isPostWedding = weddingDate

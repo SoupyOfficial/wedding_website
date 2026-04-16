@@ -4,31 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import { clsx } from "clsx";
-
-interface NavLink {
-  href: string;
-  label: string;
-  hidePostWedding?: boolean;
-  showPostWedding?: boolean;
-  featureFlag?: string;
-}
-
-const navLinks: NavLink[] = [
-  { href: "/", label: "Home" },
-  { href: "/our-story", label: "Our Story", featureFlag: "ourStoryPageEnabled" },
-  { href: "/event-details", label: "Event Details", featureFlag: "eventDetailsPageEnabled" },
-  { href: "/travel", label: "Travel & Stay", featureFlag: "travelPageEnabled" },
-  { href: "/wedding-party", label: "Wedding Party", featureFlag: "weddingPartyPageEnabled" },
-  { href: "/entertainment", label: "Entertainment", featureFlag: "entertainmentPageEnabled" },
-  { href: "/music", label: "Song Requests", featureFlag: "musicPageEnabled" },
-  { href: "/rsvp", label: "RSVP", hidePostWedding: true, featureFlag: "rsvpEnabled" },
-  { href: "/registry", label: "Registry", featureFlag: "registryPageEnabled" },
-  { href: "/faq", label: "FAQ", featureFlag: "faqPageEnabled" },
-  { href: "/gallery", label: "Gallery", featureFlag: "galleryPageEnabled" },
-  { href: "/photos-of-us", label: "Photos of Us", featureFlag: "photosOfUsPageEnabled" },
-  { href: "/guest-book", label: "Guest Book", featureFlag: "guestBookEnabled" },
-  { href: "/contact", label: "Contact", featureFlag: "contactPageEnabled" },
-];
+import { publicNavLinks, type PublicNavLink } from "@/lib/config/navigation";
 
 interface NavigationProps {
   weddingDate?: string | null;
@@ -56,7 +32,7 @@ export default function Navigation({ weddingDate, featureFlags = {} }: Navigatio
     setIsMobileOpen(false);
   }, [pathname]);
 
-  const filteredLinks = navLinks.filter((link) => {
+  const filteredLinks = publicNavLinks.filter((link) => {
     if (isPostWedding && link.hidePostWedding) return false;
     if (!isPostWedding && link.showPostWedding) return false;
     if (link.featureFlag && featureFlags[link.featureFlag] === false) return false;

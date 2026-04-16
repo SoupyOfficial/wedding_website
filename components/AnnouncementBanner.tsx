@@ -1,25 +1,15 @@
-import { queryOne, toBool } from "@/lib/db";
-import type { SiteSettings } from "@/lib/db-types";
-import { SETTINGS_BOOLS } from "@/lib/db-types";
+import { getSettings } from "@/lib/services/settings.service";
+import type { BannerSettings } from "@/lib/types/settings";
 
 interface AnnouncementBannerProps {
-  settings?: {
-    bannerActive: boolean;
-    bannerText: string;
-    bannerUrl: string;
-    bannerColor: string;
-  } | null;
+  settings?: BannerSettings | null;
 }
 
 export default async function AnnouncementBanner({
   settings: propSettings,
 }: AnnouncementBannerProps = {}) {
-  let settings = propSettings as (typeof propSettings | SiteSettings);
-  if (!settings) {
-    const dbSettings = await queryOne<SiteSettings>("SELECT * FROM SiteSettings WHERE id = ?", ["singleton"]);
-    if (dbSettings) toBool(dbSettings, ...SETTINGS_BOOLS);
-    settings = dbSettings;
-  }
+  const settings = propSettings ??
+    await getSettings("bannerActive", "bannerText", "bannerUrl", "bannerColor");
 
   if (!settings?.bannerActive || !settings.bannerText) {
     return null;
