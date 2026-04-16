@@ -1,11 +1,22 @@
 import Link from "next/link";
 import { getSettings } from "@/lib/services/settings.service";
+import { getFeatureFlags } from "@/lib/config/feature-flags";
 
 export default async function Footer() {
-  const settings = await getSettings(
-    "coupleName", "weddingHashtag", "venueName", "venueAddress",
-    "photoShareLink", "socialInstagram", "socialFacebook", "socialTikTok"
-  );
+  const [settings, featureFlags] = await Promise.all([
+    getSettings(
+      "coupleName", "weddingHashtag", "venueName", "venueAddress",
+      "photoShareLink", "socialInstagram", "socialFacebook", "socialTikTok"
+    ),
+    getFeatureFlags(),
+  ]);
+
+  const quickLinks = [
+    { href: "/rsvp", label: "RSVP", flag: "rsvpPageEnabled" },
+    { href: "/event-details", label: "Event Details", flag: "eventDetailsPageEnabled" },
+    { href: "/registry", label: "Registry", flag: "registryPageEnabled" },
+    { href: "/faq", label: "FAQ", flag: "faqPageEnabled" },
+  ].filter((link) => (featureFlags as Record<string, boolean>)[link.flag] !== false);
 
   return (
     <footer className="bg-midnight-500 border-t border-gold/10 relative overflow-hidden">
@@ -46,30 +57,15 @@ export default async function Footer() {
               Quick Links
             </h4>
             <div className="space-y-2">
-              <Link
-                href="/rsvp"
-                className="block text-ivory/70 hover:text-gold transition-colors text-sm"
-              >
-                RSVP
-              </Link>
-              <Link
-                href="/event-details"
-                className="block text-ivory/70 hover:text-gold transition-colors text-sm"
-              >
-                Event Details
-              </Link>
-              <Link
-                href="/registry"
-                className="block text-ivory/70 hover:text-gold transition-colors text-sm"
-              >
-                Registry
-              </Link>
-              <Link
-                href="/faq"
-                className="block text-ivory/70 hover:text-gold transition-colors text-sm"
-              >
-                FAQ
-              </Link>
+              {quickLinks.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className="block text-ivory/70 hover:text-gold transition-colors text-sm"
+                >
+                  {link.label}
+                </Link>
+              ))}
             </div>
           </div>
 

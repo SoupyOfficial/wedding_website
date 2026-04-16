@@ -26,11 +26,22 @@ export default async function AnnouncementBanner({
     </p>
   );
 
+  const isValidUrl = (url: string) => {
+    try {
+      const parsed = new URL(url);
+      return parsed.protocol === "http:" || parsed.protocol === "https:";
+    } catch {
+      return false;
+    }
+  };
+
+  const safeUrl = settings.bannerUrl && isValidUrl(settings.bannerUrl) ? settings.bannerUrl : null;
+
   return (
     <div className={`${colorClass} relative z-50`}>
-      {settings.bannerUrl ? (
+      {safeUrl ? (
         <a
-          href={settings.bannerUrl}
+          href={safeUrl}
           className="block hover:opacity-90 transition-opacity"
         >
           {content}

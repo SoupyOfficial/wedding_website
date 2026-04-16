@@ -40,11 +40,16 @@ export default async function EntertainmentPage() {
         />
 
         {/* Entertainment Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto mb-16">
+        {entertainment.length === 0 ? (
+          <div className="text-center text-ivory/50 py-12 mb-16">
+            <p className="text-lg">Entertainment details coming soon!</p>
+          </div>
+        ) : (
+        <div className="flex flex-wrap justify-center gap-6 max-w-5xl mx-auto mb-16">
           {entertainment.map((item: { id: string; name: string; description: string; icon: string | null; sortOrder: number }) => (
             <div
               key={item.id}
-              className="card-celestial group hover:scale-105 transition-all duration-300"
+              className="card-celestial group hover:scale-105 transition-all duration-300 w-full sm:w-72"
             >
               <div className="text-center">
                 <div className="text-4xl mb-3">
@@ -62,6 +67,7 @@ export default async function EntertainmentPage() {
             </div>
           ))}
         </div>
+        )}
 
         <SectionDivider />
 

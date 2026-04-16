@@ -1,6 +1,12 @@
 import Link from "next/link";
 import { getSettings } from "@/lib/services/settings.service";
+import { sanitizeHtml } from "@/lib/sanitize";
 import CountdownTimer from "@/components/CountdownTimer";
+
+export const metadata = {
+  title: "Home",
+  description: "Welcome to our wedding celebration!",
+};
 
 export default async function HomePage() {
   const settings = await getSettings(
@@ -97,7 +103,7 @@ export default async function HomePage() {
             <div
               className="text-ivory/70 leading-relaxed max-w-xl mx-auto"
               dangerouslySetInnerHTML={{
-                __html: settings.postWeddingContent.replace(/\n/g, "<br />"),
+                __html: sanitizeHtml(settings.postWeddingContent.replace(/\n/g, "<br />")),
               }}
             />
           )}
@@ -105,7 +111,7 @@ export default async function HomePage() {
             <div
               className="text-ivory/70 leading-relaxed max-w-xl mx-auto"
               dangerouslySetInnerHTML={{
-                __html: settings.preWeddingContent.replace(/\n/g, "<br />"),
+                __html: sanitizeHtml(settings.preWeddingContent.replace(/\n/g, "<br />")),
               }}
             />
           )}

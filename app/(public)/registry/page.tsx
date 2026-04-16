@@ -33,7 +33,7 @@ export default async function RegistryPage() {
         {/* Note */}
         <div className="max-w-2xl mx-auto text-center">
           <div className="card-celestial">
-            <div className="text-4xl mb-4">??</div>
+            <div className="text-4xl mb-4">💝</div>
             <h3 className="text-gold font-serif text-xl mb-3">
               A Note from Us
             </h3>

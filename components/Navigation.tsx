@@ -9,9 +9,10 @@ import { publicNavLinks, type PublicNavLink } from "@/lib/config/navigation";
 interface NavigationProps {
   weddingDate?: string | null;
   featureFlags?: Record<string, boolean>;
+  coupleName?: string | null;
 }
 
-export default function Navigation({ weddingDate, featureFlags = {} }: NavigationProps) {
+export default function Navigation({ weddingDate, featureFlags = {}, coupleName }: NavigationProps) {
   const pathname = usePathname();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
@@ -48,6 +49,12 @@ export default function Navigation({ weddingDate, featureFlags = {} }: Navigatio
     return true;
   });
 
+  const displayName = coupleName || "Jacob & Ashley";
+  const initials = displayName
+    .split(/\s*&\s*/)
+    .map((n) => n.trim()[0] || "")
+    .join(" & ");
+
   return (
     <nav
       className={clsx(
@@ -64,7 +71,7 @@ export default function Navigation({ weddingDate, featureFlags = {} }: Navigatio
             href="/"
             className="text-gold font-serif text-xl lg:text-2xl font-bold hover:text-gold-light transition-colors"
           >
-            J & A
+            {initials}
           </Link>
 
           {/* Desktop Navigation */}
@@ -128,7 +135,7 @@ export default function Navigation({ weddingDate, featureFlags = {} }: Navigatio
         <div className="bg-midnight/98 backdrop-blur-lg border-t border-gold/10 px-4 py-4 space-y-1">
           <div className="text-center mb-4">
             <span className="text-gold font-serif text-lg">
-              Jacob & Ashley
+              {displayName}
             </span>
           </div>
           {filteredLinks.map((link) => (

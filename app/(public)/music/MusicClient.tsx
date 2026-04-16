@@ -65,7 +65,7 @@ export default function MusicClient() {
       .then((data) => {
         if (data.success) setVisibleSongs(data.data);
       })
-      .catch(() => {})
+      .catch(() => setVisibleSongs([]))
       .finally(() => setLoadingPlaylist(false));
 
     fetch("/api/v1/music/dj-playlist")
@@ -73,7 +73,7 @@ export default function MusicClient() {
       .then((data) => {
         if (data.success) setDjPlaylist(data.data);
       })
-      .catch(() => {})
+      .catch(() => setDjPlaylist([]))
       .finally(() => setLoadingDJ(false));
   }, []);
 
@@ -91,7 +91,7 @@ export default function MusicClient() {
       const data = await res.json();
       if (data.success) setSearchResults(data.data);
     } catch {
-      // silently fail
+      setSearchResults([]);
     } finally {
       setSearching(false);
     }

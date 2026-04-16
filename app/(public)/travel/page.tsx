@@ -4,6 +4,7 @@ import type { Hotel, TimelineEvent } from "@/lib/db-types";
 import { checkFeatureFlag } from "@/lib/feature-gate";
 import SectionDivider from "@/components/SectionDivider";
 import { PageHeader } from "@/components/ui";
+import { sanitizeHtml } from "@/lib/sanitize";
 import WeatherForecast from "@/components/WeatherForecast";
 import {
   airports,
@@ -587,7 +588,7 @@ export default async function TravelPage() {
               <div
                 className="text-ivory/80 leading-relaxed"
                 dangerouslySetInnerHTML={{
-                  __html: settings.travelContent.replace(/\n/g, "<br />"),
+                  __html: sanitizeHtml(settings.travelContent.replace(/\n/g, "<br />")),
                 }}
               />
             </div>

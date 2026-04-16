@@ -59,7 +59,7 @@ function MemberCard({
   const textSize = isSmall ? "text-base" : "text-lg";
 
   return (
-    <div className="card-celestial text-center group hover:scale-[1.03] transition-transform duration-300">
+    <div className={`card-celestial text-center group hover:scale-[1.03] transition-transform duration-300 ${isSmall ? "w-full sm:w-40" : "w-full sm:w-64"}`}>
       {/* Photo */}
       <div
         className={`${photoSize} mx-auto mb-4 rounded-full bg-royal/50 border-2 border-gold/30 flex items-center justify-center overflow-hidden group-hover:border-gold/60 transition-colors`}
@@ -185,7 +185,7 @@ export default async function WeddingPartyPage() {
             <p className="text-ivory/50 text-center text-sm mb-8">
               {getSideSubtitle(bridesmaids)}
             </p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+            <div className="flex flex-wrap justify-center gap-6 max-w-5xl mx-auto">
               {bridesmaids.map((member: WPMember) => (
                 <MemberCard key={member.id} member={{ ...member, side: "bride" }} />
               ))}
@@ -204,7 +204,7 @@ export default async function WeddingPartyPage() {
             <p className="text-ivory/50 text-center text-sm mb-8">
               {getSideSubtitle(groomsmen)}
             </p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+            <div className="flex flex-wrap justify-center gap-6 max-w-5xl mx-auto">
               {groomsmen.map((member: WPMember) => (
                 <MemberCard key={member.id} member={{ ...member, side: "groom" }} />
               ))}
@@ -223,7 +223,7 @@ export default async function WeddingPartyPage() {
               <p className="text-ivory/50 text-center text-sm mb-8">
                 Our littlest VIPs leading the way
               </p>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto">
+              <div className="flex flex-wrap justify-center gap-6 max-w-4xl mx-auto">
                 {flowerGirlsAndRingBearers.map((member) => (
                   <MemberCard
                     key={member.id}
@@ -247,7 +247,7 @@ export default async function WeddingPartyPage() {
               <p className="text-ivory/50 text-center text-sm mb-8">
                 Other special roles in our celebration
               </p>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+              <div className="flex flex-wrap justify-center gap-6 max-w-4xl mx-auto">
                 {otherSpecial.map((member) => (
                   <MemberCard
                     key={member.id}

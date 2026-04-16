@@ -32,7 +32,7 @@ export default function GuestBookClient() {
         setEntries(data.data);
       }
     } catch {
-      // silently fail
+      setEntries([]);
     } finally {
       setLoading(false);
     }

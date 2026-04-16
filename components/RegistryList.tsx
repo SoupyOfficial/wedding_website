@@ -5,17 +5,16 @@ import type { RegistryItem } from "@/lib/db-types";
 import { Modal, Alert } from "@/components/ui";
 
 const iconMap: Record<string, string> = {
-  amazon: "??",
-  target: "??",
-  "crate & barrel": "??",
-  "williams sonoma": "??",
-  honeyfund: "??",
-  zola: "??",
+  amazon: "📦",
+  target: "🎯",
+  "crate & barrel": "🏠",
+  "williams sonoma": "🍳",
+  honeyfund: "💰",
+  zola: "💝",
 };
 
 export default function RegistryList({ items }: { items: RegistryItem[] }) {
   const [selectedItem, setSelectedItem] = useState<RegistryItem | null>(null);
-  const [amount, setAmount] = useState("");
   const [guestName, setGuestName] = useState("");
   const [guestEmail, setGuestEmail] = useState("");
   const [loading, setLoading] = useState(false);
@@ -41,14 +40,12 @@ export default function RegistryList({ items }: { items: RegistryItem[] }) {
     setLoading(true);
     
     try {
-      const contributionAmount = selectedItem.itemType === 'fund' ? parseFloat(amount) : 1;
-      
       const res = await fetch(`/api/v1/registry/contribute`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 
           id: selectedItem.id, 
-          amount: contributionAmount,
+          amount: 1,
           guestName: guestName,
           guestEmail: guestEmail 
         }),
@@ -78,14 +75,14 @@ export default function RegistryList({ items }: { items: RegistryItem[] }) {
     <div className="space-y-16">
       {/* Stores */}
       {stores.length > 0 && (
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-4xl mx-auto">
+        <div className="flex flex-wrap justify-center gap-8 max-w-4xl mx-auto">
           {stores.map((registry) => (
-            <div key={registry.id} className="card-celestial text-center group hover:scale-[1.03] transition-all duration-300">
+            <div key={registry.id} className="card-celestial text-center group hover:scale-[1.03] transition-all duration-300 w-full sm:w-64">
               <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-royal/50 border-2 border-gold/20 flex items-center justify-center overflow-hidden">
                 {registry.iconUrl ? (
                   <img src={registry.iconUrl} alt={registry.name} className="w-12 h-12 object-contain" />
                 ) : (
-                  <span className="text-3xl">{iconMap[registry.name.toLowerCase()] || "??"}</span>
+                  <span className="text-3xl">{iconMap[registry.name.toLowerCase()] || "🏪"}</span>
                 )}
               </div>
               <h3 className="text-gold font-serif text-xl mb-2">{registry.name}</h3>
@@ -102,12 +99,12 @@ export default function RegistryList({ items }: { items: RegistryItem[] }) {
       {funds.length > 0 && (
         <div className="max-w-4xl mx-auto">
           <h2 className="text-2xl font-serif text-gold text-center mb-8">Cash Funds</h2>
-          <div className="grid md:grid-cols-2 gap-8">
+          <div className="flex flex-wrap justify-center gap-8">
             {funds.map((fund) => (
-              <div key={fund.id} className="card-celestial">
+              <div key={fund.id} className="card-celestial w-full md:w-[calc(50%-1rem)]">
                 <div className="flex gap-4 items-start">
                   <div className="w-12 h-12 rounded-full bg-royal/50 border border-gold/20 flex items-center justify-center flex-shrink-0 text-2xl">
-                    {fund.iconUrl ? <img src={fund.iconUrl} alt="" className="w-8 h-8 object-contain" /> : "??"}
+                    {fund.iconUrl ? <img src={fund.iconUrl} alt="" className="w-8 h-8 object-contain" /> : "💝"}
                   </div>
                   <div className="flex-1">
                     <h3 className="text-gold font-serif text-xl mb-1">{fund.name}</h3>
@@ -128,13 +125,14 @@ export default function RegistryList({ items }: { items: RegistryItem[] }) {
                       </div>
                     ) : null}
                     
-                    <button 
-                      onClick={() => { setSelectedItem(fund); setAmount(""); setGuestName(""); setGuestEmail(""); setSuccess(false); setFormError(""); }}
-                      className="btn-gold text-sm px-6 py-2 w-full mt-2 disabled:opacity-50"
-                      disabled={fund.goalAmount !== null && fund.raisedAmount >= fund.goalAmount}
+                    <a 
+                      href={fund.url || "#"}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={`btn-gold text-sm px-6 py-2 w-full mt-2 inline-block text-center ${fund.goalAmount !== null && fund.raisedAmount >= fund.goalAmount ? "opacity-50 pointer-events-none" : ""}`}
                     >
-                      {fund.goalAmount !== null && fund.raisedAmount >= fund.goalAmount ? "Fully Funded ??" : "Contribute"}
-                    </button>
+                      {fund.goalAmount !== null && fund.raisedAmount >= fund.goalAmount ? "Fully Funded 🎉" : "Contribute"}
+                    </a>
                   </div>
                 </div>
               </div>
@@ -147,19 +145,19 @@ export default function RegistryList({ items }: { items: RegistryItem[] }) {
       {products.length > 0 && (
         <div className="max-w-4xl mx-auto">
           <h2 className="text-2xl font-serif text-gold text-center mb-8">Specific Items</h2>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="flex flex-wrap justify-center gap-8">
             {products.map((product) => {
               const totalNeeded = product.totalNeeded || 1;
               const totalBought = product.totalBought || 0;
               const isFulfilled = totalBought >= totalNeeded;
 
               return (
-                <div key={product.id} className="card-celestial text-center flex flex-col items-center">
+                <div key={product.id} className="card-celestial text-center flex flex-col items-center w-full sm:w-64">
                   <div className="w-24 h-24 mb-4 bg-royal/30 rounded-lg flex items-center justify-center p-2">
                     {product.iconUrl ? (
                       <img src={product.iconUrl} alt="" className="max-w-full max-h-full object-contain" />
                     ) : (
-                      <span className="text-4xl">???</span>
+                      <span className="text-4xl">🎁</span>
                     )}
                   </div>
                   <h3 className="text-gold font-serif text-lg mb-1">{product.name}</h3>
@@ -175,7 +173,7 @@ export default function RegistryList({ items }: { items: RegistryItem[] }) {
                     className="btn-gold text-sm px-6 py-2 w-full mt-auto"
                     disabled={isFulfilled}
                   >
-                    {isFulfilled ? "Purchased ??" : "Mark as Purchased"}
+                    {isFulfilled ? "Purchased ✅" : "Mark as Purchased"}
                   </button>
                 </div>
               );
@@ -184,17 +182,17 @@ export default function RegistryList({ items }: { items: RegistryItem[] }) {
         </div>
       )}
 
-      {/* Contribution Modal */}
+      {/* Product Purchase Modal */}
       {selectedItem && (
-        <Modal title={selectedItem.itemType === 'fund' ? "Contribute to Fund" : "Confirm Purchase"} onClose={() => setSelectedItem(null)}>
+        <Modal title="Confirm Purchase" onClose={() => setSelectedItem(null)}>
           {success ? (
             <div className="text-center py-8">
-              <div className="text-4xl mb-4">??</div>
+              <div className="text-4xl mb-4">🎁</div>
               <h3 className="text-gold font-serif text-xl mb-2">Thank you!</h3>
               <p className="text-ivory/70">
-                {selectedItem.itemType === 'fund' ? 
-                  "Redirecting to payment link..." : 
-                  "We've marked this as purchased. Thank you for taking the time to bless us!"
+                {selectedItem.url 
+                  ? "Redirecting you to purchase..." 
+                  : "We've marked this as purchased. Thank you for taking the time to bless us!"
                 }
               </p>
             </div>
@@ -202,9 +200,6 @@ export default function RegistryList({ items }: { items: RegistryItem[] }) {
             <div className="space-y-4">
               <div className="text-center mb-6">
                 <h3 className="text-lg text-ivory font-medium">{selectedItem.name}</h3>
-                {selectedItem.itemType === 'fund' && (
-                  <p className="text-sm text-ivory/70 mt-1">You will be redirected to complete your contribution.</p>
-                )}
               </div>
 
               {formError && <Alert type="error" message={formError} className="mb-4" />}
@@ -232,45 +227,21 @@ export default function RegistryList({ items }: { items: RegistryItem[] }) {
                   />
                 </div>
 
-                {selectedItem.itemType === 'fund' && (
-                  <div>
-                    <label className="block text-ivory/70 text-sm mb-2">Contribution Amount ($) *</label>
-                    <input
-                      type="number"
-                      required
-                      min="1"
-                      step="1"
-                      max={selectedItem.goalAmount ? selectedItem.goalAmount - selectedItem.raisedAmount : undefined}
-                      value={amount}
-                      onChange={(e) => setAmount(e.target.value)}
-                      className="input-celestial w-full text-lg"
-                      placeholder="50"
-                    />
-                    {selectedItem.goalAmount && (
-                      <p className="text-xs text-ivory/50 mt-1">
-                        Remaining: ${(selectedItem.goalAmount - selectedItem.raisedAmount).toLocaleString()} of ${selectedItem.goalAmount.toLocaleString()} goal
-                      </p>
-                    )}
-                  </div>
-                )}
-
-                {selectedItem.itemType === 'product' && (
-                  <div className="bg-royal/30 p-4 rounded-lg text-center">
-                    <p className="text-sm text-ivory/70">
-                      Please click continue to log your intent to purchase{selectedItem.url ? " — you will be redirected to buy it directly" : ""}!
+                <div className="bg-royal/30 p-4 rounded-lg text-center">
+                  <p className="text-sm text-ivory/70">
+                    Please click continue to log your intent to purchase{selectedItem.url ? " — you will be redirected to buy it directly" : ""}!
+                  </p>
+                  {selectedItem.totalNeeded && (
+                    <p className="text-xs text-ivory/50 mt-2">
+                      {selectedItem.totalBought} of {selectedItem.totalNeeded} already purchased
                     </p>
-                    {selectedItem.totalNeeded && (
-                      <p className="text-xs text-ivory/50 mt-2">
-                        {selectedItem.totalBought} of {selectedItem.totalNeeded} already purchased
-                      </p>
-                    )}
-                  </div>
-                )}
+                  )}
+                </div>
 
                 <div className="flex gap-3 pt-2">
                   <button 
                     type="submit"
-                    disabled={loading || (selectedItem.itemType === 'fund' && !amount)}
+                    disabled={loading}
                     className="btn-gold flex-1 py-3 disabled:opacity-50"
                   >
                     {loading ? "Processing..." : "Continue"}

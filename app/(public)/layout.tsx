@@ -13,7 +13,7 @@ export default async function PublicLayout({
   children: React.ReactNode;
 }) {
   const [settings, featureFlags] = await Promise.all([
-    getSettings("weddingDate", "bannerActive", "bannerText", "bannerUrl", "bannerColor"),
+    getSettings("weddingDate", "bannerActive", "bannerText", "bannerUrl", "bannerColor", "coupleName"),
     getFeatureFlags(),
   ]);
 
@@ -30,6 +30,7 @@ export default async function PublicLayout({
       <Navigation
         weddingDate={settings?.weddingDate || null}
         featureFlags={featureFlags}
+        coupleName={settings?.coupleName || null}
       />
       <main id="main-content" className="relative z-10 pt-16 lg:pt-20">{children}</main>
       <Footer />
