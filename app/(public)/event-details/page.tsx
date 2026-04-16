@@ -44,9 +44,17 @@ export default async function EventDetailsPage() {
             <p className="text-ivory/60">
               {settings?.venueName || "The Highland Manor"}
             </p>
-            <p className="text-ivory/60">
-              {settings?.venueAddress || "Apopka, Florida"}
-            </p>
+            <a
+              href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
+                (settings?.venueAddress || "604 E Main St, Apopka, FL 32703") +
+                ", " + (settings?.venueName || "The Highland Manor")
+              )}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-ivory/60 hover:text-gold underline underline-offset-2 transition-colors"
+            >
+              {settings?.venueAddress || "604 E Main St, Apopka, FL 32703"}
+            </a>
             {settings?.weddingDate && (
               <p className="text-gold mt-4 font-serif text-lg">
                 {new Date(settings.weddingDate).toLocaleDateString(
@@ -77,9 +85,17 @@ export default async function EventDetailsPage() {
             <p className="text-ivory/60">
               {settings?.venueName || "The Highland Manor"}
             </p>
-            <p className="text-ivory/60">
-              {settings?.venueAddress || "Apopka, Florida"}
-            </p>
+            <a
+              href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
+                (settings?.venueAddress || "604 E Main St, Apopka, FL 32703") +
+                ", " + (settings?.venueName || "The Highland Manor")
+              )}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-ivory/60 hover:text-gold underline underline-offset-2 transition-colors"
+            >
+              {settings?.venueAddress || "604 E Main St, Apopka, FL 32703"}
+            </a>
             <p className="text-gold/80 mt-4 text-sm">
               Dinner, Dancing &amp; Celebration
             </p>
@@ -207,6 +223,65 @@ export default async function EventDetailsPage() {
               </p>
             </div>
           )}
+        </div>
+
+        <SectionDivider />
+
+        {/* Venue Map */}
+        <div className="max-w-4xl mx-auto">
+          <h2 className="heading-gold text-3xl text-center mb-4">
+            📍 Find the Venue
+          </h2>
+          <p className="text-ivory/60 text-center max-w-2xl mx-auto mb-2">
+            {settings?.venueName || "The Highland Manor"} •{" "}
+            <a
+              href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
+                (settings?.venueAddress || "604 E Main St, Apopka, FL 32703") +
+                ", " + (settings?.venueName || "The Highland Manor")
+              )}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-gold hover:text-gold-light underline underline-offset-2 transition-colors"
+            >
+              {settings?.venueAddress || "604 E Main St, Apopka, FL 32703"}
+            </a>
+          </p>
+          <p className="text-ivory/40 text-center text-xs mb-8">
+            Tap the address above for turn-by-turn directions
+          </p>
+          <div className="rounded-lg overflow-hidden border border-gold/20 shadow-glow">
+            <iframe
+              title="The Highland Manor - Venue Location"
+              src={`https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3499.5!2d-81.4988!3d28.6715!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x88e77611889e53b7%3A0x1feda9b7ffa63093!2sThe%20Highland%20Manor%20-%20Events%20Venue!5e0!3m2!1sen!2sus!4v1`}
+              width="100%"
+              height="400"
+              style={{ border: 0 }}
+              allowFullScreen
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+              className="w-full"
+            />
+          </div>
+          <div className="flex justify-center gap-4 mt-4">
+            <a
+              href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
+                "The Highland Manor, 604 E Main St, Apopka, FL 32703"
+              )}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn-gold text-sm px-5 py-2"
+            >
+              Get Directions
+            </a>
+            <a
+              href="https://www.thehighlandmanor.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn-outline text-sm px-5 py-2"
+            >
+              Venue Website
+            </a>
+          </div>
         </div>
       </div>
     </div>

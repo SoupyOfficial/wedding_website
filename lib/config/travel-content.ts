@@ -6,12 +6,14 @@ export interface Airport {
   code: string;
   subtitle: string;
   details: string[];
+  website?: string;
 }
 
 export interface TransportOption {
   name: string;
   description: string;
   details: string[];
+  website?: string;
 }
 
 export interface RailOrDriveOption {
@@ -19,6 +21,7 @@ export interface RailOrDriveOption {
   description: string;
   /** Use `{{parkingInfo}}` as a placeholder for the dynamic parking info from settings. */
   details: string[];
+  website?: string;
 }
 
 export interface FeaturedPark {
@@ -27,6 +30,7 @@ export interface FeaturedPark {
   description: string;
   subParks: { name: string; description: string }[];
   details: string[];
+  website?: string;
 }
 
 export interface ThemePark {
@@ -34,6 +38,7 @@ export interface ThemePark {
   icon: string;
   distance: string;
   description: string;
+  website?: string;
 }
 
 export interface Restaurant {
@@ -41,12 +46,15 @@ export interface Restaurant {
   icon: string;
   meta: string;
   description: string;
+  website?: string;
+  mapUrl?: string;
 }
 
 export interface LocalActivity {
   name: string;
   icon: string;
   description: string;
+  website?: string;
 }
 
 export interface TrafficTip {
@@ -69,6 +77,7 @@ export interface NearbyHotel {
   area: string;
   driveTime: string;
   note?: string;
+  searchUrl?: string;
 }
 
 // ─── Airports ────────────────────────────────────────────────────────
@@ -85,6 +94,7 @@ export const airports: Airport[] = [
       "Car rental counters on-site at the terminal",
       "Rideshare pickup at Level 2 of the terminal garages",
     ],
+    website: "https://orlandoairports.net",
   },
   {
     name: "Orlando Sanford International (SFB)",
@@ -97,6 +107,7 @@ export const airports: Airport[] = [
       "Fewer rental car options — book in advance",
       "Good option if coming from smaller regional airports",
     ],
+    website: "https://www.osaa.net",
   },
 ];
 
@@ -122,6 +133,7 @@ export const groundTransport: TransportOption[] = [
       "Available 24/7",
       "Great for evenings out or the wedding itself",
     ],
+    website: "https://www.uber.com",
   },
   {
     name: "Shuttle & Taxi",
@@ -132,6 +144,7 @@ export const groundTransport: TransportOption[] = [
       "Mears Transportation for pre-booked shuttles",
       "Taxis available at airport taxi stands",
     ],
+    website: "https://www.mearstransportation.com",
   },
 ];
 
@@ -148,6 +161,7 @@ export const railAndDriving: RailOrDriveOption[] = [
       "Travel time: ~3\u20133.5 hours from Miami",
       "Smart (economy) and Premium class seating",
     ],
+    website: "https://www.gobrightline.com",
   },
   {
     name: "Driving Directions",
@@ -195,6 +209,7 @@ export const featuredPark: FeaturedPark = {
     "On-site resort hotels with Early Park Admission perks",
     "CityWalk dining & nightlife included with park admission",
   ],
+  website: "https://www.universalorlando.com",
 };
 
 // ─── Theme Parks ────────────────────────────────────────────────────
@@ -206,6 +221,7 @@ export const themeParks: ThemePark[] = [
     distance: "~30 min from venue",
     description:
       "Four theme parks \u2014 Magic Kingdom, EPCOT, Hollywood Studios, and Animal Kingdom. Plus Disney Springs for shopping & dining.",
+    website: "https://disneyworld.disney.go.com",
   },
   {
     name: "SeaWorld Orlando",
@@ -213,6 +229,7 @@ export const themeParks: ThemePark[] = [
     distance: "~35 min from venue",
     description:
       "Marine life encounters, roller coasters, and shows. Also check out Aquatica water park nearby.",
+    website: "https://seaworld.com/orlando",
   },
   {
     name: "LEGOLAND Florida",
@@ -220,6 +237,7 @@ export const themeParks: ThemePark[] = [
     distance: "~45 min from venue",
     description:
       "Perfect for families with younger kids. Interactive rides, building experiences, and a water park.",
+    website: "https://www.legoland.com/florida",
   },
   {
     name: "TopGolf Orlando",
@@ -227,6 +245,7 @@ export const themeParks: ThemePark[] = [
     distance: "~25 min from venue",
     description:
       "High-tech driving range with games, food, drinks, and entertainment for groups.",
+    website: "https://topgolf.com/us/orlando",
   },
   {
     name: "Orlando Premium Outlets",
@@ -234,6 +253,7 @@ export const themeParks: ThemePark[] = [
     distance: "~30 min from venue",
     description:
       "Two locations with 150+ designer and name-brand stores at discounted prices.",
+    website: "https://www.premiumoutlets.com/outlet/orlando-vineland",
   },
   {
     name: "Wekiwa Springs State Park",
@@ -241,6 +261,7 @@ export const themeParks: ThemePark[] = [
     distance: "~15 min from venue",
     description:
       "Natural Florida at its best \u2014 crystal-clear springs, kayaking, hiking trails, and wildlife.",
+    website: "https://www.floridastateparks.org/parks-and-trails/wekiwa-springs-state-park",
   },
 ];
 
@@ -253,6 +274,7 @@ export const restaurants: Restaurant[] = [
     meta: "~10 min \u00B7 Casual \u00B7 $$",
     description:
       "A beloved local spot for Southern comfort food \u2014 catfish, gator bites, and hush puppies.",
+    mapUrl: "https://www.google.com/maps/search/The+Catfish+Place+Apopka+FL",
   },
   {
     name: "Ciao Italian Grill",
@@ -260,6 +282,7 @@ export const restaurants: Restaurant[] = [
     meta: "~15 min \u00B7 Italian \u00B7 $$",
     description:
       "Cozy Italian restaurant with homemade pastas, wood-fired pizzas, and great wine selections.",
+    mapUrl: "https://www.google.com/maps/search/Ciao+Italian+Grill+Apopka+FL",
   },
   {
     name: "Hunger Street Tacos",
@@ -267,6 +290,7 @@ export const restaurants: Restaurant[] = [
     meta: "~20 min \u00B7 Mexican \u00B7 $",
     description:
       "Trendy taqueria with creative street tacos, fresh guac, and craft margaritas.",
+    mapUrl: "https://www.google.com/maps/search/Hunger+Street+Tacos+Orlando+FL",
   },
   {
     name: "First Watch",
@@ -274,6 +298,8 @@ export const restaurants: Restaurant[] = [
     meta: "~15 min \u00B7 Brunch \u00B7 $$",
     description:
       "Perfect for a morning-after brunch \u2014 fresh juices, avocado toast, and egg specialties.",
+    website: "https://www.firstwatch.com",
+    mapUrl: "https://www.google.com/maps/search/First+Watch+Apopka+FL",
   },
   {
     name: "4 Rivers Smokehouse",
@@ -281,6 +307,8 @@ export const restaurants: Restaurant[] = [
     meta: "~20 min \u00B7 BBQ \u00B7 $$",
     description:
       "Award-winning Central Florida BBQ \u2014 brisket, burnt ends, and legendary sides.",
+    website: "https://4rsmokehouse.com",
+    mapUrl: "https://www.google.com/maps/search/4+Rivers+Smokehouse+Orlando+FL",
   },
   {
     name: "Dragonfly Robata Grill",
@@ -288,6 +316,7 @@ export const restaurants: Restaurant[] = [
     meta: "~25 min \u00B7 Sushi/Japanese \u00B7 $$$",
     description:
       "Upscale Japanese izakaya experience with inventive sushi rolls, small plates, and craft cocktails.",
+    mapUrl: "https://www.google.com/maps/search/Dragonfly+Robata+Grill+Orlando+FL",
   },
 ];
 
@@ -299,6 +328,7 @@ export const localActivities: LocalActivity[] = [
     icon: "\uD83D\uDEA3",
     description:
       "Explore the Wekiva River, Rock Springs Run, or King\u2019s Landing \u2014 all within 20 minutes of the venue.",
+    website: "https://www.google.com/maps/search/kayak+rental+near+Apopka+FL",
   },
   {
     name: "Beach Day Trips",
@@ -311,12 +341,14 @@ export const localActivities: LocalActivity[] = [
     icon: "\uD83C\uDFA8",
     description:
       "Beautiful galleries showcasing American art, plus rotating exhibitions in Loch Haven Park.",
+    website: "https://omart.org",
   },
   {
     name: "Harry P. Leu Gardens",
     icon: "\uD83C\uDF3A",
     description:
       "50 acres of stunning botanical gardens \u2014 a peaceful escape and great for photos.",
+    website: "https://www.leugardens.org",
   },
   {
     name: "Wine & Cocktail Bars",
@@ -329,6 +361,7 @@ export const localActivities: LocalActivity[] = [
     icon: "\uD83C\uDFEC",
     description:
       "Charming town with boutique shopping on Park Ave, scenic boat tours, and excellent restaurants.",
+    website: "https://cityofwinterpark.org/visitors",
   },
 ];
 
@@ -340,36 +373,42 @@ export const nearbyHotels: NearbyHotel[] = [
     area: "Apopka",
     driveTime: "~10 min",
     note: "Clean, reliable, and very close to the venue",
+    searchUrl: "https://www.google.com/travel/hotels/s/Hampton%20Inn%20Apopka%20FL",
   },
   {
     name: "Hilton Garden Inn Apopka",
     area: "Apopka",
     driveTime: "~10 min",
     note: "Full-service hotel with on-site restaurant",
+    searchUrl: "https://www.google.com/travel/hotels/s/Hilton%20Garden%20Inn%20Apopka%20FL",
   },
   {
     name: "Home2 Suites by Hilton Orlando/Apopka",
     area: "Apopka",
     driveTime: "~10 min",
     note: "Extended-stay suites with kitchenettes",
+    searchUrl: "https://www.google.com/travel/hotels/s/Home2%20Suites%20Apopka%20FL",
   },
   {
     name: "Comfort Suites Near Wekiva Springs",
     area: "Apopka / Longwood",
     driveTime: "~15 min",
     note: "Close to Wekiwa Springs State Park",
+    searchUrl: "https://www.google.com/travel/hotels/s/Comfort%20Suites%20Wekiva%20Springs",
   },
   {
     name: "SpringHill Suites by Marriott Orlando Altamonte Springs",
     area: "Altamonte Springs",
     driveTime: "~20 min",
     note: "Near Altamonte Mall and I-4 access",
+    searchUrl: "https://www.google.com/travel/hotels/s/SpringHill%20Suites%20Altamonte%20Springs",
   },
   {
     name: "Courtyard by Marriott Sanford / Lake Mary",
     area: "Sanford / Lake Mary",
     driveTime: "~25 min",
     note: "Near SFB airport; convenient for SunRail commuters",
+    searchUrl: "https://www.google.com/travel/hotels/s/Courtyard%20Marriott%20Sanford%20Lake%20Mary",
   },
 ];
 

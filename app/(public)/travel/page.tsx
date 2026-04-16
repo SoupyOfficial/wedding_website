@@ -169,7 +169,17 @@ export default async function TravelPage() {
                     <span>🚗 {h.driveTime}</span>
                   </div>
                   {h.note && (
-                    <p className="text-ivory/60 text-xs">{h.note}</p>
+                    <p className="text-ivory/60 text-xs mb-2">{h.note}</p>
+                  )}
+                  {h.searchUrl && (
+                    <a
+                      href={h.searchUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-gold/80 hover:text-gold text-xs underline underline-offset-2"
+                    >
+                      Check Rates →
+                    </a>
                   )}
                 </div>
               ))}
@@ -207,6 +217,16 @@ export default async function TravelPage() {
                       <li key={i}>• {d}</li>
                     ))}
                   </ul>
+                  {airport.website && (
+                    <a
+                      href={airport.website}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-block text-gold/80 hover:text-gold text-xs mt-3 underline underline-offset-2"
+                    >
+                      Visit Website →
+                    </a>
+                  )}
                 </div>
               ))}
             </div>
@@ -225,6 +245,16 @@ export default async function TravelPage() {
                       <li key={i}>• {d}</li>
                     ))}
                   </ul>
+                  {opt.website && (
+                    <a
+                      href={opt.website}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-block text-gold/80 hover:text-gold text-xs mt-3 underline underline-offset-2"
+                    >
+                      Visit Website →
+                    </a>
+                  )}
                 </div>
               ))}
             </div>
@@ -243,10 +273,15 @@ export default async function TravelPage() {
                       <li key={i}>• {d.replace("{{parkingInfo}}", parkingInfo)}</li>
                     ))}
                   </ul>
-                  {opt.name === "Brightline High-Speed Rail" && (
-                    <p className="text-ivory/60 space-y-1 text-sm mt-1">
-                      • Book at <span className="text-gold/80">gobrightline.com</span>
-                    </p>
+                  {opt.website && (
+                    <a
+                      href={opt.website}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-block text-gold/80 hover:text-gold text-xs mt-3 underline underline-offset-2"
+                    >
+                      {opt.name === "Brightline High-Speed Rail" ? "Book Tickets →" : "Visit Website →"}
+                    </a>
                   )}
                 </div>
               ))}
@@ -354,6 +389,16 @@ export default async function TravelPage() {
                       <li key={i}>• {d}</li>
                     ))}
                   </ul>
+                  {featuredPark.website && (
+                    <a
+                      href={featuredPark.website}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn-outline text-sm px-4 py-2 inline-block"
+                    >
+                      Explore Universal Orlando →
+                    </a>
+                  )}
                 </div>
               </div>
               {raffleTicketCount > 0 && (
@@ -383,7 +428,17 @@ export default async function TravelPage() {
                 <div className="text-3xl mb-3">{park.icon}</div>
                 <h3 className="text-gold font-serif text-lg mb-2">{park.name}</h3>
                 <p className="text-ivory/60 text-sm mb-2">{park.distance}</p>
-                <p className="text-ivory/50 text-xs">{park.description}</p>
+                <p className="text-ivory/50 text-xs mb-2">{park.description}</p>
+                {park.website && (
+                  <a
+                    href={park.website}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-gold/80 hover:text-gold text-xs underline underline-offset-2"
+                  >
+                    Visit Website →
+                  </a>
+                )}
               </div>
             ))}
           </div>
@@ -399,7 +454,29 @@ export default async function TravelPage() {
                 <div key={r.name} className="card-celestial">
                   <h4 className="text-gold font-serif text-base mb-1">{r.icon} {r.name}</h4>
                   <p className="text-ivory/50 text-xs mb-1">{r.meta}</p>
-                  <p className="text-ivory/60 text-xs">{r.description}</p>
+                  <p className="text-ivory/60 text-xs mb-2">{r.description}</p>
+                  <div className="flex gap-3">
+                    {r.website && (
+                      <a
+                        href={r.website}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-gold/80 hover:text-gold text-xs underline underline-offset-2"
+                      >
+                        Website →
+                      </a>
+                    )}
+                    {r.mapUrl && (
+                      <a
+                        href={r.mapUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-gold/80 hover:text-gold text-xs underline underline-offset-2"
+                      >
+                        Map →
+                      </a>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
@@ -416,7 +493,17 @@ export default async function TravelPage() {
                 <div key={a.name} className="card-celestial text-center">
                   <div className="text-3xl mb-2">{a.icon}</div>
                   <h4 className="text-gold font-serif text-base mb-1">{a.name}</h4>
-                  <p className="text-ivory/50 text-xs">{a.description}</p>
+                  <p className="text-ivory/50 text-xs mb-2">{a.description}</p>
+                  {a.website && (
+                    <a
+                      href={a.website}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-gold/80 hover:text-gold text-xs underline underline-offset-2"
+                    >
+                      Learn More →
+                    </a>
+                  )}
                 </div>
               ))}
             </div>

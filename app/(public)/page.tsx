@@ -55,7 +55,17 @@ export default async function HomePage() {
           {/* Venue */}
           <p className="text-ivory/60 text-base md:text-lg">
             {settings?.venueName || "The Highland Manor"} •{" "}
-            {settings?.venueAddress || "Apopka, Florida"}
+            <a
+              href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
+                (settings?.venueAddress || "604 E Main St, Apopka, FL 32703") +
+                ", " + (settings?.venueName || "The Highland Manor")
+              )}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-gold underline underline-offset-2 transition-colors"
+            >
+              {settings?.venueAddress || "604 E Main St, Apopka, FL 32703"}
+            </a>
           </p>
 
           {/* Divider */}
