@@ -49,3 +49,12 @@ next-env.d.ts
 # prisma shadow database (used by migration drift check)
 prisma/shadow.db
 local.db
+
+# playwright
+/e2e/test.db
+/e2e/test.db-wal
+/e2e/test.db-shm
+/e2e/storageState.json
+/e2e/test-history/
+/test-results/
+/playwright-report/

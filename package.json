@@ -14,6 +14,10 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
+    "test:e2e": "npx tsx e2e/rotate-results.ts && npx playwright test && npx tsx e2e/rotate-results.ts",
+    "test:e2e:ui": "npx playwright test --ui",
+    "test:e2e:sync": "npx tsx e2e/sync-test-db.ts",
+    "test:e2e:history": "npx tsx e2e/rotate-results.ts",
     "generate:types": "tsx scripts/generate-db-types.ts"
   },
   "dependencies": {
@@ -36,6 +40,7 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
+    "@playwright/test": "^1.59.1",
     "@tailwindcss/typography": "^0.5.19",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^6.9.1",
@@ -49,6 +54,7 @@
     "@types/sharp": "^0.31.1",
     "@vitejs/plugin-react": "^4.7.0",
     "@vitest/coverage-istanbul": "^3.2.4",
+    "cross-env": "^7.0.3",
     "dotenv-cli": "^11.0.0",
     "eslint": "^8.57.1",
     "eslint-config-next": "^14.2.35",
