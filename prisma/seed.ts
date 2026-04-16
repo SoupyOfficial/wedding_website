@@ -98,6 +98,11 @@ async function main() {
     {
       name: "Hilton Garden Inn Apopka City Center",
       address: "Apopka, FL",
+      phone: "1-800-HILTONS",
+      bookingLink: "https://www.hilton.com/en/attend-my-event/garcia-campbell-wedding/",
+      blockCode: "93E",
+      blockDeadline: "2026-10-13",
+      notes: "On-site venue hotel — book by phone with code \"93E\" or use the booking link.",
       sortOrder: 1,
     },
     {
@@ -114,8 +119,8 @@ async function main() {
 
   for (const hotel of hotels) {
     await client.execute({
-      sql: `INSERT OR IGNORE INTO Hotel (id, name, address, sortOrder)
-            SELECT ?, ?, ?, ?
+      sql: `INSERT OR IGNORE INTO Hotel (id, name, address, phone, bookingLink, blockCode, blockDeadline, notes, sortOrder)
+            SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?
             WHERE NOT EXISTS (
               SELECT 1 FROM Hotel WHERE name = ?
             )`,
@@ -123,6 +128,11 @@ async function main() {
         crypto.randomUUID(),
         hotel.name,
         hotel.address,
+        hotel.phone ?? "",
+        hotel.bookingLink ?? "",
+        hotel.blockCode ?? "",
+        hotel.blockDeadline ?? null,
+        hotel.notes ?? "",
         hotel.sortOrder,
         hotel.name,
       ],
