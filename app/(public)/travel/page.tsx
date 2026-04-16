@@ -17,7 +17,8 @@ import {
   trafficTips,
   nearbyHotels,
 } from "@/lib/config/travel-content";
-import TravelTimeChecker from "@/components/TravelTimeChecker";
+// TravelTimeChecker disabled until Google Maps API key is configured
+// import TravelTimeChecker from "@/components/TravelTimeChecker";
 
 export const metadata = {
   title: "Travel & Stay",
@@ -288,19 +289,19 @@ export default async function TravelPage() {
 
         <SectionDivider />
 
-        {/* Travel Time Checker */}
-        <div className="max-w-5xl mx-auto mb-16">
-          <h2 className="heading-gold text-3xl text-center mb-4">
-            📍 Check Your Travel Time
-          </h2>
-          <p className="text-ivory/60 text-center max-w-2xl mx-auto mb-8">
-            Enter your hotel, Airbnb, or starting address below to see estimated
-            driving time to the venue — or tap a popular location for a quick check.
-          </p>
-          <TravelTimeChecker />
-        </div>
-
-        <SectionDivider />
+        {/* Travel Time Checker — disabled until Google Maps API key is configured.
+            To enable: see docs/guides/google-maps-setup.md, then uncomment the
+            TravelTimeChecker import at the top of this file and restore this section:
+            <div className="max-w-5xl mx-auto mb-16">
+              <h2 className="heading-gold text-3xl text-center mb-4">📍 Check Your Travel Time</h2>
+              <p className="text-ivory/60 text-center max-w-2xl mx-auto mb-8">
+                Enter your hotel, Airbnb, or starting address below to see estimated
+                driving time to the venue — or tap a popular location for a quick check.
+              </p>
+              <TravelTimeChecker />
+            </div>
+            <SectionDivider />
+        */}
 
         {/* Live Weather Forecast */}
         <WeatherForecast
