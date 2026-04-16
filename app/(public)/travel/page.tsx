@@ -15,6 +15,7 @@ import {
   restaurants,
   localActivities,
   trafficTips,
+  nearbyHotels,
 } from "@/lib/config/travel-content";
 import TravelTimeChecker from "@/components/TravelTimeChecker";
 
@@ -53,8 +54,10 @@ export default async function TravelPage() {
             Where to Stay
           </h2>
           <p className="text-ivory/60 text-center max-w-2xl mx-auto mb-8">
-            We&apos;ve arranged room blocks at nearby hotels for your convenience.
-            Book early to secure the best rates — Orlando is a popular destination!
+            We have <span className="text-gold">limited room blocks</span> at the
+            on-site venue hotel — once they&apos;re gone, they&apos;re gone!
+            Beyond that, there are plenty of great hotels nearby in the Apopka
+            and greater Orlando area.
           </p>
           <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
             {hotels.map((hotel) => (
@@ -142,9 +145,39 @@ export default async function TravelPage() {
           </div>
           {hotels.length > 0 && (
             <p className="text-center text-ivory/40 text-xs mt-4 italic">
-              Rates and availability are subject to change. We recommend booking as soon as possible.
+              Room block availability is limited. We recommend booking as soon as possible.
             </p>
           )}
+
+          {/* Other Nearby Hotels */}
+          <div className="mt-12">
+            <h3 className="text-gold font-serif text-xl text-center mb-2">
+              Other Nearby Hotels
+            </h3>
+            <p className="text-ivory/50 text-center text-sm max-w-2xl mx-auto mb-6">
+              If the venue hotel block is full — or you&apos;d prefer a different
+              option — these hotels are all a short drive from the venue.
+              Remember: <span className="text-gold/80">check travel time, not just miles!</span>
+            </p>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 max-w-5xl mx-auto">
+              {nearbyHotels.map((h) => (
+                <div key={h.name} className="card-celestial">
+                  <h4 className="text-gold font-serif text-base mb-1">🏨 {h.name}</h4>
+                  <div className="flex items-center gap-3 text-xs text-ivory/50 mb-1">
+                    <span>📍 {h.area}</span>
+                    <span>🚗 {h.driveTime}</span>
+                  </div>
+                  {h.note && (
+                    <p className="text-ivory/60 text-xs">{h.note}</p>
+                  )}
+                </div>
+              ))}
+            </div>
+            <p className="text-center text-ivory/30 text-[11px] mt-4 italic">
+              Search for these hotels on your preferred booking site for current rates.
+              Airbnb and VRBO are also great options in the Apopka area.
+            </p>
+          </div>
         </div>
 
         <SectionDivider />

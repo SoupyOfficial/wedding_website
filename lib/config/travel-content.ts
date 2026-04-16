@@ -64,6 +64,13 @@ export interface KeyDestination {
   trafficWarning?: string;
 }
 
+export interface NearbyHotel {
+  name: string;
+  area: string;
+  driveTime: string;
+  note?: string;
+}
+
 // ─── Airports ────────────────────────────────────────────────────────
 
 export const airports: Airport[] = [
@@ -322,6 +329,47 @@ export const localActivities: LocalActivity[] = [
     icon: "\uD83C\uDFEC",
     description:
       "Charming town with boutique shopping on Park Ave, scenic boat tours, and excellent restaurants.",
+  },
+];
+
+// ─── Nearby Hotels ──────────────────────────────────────────────────
+
+export const nearbyHotels: NearbyHotel[] = [
+  {
+    name: "Hampton Inn & Suites Orlando/Apopka",
+    area: "Apopka",
+    driveTime: "~10 min",
+    note: "Clean, reliable, and very close to the venue",
+  },
+  {
+    name: "Hilton Garden Inn Apopka",
+    area: "Apopka",
+    driveTime: "~10 min",
+    note: "Full-service hotel with on-site restaurant",
+  },
+  {
+    name: "Home2 Suites by Hilton Orlando/Apopka",
+    area: "Apopka",
+    driveTime: "~10 min",
+    note: "Extended-stay suites with kitchenettes",
+  },
+  {
+    name: "Comfort Suites Near Wekiva Springs",
+    area: "Apopka / Longwood",
+    driveTime: "~15 min",
+    note: "Close to Wekiwa Springs State Park",
+  },
+  {
+    name: "SpringHill Suites by Marriott Orlando Altamonte Springs",
+    area: "Altamonte Springs",
+    driveTime: "~20 min",
+    note: "Near Altamonte Mall and I-4 access",
+  },
+  {
+    name: "Courtyard by Marriott Sanford / Lake Mary",
+    area: "Sanford / Lake Mary",
+    driveTime: "~25 min",
+    note: "Near SFB airport; convenient for SunRail commuters",
   },
 ];
 
