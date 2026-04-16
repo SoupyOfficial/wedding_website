@@ -30,7 +30,9 @@ export default async function TravelPage() {
   if (gate) return gate;
   const settings = await getSettings("raffleTicketCount", "parkingInfo", "weddingDate", "travelContent");
 
-  const hotels = await query<Hotel>("SELECT * FROM Hotel ORDER BY sortOrder ASC");
+  const allHotels = await query<Hotel>("SELECT * FROM Hotel ORDER BY sortOrder ASC");
+  const venueHotels = allHotels.filter((h) => h.blockCode || h.bookingLink);
+  const otherHotels = allHotels.filter((h) => !h.blockCode && !h.bookingLink);
 
   const timelineEvents = await query<TimelineEvent>(
     "SELECT * FROM TimelineEvent WHERE eventType = ? ORDER BY sortOrder ASC",
@@ -60,94 +62,143 @@ export default async function TravelPage() {
             Beyond that, there are plenty of great hotels nearby in the Apopka
             and greater Orlando area.
           </p>
-          <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-            {hotels.map((hotel) => (
-              <div key={hotel.id} className="card-celestial text-center">
-                <div className="text-3xl mb-3">🏨</div>
-                <h3 className="text-gold font-serif text-xl mb-2">
-                  {hotel.name}
-                </h3>
-                {hotel.priceRange && (
-                  <p className="text-gold/70 text-xs font-semibold uppercase tracking-wider mb-2">
-                    {hotel.priceRange}
-                  </p>
-                )}
-                {hotel.address && (
-                  <p className="text-ivory/60 text-sm mb-1">
-                    📍 {hotel.address}
-                  </p>
-                )}
-                {hotel.distanceFromVenue && (
-                  <p className="text-ivory/50 text-xs mb-2">
-                    🚗 {hotel.distanceFromVenue} from venue
-                  </p>
-                )}
-                {hotel.phone && (
-                  <p className="text-ivory/50 text-xs mb-2">
-                    📞 {hotel.phone}
-                  </p>
-                )}
-                {hotel.blockCode && (
-                  <p className="text-gold/80 text-sm mb-1">
-                    Block Code: <span className="font-mono font-bold">{hotel.blockCode}</span>
-                  </p>
-                )}
-                {hotel.blockDeadline && (
-                  <p className="text-ivory/50 text-xs mb-2">
-                    ⏰ Book by:{" "}
-                    {new Date(hotel.blockDeadline).toLocaleDateString("en-US", {
-                      month: "long",
-                      day: "numeric",
-                      year: "numeric",
-                    })}
-                  </p>
-                )}
-                {hotel.amenities && (
-                  <div className="flex flex-wrap gap-1 justify-center mb-3">
-                    {hotel.amenities.split(",").map((amenity: string, i: number) => (
-                      <span
-                        key={i}
-                        className="text-xs bg-royal/40 text-ivory/60 px-2 py-0.5 rounded-full"
-                      >
-                        {amenity.trim()}
-                      </span>
-                    ))}
+
+          {/* Venue Hotel Room Block */}
+          {venueHotels.length > 0 && (
+            <>
+              <div className="grid gap-6 max-w-2xl mx-auto mb-6">
+                {venueHotels.map((hotel) => (
+                  <div key={hotel.id} className="card-celestial text-center border border-gold/30">
+                    <div className="text-xs font-semibold uppercase tracking-wider text-gold/90 mb-3">
+                      ✨ Venue Room Block ✨
+                    </div>
+                    <div className="text-3xl mb-3">🏨</div>
+                    <h3 className="text-gold font-serif text-2xl mb-2">
+                      {hotel.name}
+                    </h3>
+                    {hotel.priceRange && (
+                      <p className="text-gold/70 text-xs font-semibold uppercase tracking-wider mb-2">
+                        {hotel.priceRange}
+                      </p>
+                    )}
+                    {hotel.address && (
+                      <p className="text-ivory/60 text-sm mb-1">
+                        📍 {hotel.address}
+                      </p>
+                    )}
+                    {hotel.distanceFromVenue && (
+                      <p className="text-ivory/50 text-xs mb-2">
+                        🚗 {hotel.distanceFromVenue} from venue
+                      </p>
+                    )}
+                    {hotel.phone && (
+                      <p className="text-ivory/50 text-xs mb-2">
+                        📞 {hotel.phone}
+                      </p>
+                    )}
+                    {hotel.blockCode && (
+                      <p className="text-gold/80 text-sm mb-1">
+                        Block Code: <span className="font-mono font-bold">{hotel.blockCode}</span>
+                      </p>
+                    )}
+                    {hotel.blockDeadline && (
+                      <p className="text-ivory/50 text-xs mb-2">
+                        ⏰ Book by:{" "}
+                        {new Date(hotel.blockDeadline).toLocaleDateString("en-US", {
+                          month: "long",
+                          day: "numeric",
+                          year: "numeric",
+                        })}
+                      </p>
+                    )}
+                    {hotel.amenities && (
+                      <div className="flex flex-wrap gap-1 justify-center mb-3">
+                        {hotel.amenities.split(",").map((amenity: string, i: number) => (
+                          <span
+                            key={i}
+                            className="text-xs bg-royal/40 text-ivory/60 px-2 py-0.5 rounded-full"
+                          >
+                            {amenity.trim()}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                    {hotel.notes && (
+                      <p className="text-ivory/60 text-sm mb-3">
+                        {hotel.notes}
+                      </p>
+                    )}
+                    <div className="flex gap-2 justify-center mt-4">
+                      {hotel.bookingLink && (
+                        <a
+                          href={hotel.bookingLink}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="btn-gold text-sm px-4 py-2"
+                        >
+                          Book Now
+                        </a>
+                      )}
+                      {hotel.website && (
+                        <a
+                          href={hotel.website}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="btn-outline text-sm px-4 py-2"
+                        >
+                          Website
+                        </a>
+                      )}
+                    </div>
                   </div>
-                )}
-                {hotel.notes && (
-                  <p className="text-ivory/60 text-sm mb-3">
-                    {hotel.notes}
-                  </p>
-                )}
-                <div className="flex gap-2 justify-center mt-4">
-                  {hotel.bookingLink && (
-                    <a
-                      href={hotel.bookingLink}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="btn-gold text-sm px-4 py-2"
-                    >
-                      Book Now
-                    </a>
-                  )}
-                  {hotel.website && (
-                    <a
-                      href={hotel.website}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="btn-outline text-sm px-4 py-2"
-                    >
-                      Website
-                    </a>
-                  )}
-                </div>
+                ))}
               </div>
-            ))}
-          </div>
-          {hotels.length > 0 && (
-            <p className="text-center text-ivory/40 text-xs mt-4 italic">
-              Room block availability is limited. We recommend booking as soon as possible.
-            </p>
+              <p className="text-center text-ivory/40 text-xs mb-8 italic">
+                Room block availability is limited. We recommend booking as soon as possible.
+              </p>
+            </>
+          )}
+
+          {/* Other Hotels (no room block) */}
+          {otherHotels.length > 0 && (
+            <div className="mt-4">
+              <h3 className="text-gold font-serif text-xl text-center mb-2">
+                Other Recommended Hotels
+              </h3>
+              <p className="text-ivory/50 text-center text-sm max-w-2xl mx-auto mb-6">
+                No room block at these — but they&apos;re close to the venue and
+                well-reviewed options.
+              </p>
+              <div className="grid md:grid-cols-2 gap-4 max-w-3xl mx-auto">
+                {otherHotels.map((hotel) => (
+                  <div key={hotel.id} className="card-celestial">
+                    <h4 className="text-gold font-serif text-base mb-1">🏨 {hotel.name}</h4>
+                    {hotel.address && (
+                      <p className="text-ivory/50 text-xs mb-1">📍 {hotel.address}</p>
+                    )}
+                    {hotel.distanceFromVenue && (
+                      <p className="text-ivory/50 text-xs mb-1">🚗 {hotel.distanceFromVenue} from venue</p>
+                    )}
+                    {hotel.priceRange && (
+                      <p className="text-ivory/50 text-xs mb-1">{hotel.priceRange}</p>
+                    )}
+                    {hotel.notes && (
+                      <p className="text-ivory/60 text-sm mt-2">{hotel.notes}</p>
+                    )}
+                    {hotel.website && (
+                      <a
+                        href={hotel.website}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-gold/70 text-xs hover:text-gold mt-2 inline-block"
+                      >
+                        Check Rates →
+                      </a>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
           )}
 
           {/* Other Nearby Hotels */}

@@ -187,6 +187,7 @@ export interface Entertainment {
   description: string;
   icon: string | null;
   sortOrder: number;
+  isVisible: boolean;
 }
 
 export interface GuestBookEntry {

@@ -14,7 +14,7 @@ export default async function EntertainmentPage() {
   const gate = await checkFeatureFlag("entertainmentPageEnabled");
   if (gate) return gate;
 
-  const entertainment = await query<Entertainment>("SELECT * FROM Entertainment ORDER BY sortOrder ASC");
+  const entertainment = await query<Entertainment>("SELECT * FROM Entertainment WHERE isVisible = 1 ORDER BY sortOrder ASC");
 
   const settings = await getSettings("entertainmentNote");
 

@@ -198,11 +198,12 @@ model PhotoTag {
 // Entertainment
 // ─────────────────────────────────────────────
 model Entertainment {
-  id          String @id @default(cuid())
+  id          String  @id @default(cuid())
   name        String
-  description String @default("")
+  description String  @default("")
   icon        String?
-  sortOrder   Int    @default(0)
+  sortOrder   Int     @default(0)
+  isVisible   Boolean @default(true)
 }
 
 // ─────────────────────────────────────────────
