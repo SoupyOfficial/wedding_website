@@ -522,7 +522,7 @@ export default async function TravelPage() {
                 at the reception via raffle. Make sure you&apos;re there for your chance to win!
               </p>
               <p className="text-ivory/40 text-xs mt-2 italic">
-                Subject to availability. Winners must be present.
+                Subject to availability. Winners must be present. Raffle ticket purchase required for entry. Details will be announced at the reception.
               </p>
             </div>
           )}
