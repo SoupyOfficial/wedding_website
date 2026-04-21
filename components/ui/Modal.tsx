@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode, useEffect, useRef } from "react";
+import { ReactNode, useCallback, useEffect, useRef } from "react";
 
 interface ModalProps {
   title: string;
@@ -16,12 +16,20 @@ export default function Modal({
   maxWidth = "max-w-md",
 }: ModalProps) {
   const dialogRef = useRef<HTMLDivElement>(null);
+  const onCloseRef = useRef(onClose);
   const titleId = "modal-title";
+
+  // Keep the ref current without triggering effects
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  });
+
+  const stableOnClose = useCallback(() => onCloseRef.current(), []);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
-        onClose();
+        stableOnClose();
         return;
       }
       if (e.key === "Tab" && dialogRef.current) {
@@ -50,10 +58,10 @@ export default function Modal({
       document.removeEventListener("keydown", handleKeyDown);
       prev?.focus();
     };
-  }, [onClose]);
+  }, [stableOnClose]);
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4" onClick={onClose}>
+    <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4" onClick={stableOnClose}>
       <div
         ref={dialogRef}
         role="dialog"
@@ -66,7 +74,7 @@ export default function Modal({
         <div className="flex items-center justify-between mb-4">
           <h3 id={titleId} className="text-gold font-serif text-xl">{title}</h3>
           <button
-            onClick={onClose}
+            onClick={stableOnClose}
             aria-label="Close dialog"
             className="text-ivory/40 hover:text-ivory text-xl transition-colors"
           >

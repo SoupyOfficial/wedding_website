@@ -20,7 +20,7 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { title, description, time, icon, sortOrder } = body;
+    const { title, description, time, icon, sortOrder, eventType } = body;
 
     if (!title?.trim()) return errorResponse("Title is required.", 400);
 
@@ -28,8 +28,8 @@ export async function POST(req: NextRequest) {
     const timestamp = now();
     await execute(
       `INSERT INTO TimelineEvent (id, title, description, time, icon, sortOrder, eventType, createdAt, updatedAt)
-       VALUES (?, ?, ?, ?, ?, ?, 'wedding-day', ?, ?)`,
-      [id, title.trim(), description || "", time || "", icon || null, sortOrder ?? 0, timestamp, timestamp]
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [id, title.trim(), description || "", time || "", icon || null, sortOrder ?? 0, eventType || "wedding-day", timestamp, timestamp]
     );
 
     const event = await queryOne<TimelineEvent>("SELECT * FROM TimelineEvent WHERE id = ?", [id]);

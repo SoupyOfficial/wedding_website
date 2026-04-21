@@ -2,6 +2,7 @@ import { query } from "@/lib/db";
 import { getSettings } from "@/lib/services/settings.service";
 import type { TimelineEvent } from "@/lib/db-types";
 import { checkFeatureFlag } from "@/lib/feature-gate";
+import { getFeatureFlag } from "@/lib/config/feature-flags";
 import SectionDivider from "@/components/SectionDivider";
 import { PageHeader } from "@/components/ui";
 
@@ -24,6 +25,8 @@ export default async function EventDetailsPage() {
     "SELECT * FROM TimelineEvent WHERE eventType = ? ORDER BY sortOrder ASC",
     ["wedding-day"]
   );
+
+  const timelineEnabled = await getFeatureFlag("timelineEnabled");
 
   return (
     <div className="pt-8 pb-16">
@@ -144,7 +147,7 @@ export default async function EventDetailsPage() {
         <SectionDivider />
 
         {/* Day-of Timeline */}
-        {timelineEvents.length > 0 && (
+        {timelineEnabled && timelineEvents.length > 0 && (
           <div className="max-w-2xl mx-auto">
             <h2 className="heading-gold text-3xl text-center mb-12">
               Day-of Timeline

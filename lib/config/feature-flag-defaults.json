@@ -17,5 +17,6 @@
   "faqPageEnabled": true,
   "contactPageEnabled": true,
   "musicPageEnabled": true,
-  "photosOfUsPageEnabled": true
+  "photosOfUsPageEnabled": true,
+  "timelineEnabled": true
 }

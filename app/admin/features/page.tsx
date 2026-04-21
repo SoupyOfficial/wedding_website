@@ -40,6 +40,7 @@ const FLAG_GROUPS: { title: string; items: FlagConfig[] }[] = [
       { key: "photoUploadEnabled", label: "Photo Uploads", description: "Allow guests to upload photos from the event" },
       { key: "guestPhotoSharingEnabled", label: "Photo Sharing", description: "Allow guests to view each others uploaded photos" },
       { key: "liveGuestCountEnabled", label: "Live Guest Count", description: "Show real-time attendance count on the homepage" },
+      { key: "timelineEnabled", label: "Day-of Timeline", description: "Show the wedding day timeline on the Event Details page" },
     ],
   },
   {
