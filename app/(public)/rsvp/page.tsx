@@ -1,5 +1,6 @@
 import { getSettings } from "@/lib/services/settings.service";
-import { checkFeatureFlag } from "@/lib/feature-gate";
+import { getFeatureFlag } from "@/lib/config/feature-flags";
+import PageDisabled from "@/components/PageDisabled";
 import RsvpClient from "./RsvpClient";
 
 export const metadata = {
@@ -8,8 +9,15 @@ export const metadata = {
 };
 
 export default async function RSVPPage() {
-  const gate = await checkFeatureFlag("rsvpEnabled");
-  if (gate) return gate;
+  const rsvpEnabled = await getFeatureFlag("rsvpEnabled");
+  if (!rsvpEnabled)
+    return (
+      <PageDisabled
+        emoji="😄"
+        title="Not Just Yet!"
+        message="Get out of here, you overachiever! It's a bit too early for RSVPs — we haven't even sent the invites yet. Check back soon!"
+      />
+    );
 
   const settings = await getSettings("rsvpDeadline");
 
