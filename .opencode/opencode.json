@@ -1,0 +1,69 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "default_agent": "orchestrator",
+  "instructions": [
+    "README.md",
+    "docs/ARCHITECTURE.md"
+  ],
+  "skills": {
+    "paths": [
+      ".opencode/skills"
+    ]
+  },
+  "mcp": {
+    "vercel": {
+      "type": "remote",
+      "url": "https://mcp.vercel.com",
+      "enabled": true
+    },
+    "turso": {
+      "type": "local",
+      "command": ["npx", "-y", "mcp-turso"],
+      "env": {
+        "TURSO_DATABASE_URL": "",
+        "TURSO_AUTH_TOKEN": ""
+      },
+      "enabled": false
+    },
+    "prisma": {
+      "type": "remote",
+      "url": "https://mcp.prisma.io/mcp",
+      "enabled": true
+    }
+  },
+  "agent": {
+    "orchestrator": {
+      "description": "Project orchestrator for the Forever Campbells wedding website. Coordinates planning, execution, QA, and documentation across specialized subagents.",
+      "mode": "primary",
+      "model": "anthropic/claude-sonnet-4-6"
+    },
+    "planner": {
+      "mode": "subagent",
+      "description": "Planning specialist. Breaks features into concrete testable steps.",
+      "model": "anthropic/claude-sonnet-4-6",
+      "permission": {
+        "edit": "deny",
+        "bash": "ask"
+      }
+    },
+    "executor": {
+      "mode": "subagent",
+      "description": "Implementation specialist. Writes code and implements planned features.",
+      "model": "anthropic/claude-sonnet-4-6"
+    },
+    "qa": {
+      "mode": "subagent",
+      "description": "Testing specialist. Runs lint, typecheck, tests, validates changes.",
+      "model": "anthropic/claude-sonnet-4-6",
+      "permission": {
+        "edit": "deny",
+        "bash": "allow"
+      }
+    },
+    "docs-writer": {
+      "mode": "subagent",
+      "description": "Documentation specialist. Updates README, architecture docs, decision records.",
+      "model": "anthropic/claude-sonnet-4-6"
+    }
+  }
+}

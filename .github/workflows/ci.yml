@@ -26,8 +26,8 @@ jobs:
       - name: Type check
         run: npx tsc --noEmit
 
-  build:
-    name: Build
+  test:
+    name: Unit Tests
     needs: [lint-and-typecheck]
     runs-on: ubuntu-latest
     steps:
@@ -40,5 +40,33 @@ jobs:
 
       - run: npm ci
 
+      - name: Generate Prisma client
+        run: npx prisma generate
+
+      - name: Create test environment
+        run: |
+          echo "DATABASE_URL=file:./prisma/dev.db" >> .env
+          echo "NEXTAUTH_SECRET=test-secret-do-not-use-in-prod" >> .env
+          echo "NEXTAUTH_URL=http://localhost:3000" >> .env
+          echo "ADMIN_EMAIL=test@example.com" >> .env
+          echo "ADMIN_PASSWORD=testpassword" >> .env
+
+      - name: Run unit tests
+        run: npm run test
+
+  build:
+    name: Build
+    needs: [lint-and-typecheck, test]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
       - name: Build Next.js
-        run: npx next build
+        run: npm run build

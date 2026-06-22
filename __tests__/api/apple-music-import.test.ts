@@ -111,16 +111,16 @@ describe("Apple Music Import", () => {
       mockFetchPlaylist.mockResolvedValue({
         name: "My Playlist",
         tracks: [
-          { songName: "Song A", artist: "Artist A" },
-          { songName: "Song B", artist: "Artist B" },
-          { songName: "Existing", artist: "Dup" },
+          { songName: "Song A", artist: "Artist A", album: "Album A", durationMs: 210000 },
+          { songName: "Song B", artist: "Artist B", album: "Album B", durationMs: 195000 },
+          { songName: "Existing", artist: "Dup", album: "Album Dup", durationMs: 180000 },
         ],
       });
       // Return existing songs
       mockQuery.mockResolvedValue([
         { songName: "Existing", artist: "Dup" },
       ] as never);
-      mockExecute.mockResolvedValue({ rowsAffected: 1, rows: [], columns: [], lastInsertRowid: undefined });
+      mockExecute.mockResolvedValue({ rowsAffected: 1, lastInsertRowid: undefined });
 
       const req = new NextRequest("http://l", {
         method: "POST",
@@ -144,11 +144,11 @@ describe("Apple Music Import", () => {
       mockFetchPlaylist.mockResolvedValue({
         name: "Party Mix",
         tracks: [
-          { songName: "Song A", artist: "Artist A" },
-          { songName: "Song B", artist: "Artist B" },
+          { songName: "Song A", artist: "Artist A", album: "Album A", durationMs: 210000 },
+          { songName: "Song B", artist: "Artist B", album: "Album B", durationMs: 195000 },
         ],
       });
-      mockExecute.mockResolvedValue({ rowsAffected: 1, rows: [], columns: [], lastInsertRowid: undefined });
+      mockExecute.mockResolvedValue({ rowsAffected: 1, lastInsertRowid: undefined });
 
       const req = new NextRequest("http://l", {
         method: "POST",

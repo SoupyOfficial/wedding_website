@@ -1,13 +1,22 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import { NextRequest } from "next/server";
 
 vi.mock("@/lib/db", () => ({
   queryOne: vi.fn(),
+}));
+
+vi.mock("@/lib/api/middleware", () => ({
+  rateLimit: () => async () => null, // no-op rate limiter for tests
 }));
 
 import { queryOne } from "@/lib/db";
 import { GET } from "@/app/api/v1/settings/public/route";
 
 const mockQueryOne = vi.mocked(queryOne);
+
+function mockReq() {
+  return new NextRequest("http://localhost:3000/api/v1/settings/public");
+}
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -35,7 +44,7 @@ describe("GET /api/v1/settings/public", () => {
       sitePassword: "supersecret",
     });
 
-    const res = await GET();
+    const res = await GET(mockReq());
     const body = await res.json();
     expect(res.status).toBe(200);
     expect(body.data.coupleName).toBe("Alice & Bob");
@@ -47,13 +56,13 @@ describe("GET /api/v1/settings/public", () => {
 
   it("returns 404 when settings not found", async () => {
     mockQueryOne.mockResolvedValue(null);
-    const res = await GET();
+    const res = await GET(mockReq());
     expect(res.status).toBe(404);
   });
 
   it("returns 500 on error", async () => {
     mockQueryOne.mockRejectedValue(new Error("db failure"));
-    const res = await GET();
+    const res = await GET(mockReq());
     expect(res.status).toBe(500);
   });
 });

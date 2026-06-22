@@ -77,10 +77,10 @@ export async function submitRsvp(input: RsvpSubmitInput): Promise<{ error: strin
   const sets: string[] = ["rsvpStatus = ?", "rsvpRespondedAt = ?", "updatedAt = ?"];
   const args: (string | number | null)[] = [rsvpStatus, timestamp, timestamp];
 
-  if (email) { sets.push("email = ?"); args.push(String(email).slice(0, 200)); }
-  if (phone) { sets.push("phone = ?"); args.push(String(phone).slice(0, 30)); }
-  if (dietaryNotes) { sets.push("dietaryNeeds = ?"); args.push(String(dietaryNotes).slice(0, 500)); }
-  if (plusOneName) { sets.push("plusOneName = ?"); args.push(String(plusOneName).slice(0, 100)); }
+  if (email) { sets.push("email = ?"); args.push(String(email).trim().slice(0, 200)); }
+  if (phone) { sets.push("phone = ?"); args.push(String(phone).trim().slice(0, 30)); }
+  if (dietaryNotes) { sets.push("dietaryNeeds = ?"); args.push(String(dietaryNotes).trim().slice(0, 500)); }
+  if (plusOneName) { sets.push("plusOneName = ?"); args.push(String(plusOneName).trim().slice(0, 100)); }
   if (mealOptionId) {
     const meal = await queryOne("SELECT id FROM MealOption WHERE id = ?", [mealOptionId]);
     if (!meal) return { error: "Invalid meal option." };
@@ -97,7 +97,7 @@ export async function submitRsvp(input: RsvpSubmitInput): Promise<{ error: strin
   if (songRequest && attending) {
     await execute(
       "INSERT INTO SongRequest (id, songTitle, artist, guestName, approved, isVisible, createdAt) VALUES (?, ?, ?, ?, 0, 0, ?)",
-      [generateId(), songRequest, songArtist || "", `${guest.firstName} ${guest.lastName}`, now()]
+      [generateId(), songRequest.trim().slice(0, 200), (songArtist || "").trim().slice(0, 150), `${guest.firstName} ${guest.lastName}`, now()]
     );
   }
 

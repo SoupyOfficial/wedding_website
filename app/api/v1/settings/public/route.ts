@@ -1,7 +1,11 @@
+import { NextRequest } from "next/server";
 import { successResponse, errorResponse } from "@/lib/api";
 import { getSettings } from "@/lib/services/settings.service";
+import { rateLimit } from "@/lib/api/middleware";
 
 export const dynamic = "force-dynamic";
+
+const limiter = rateLimit({ windowMs: 60_000, maxRequests: 30 });
 
 const PUBLIC_FIELDS = [
   "coupleName",
@@ -27,7 +31,9 @@ const PUBLIC_FIELDS = [
  * GET /api/v1/settings/public
  * Returns non-sensitive site settings for public-facing client components.
  */
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const limited = await limiter(req, {});
+  if (limited) return limited;
   try {
     const settings = await getSettings(...PUBLIC_FIELDS);
 

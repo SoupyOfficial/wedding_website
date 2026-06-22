@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { execute, now } from "@/lib/db";
 import { successResponse, errorResponse } from "@/lib/api";
 import { getFullSettings } from "@/lib/services/settings.service";
+import bcrypt from "bcryptjs";
 
 export const dynamic = "force-dynamic";
 
@@ -73,9 +74,10 @@ export async function PUT(req: NextRequest) {
       ["hideUnconfirmedWeddingParty", (body.hideUnconfirmedWeddingParty ?? false) ? 1 : 0],
     ];
 
-    // Only update password if a real value was sent
+    // Only update password if a real value was sent — hash with bcrypt
     if (body.sitePassword && body.sitePassword !== "••••••••") {
-      fields.push(["sitePassword", body.sitePassword]);
+      const hashed = await bcrypt.hash(String(body.sitePassword), 10);
+      fields.push(["sitePassword", hashed]);
     }
 
     for (const [col, val] of fields) {
@@ -96,7 +98,12 @@ export async function PUT(req: NextRequest) {
 
     const settings = await getFullSettings();
 
-    return successResponse(settings);
+    // Mask password in response — never return cleartext
+    const safeSettings = settings
+      ? { ...settings, sitePassword: settings.sitePassword ? "••••••••" : "" }
+      : null;
+
+    return successResponse(safeSettings);
   } catch (error) {
     console.error("Failed to update settings:", error);
     return errorResponse("Internal server error.", 500);

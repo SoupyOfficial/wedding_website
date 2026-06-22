@@ -1,0 +1,369 @@
+{
+  "airports": [
+    {
+      "name": "Orlando International Airport (MCO)",
+      "code": "MCO",
+      "subtitle": "Recommended — Most Flights",
+      "details": [
+        "~35 minutes from the venue",
+        "Major hub with direct flights from most U.S. cities",
+        "All major airlines (Delta, United, American, Southwest, JetBlue, Spirit, Frontier)",
+        "Car rental counters on-site at the terminal",
+        "Rideshare pickup at Level 2 of the terminal garages"
+      ],
+      "website": "https://orlandoairports.net"
+    },
+    {
+      "name": "Orlando Sanford International (SFB)",
+      "code": "SFB",
+      "subtitle": "Budget-Friendly Alternative",
+      "details": [
+        "~40 minutes from the venue",
+        "Smaller, less crowded airport",
+        "Budget carriers (Allegiant Air, international charters)",
+        "Fewer rental car options — book in advance",
+        "Good option if coming from smaller regional airports"
+      ],
+      "website": "https://www.osaa.net"
+    }
+  ],
+  "groundTransport": [
+    {
+      "name": "Rental Cars",
+      "description": "Highly recommended for getting around Orlando. The venue and most attractions require driving.",
+      "details": [
+        "Available at both airports",
+        "Enterprise, Hertz, National, Budget, Avis",
+        "Free parking available at the venue"
+      ]
+    },
+    {
+      "name": "Rideshare",
+      "description": "Uber and Lyft are widely available throughout Orlando and surrounding areas.",
+      "details": [
+        "Airport to venue: ~$25–40",
+        "Available 24/7",
+        "Great for evenings out or the wedding itself"
+      ],
+      "website": "https://www.uber.com"
+    },
+    {
+      "name": "Shuttle & Taxi",
+      "description": "Hotel shuttles and taxi services are also available options.",
+      "details": [
+        "Many hotels offer complimentary airport shuttles",
+        "Mears Transportation for pre-booked shuttles",
+        "Taxis available at airport taxi stands"
+      ],
+      "website": "https://www.mearstransportation.com"
+    }
+  ],
+  "railAndDriving": [
+    {
+      "name": "Brightline High-Speed Rail",
+      "description": "Florida\u2019s high-speed rail service connects South Florida to Orlando in comfort and style.",
+      "details": [
+        "Stations: Miami, Fort Lauderdale, Aventura, Boca Raton, West Palm Beach \u2192 Orlando",
+        "Orlando station at the airport (MCO)",
+        "Travel time: ~3\u20133.5 hours from Miami",
+        "Smart (economy) and Premium class seating"
+      ],
+      "website": "https://www.gobrightline.com"
+    },
+    {
+      "name": "Driving Directions",
+      "description": "Orlando is centrally located in Florida and easily accessible by car.",
+      "details": [
+        "From Miami: ~3.5 hours via Florida\u2019s Turnpike",
+        "From Tampa: ~1.5 hours via I-4 East",
+        "From Jacksonville: ~2 hours via I-95 South \u2192 I-4 West",
+        "Key highways near the venue: I-4, FL-429, US-441",
+        "{{parkingInfo}}"
+      ]
+    }
+  ],
+  "featuredPark": {
+    "name": "Universal Orlando Resort",
+    "icon": "\uD83C\uDFA2",
+    "description": "Home to some of the most thrilling rides and immersive experiences in the world. With three incredible theme parks, there\u2019s something for everyone \u2014 from The Wizarding World of Harry Potter to epic roller coasters and brand-new worlds to explore.",
+    "subParks": [
+      {
+        "name": "Universal Studios",
+        "description": "Movies come to life \u2014 rides, shows, & Diagon Alley"
+      },
+      {
+        "name": "Islands of Adventure",
+        "description": "Hogwarts, Jurassic World, & thrill rides"
+      },
+      {
+        "name": "Epic Universe",
+        "description": "Brand new park \u2014 How to Train Your Dragon, Super Nintendo World, & more"
+      }
+    ],
+    "details": [
+      "~30 minutes from the venue",
+      "Multi-day and park-to-park tickets available",
+      "On-site resort hotels with Early Park Admission perks",
+      "CityWalk dining & nightlife included with park admission"
+    ],
+    "website": "https://www.universalorlando.com"
+  },
+  "themeParks": [
+    {
+      "name": "Walt Disney World",
+      "icon": "\uD83C\uDFF0",
+      "distance": "~30 min from venue",
+      "description": "Four theme parks \u2014 Magic Kingdom, EPCOT, Hollywood Studios, and Animal Kingdom. Plus Disney Springs for shopping & dining.",
+      "website": "https://disneyworld.disney.go.com"
+    },
+    {
+      "name": "SeaWorld Orlando",
+      "icon": "\uD83D\uDC2C",
+      "distance": "~35 min from venue",
+      "description": "Marine life encounters, roller coasters, and shows. Also check out Aquatica water park nearby.",
+      "website": "https://seaworld.com/orlando"
+    },
+    {
+      "name": "LEGOLAND Florida",
+      "icon": "\uD83C\uDF0A",
+      "distance": "~45 min from venue",
+      "description": "Perfect for families with younger kids. Interactive rides, building experiences, and a water park.",
+      "website": "https://www.legoland.com/florida"
+    },
+    {
+      "name": "TopGolf Orlando",
+      "icon": "\uD83C\uDFCC\uFE0F",
+      "distance": "~25 min from venue",
+      "description": "High-tech driving range with games, food, drinks, and entertainment for groups.",
+      "website": "https://topgolf.com/us/orlando"
+    },
+    {
+      "name": "Orlando Premium Outlets",
+      "icon": "\uD83D\uDECD\uFE0F",
+      "distance": "~30 min from venue",
+      "description": "Two locations with 150+ designer and name-brand stores at discounted prices.",
+      "website": "https://www.premiumoutlets.com/outlet/orlando-vineland"
+    },
+    {
+      "name": "Wekiwa Springs State Park",
+      "icon": "\uD83C\uDF3F",
+      "distance": "~15 min from venue",
+      "description": "Natural Florida at its best \u2014 crystal-clear springs, kayaking, hiking trails, and wildlife.",
+      "website": "https://www.floridastateparks.org/parks-and-trails/wekiwa-springs-state-park"
+    }
+  ],
+  "restaurants": [
+    {
+      "name": "The Catfish Place",
+      "icon": "\uD83E\uDD69",
+      "meta": "~10 min \u00B7 Casual \u00B7 $$",
+      "description": "A beloved local spot for Southern comfort food \u2014 catfish, gator bites, and hush puppies.",
+      "mapUrl": "https://www.google.com/maps/search/The+Catfish+Place+Apopka+FL"
+    },
+    {
+      "name": "Ciao Italian Grill",
+      "icon": "\uD83C\uDF55",
+      "meta": "~15 min \u00B7 Italian \u00B7 $$",
+      "description": "Cozy Italian restaurant with homemade pastas, wood-fired pizzas, and great wine selections.",
+      "mapUrl": "https://www.google.com/maps/search/Ciao+Italian+Grill+Apopka+FL"
+    },
+    {
+      "name": "Hunger Street Tacos",
+      "icon": "\uD83C\uDF2E",
+      "meta": "~20 min \u00B7 Mexican \u00B7 $",
+      "description": "Trendy taqueria with creative street tacos, fresh guac, and craft margaritas.",
+      "mapUrl": "https://www.google.com/maps/search/Hunger+Street+Tacos+Orlando+FL"
+    },
+    {
+      "name": "First Watch",
+      "icon": "\uD83C\uDF73",
+      "meta": "~15 min \u00B7 Brunch \u00B7 $$",
+      "description": "Perfect for a morning-after brunch \u2014 fresh juices, avocado toast, and egg specialties.",
+      "website": "https://www.firstwatch.com",
+      "mapUrl": "https://www.google.com/maps/search/First+Watch+Apopka+FL"
+    },
+    {
+      "name": "4 Rivers Smokehouse",
+      "icon": "\uD83C\uDF54",
+      "meta": "~20 min \u00B7 BBQ \u00B7 $$",
+      "description": "Award-winning Central Florida BBQ \u2014 brisket, burnt ends, and legendary sides.",
+      "website": "https://4rsmokehouse.com",
+      "mapUrl": "https://www.google.com/maps/search/4+Rivers+Smokehouse+Orlando+FL"
+    },
+    {
+      "name": "Dragonfly Robata Grill",
+      "icon": "\uD83C\uDF63",
+      "meta": "~25 min \u00B7 Sushi/Japanese \u00B7 $$$",
+      "description": "Upscale Japanese izakaya experience with inventive sushi rolls, small plates, and craft cocktails.",
+      "mapUrl": "https://www.google.com/maps/search/Dragonfly+Robata+Grill+Orlando+FL"
+    }
+  ],
+  "localActivities": [
+    {
+      "name": "Kayaking & Paddleboarding",
+      "icon": "\uD83D\uDEA3",
+      "description": "Explore the Wekiva River, Rock Springs Run, or King\u2019s Landing \u2014 all within 20 minutes of the venue.",
+      "website": "https://www.google.com/maps/search/kayak+rental+near+Apopka+FL"
+    },
+    {
+      "name": "Beach Day Trips",
+      "icon": "\uD83C\uDFD6\uFE0F",
+      "description": "New Smyrna Beach and Cocoa Beach are about an hour away \u2014 perfect for a quick beach escape."
+    },
+    {
+      "name": "Orlando Museum of Art",
+      "icon": "\uD83C\uDFA8",
+      "description": "Beautiful galleries showcasing American art, plus rotating exhibitions in Loch Haven Park.",
+      "website": "https://omart.org"
+    },
+    {
+      "name": "Harry P. Leu Gardens",
+      "icon": "\uD83C\uDF3A",
+      "description": "50 acres of stunning botanical gardens \u2014 a peaceful escape and great for photos.",
+      "website": "https://www.leugardens.org"
+    },
+    {
+      "name": "Wine & Cocktail Bars",
+      "icon": "\uD83C\uDF77",
+      "description": "Check out the bars on Park Avenue in Winter Park or downtown Orlando\u2019s cocktail scene."
+    },
+    {
+      "name": "Winter Park",
+      "icon": "\uD83C\uDFEC",
+      "description": "Charming town with boutique shopping on Park Ave, scenic boat tours, and excellent restaurants.",
+      "website": "https://cityofwinterpark.org/visitors"
+    }
+  ],
+  "nearbyHotels": [
+    {
+      "name": "Hampton Inn & Suites Orlando/Apopka",
+      "area": "Apopka",
+      "driveTime": "~10 min",
+      "note": "Clean, reliable, and very close to the venue",
+      "searchUrl": "https://www.google.com/travel/hotels/s/Hampton%20Inn%20Apopka%20FL"
+    },
+    {
+      "name": "Hilton Garden Inn Apopka",
+      "area": "Apopka",
+      "driveTime": "~10 min",
+      "note": "Full-service hotel with on-site restaurant",
+      "searchUrl": "https://www.google.com/travel/hotels/s/Hilton%20Garden%20Inn%20Apopka%20FL"
+    },
+    {
+      "name": "Home2 Suites by Hilton Orlando/Apopka",
+      "area": "Apopka",
+      "driveTime": "~10 min",
+      "note": "Extended-stay suites with kitchenettes",
+      "searchUrl": "https://www.google.com/travel/hotels/s/Home2%20Suites%20Apopka%20FL"
+    },
+    {
+      "name": "Comfort Suites Near Wekiva Springs",
+      "area": "Apopka / Longwood",
+      "driveTime": "~15 min",
+      "note": "Close to Wekiwa Springs State Park",
+      "searchUrl": "https://www.google.com/travel/hotels/s/Comfort%20Suites%20Wekiva%20Springs"
+    },
+    {
+      "name": "SpringHill Suites by Marriott Orlando Altamonte Springs",
+      "area": "Altamonte Springs",
+      "driveTime": "~20 min",
+      "note": "Near Altamonte Mall and I-4 access",
+      "searchUrl": "https://www.google.com/travel/hotels/s/SpringHill%20Suites%20Altamonte%20Springs"
+    },
+    {
+      "name": "Courtyard by Marriott Sanford / Lake Mary",
+      "area": "Sanford / Lake Mary",
+      "driveTime": "~25 min",
+      "note": "Near SFB airport; convenient for SunRail commuters",
+      "searchUrl": "https://www.google.com/travel/hotels/s/Courtyard%20Marriott%20Sanford%20Lake%20Mary"
+    }
+  ],
+  "trafficTips": [
+    {
+      "icon": "⚠️",
+      "title": "Check Travel Times, Not Miles",
+      "description": "Orlando traffic can easily double your drive time. A location 20 miles away might take 45+ minutes during peak hours. Always check real-time travel times on Google Maps or Waze before heading out."
+    },
+    {
+      "icon": "🚗",
+      "title": "I-4 Is Notoriously Congested",
+      "description": "Interstate 4 runs through the heart of Orlando and is one of the busiest highways in the country. Avoid it during rush hours (7\u20139 AM and 4\u20137 PM). Consider FL-429 (toll road) as a faster alternative to reach Apopka."
+    },
+    {
+      "icon": "🏰",
+      "title": "Theme Park Traffic Is Real",
+      "description": "If you\u2019re staying near the theme parks (International Drive, Kissimmee, Lake Buena Vista), expect 40\u201360+ minutes to the venue despite being only ~25 miles away. Park traffic peaks 9\u201311 AM and 5\u20138 PM."
+    },
+    {
+      "icon": "✅",
+      "title": "Apopka Itself Is Low-Traffic",
+      "description": "The good news: once you\u2019re in the Apopka area, traffic is minimal. The congestion is on the highways getting here. If you\u2019re staying nearby, getting around will be easy."
+    },
+    {
+      "icon": "🛣️",
+      "title": "Pro Tip: Use FL-429",
+      "description": "FL-429 (Western Beltway) is a toll road that bypasses most of Orlando\u2019s congestion. From MCO airport or South Florida, taking FL-429 north is significantly faster than fighting through I-4."
+    },
+    {
+      "icon": "⏰",
+      "title": "Wedding Day: Leave Extra Time",
+      "description": "On the wedding day, add 15\u201320 minutes to whatever Google Maps estimates. Weekend traffic near theme parks can be unpredictable, and you don\u2019t want to be stressed about being late!"
+    }
+  ],
+  "keyDestinations": [
+    {
+      "name": "Orlando Int'l Airport (MCO)",
+      "address": "Orlando International Airport, Orlando, FL",
+      "icon": "✈️",
+      "estimatedTime": "~35 min",
+      "note": "Take FL-429 N to avoid I-4"
+    },
+    {
+      "name": "Sanford Airport (SFB)",
+      "address": "Orlando Sanford International Airport, Sanford, FL",
+      "icon": "✈️",
+      "estimatedTime": "~40 min"
+    },
+    {
+      "name": "Downtown Orlando",
+      "address": "Downtown Orlando, FL",
+      "icon": "🏙️",
+      "estimatedTime": "~25\u201335 min",
+      "note": "US-441 N or FL-429"
+    },
+    {
+      "name": "Universal Orlando",
+      "address": "Universal Orlando Resort, Orlando, FL",
+      "icon": "🎢",
+      "estimatedTime": "~30 min"
+    },
+    {
+      "name": "Walt Disney World",
+      "address": "Walt Disney World, Orlando, FL",
+      "icon": "🏰",
+      "estimatedTime": "~40\u201350 min",
+      "trafficWarning": "The Walt Disney World area typically has heavy tourist traffic. Your actual drive time could be 50\u201370 minutes during peak hours. Consider taking FL-429 (toll road) for a faster route to the venue."
+    },
+    {
+      "name": "International Drive",
+      "address": "International Drive, Orlando, FL",
+      "icon": "🌴",
+      "estimatedTime": "~35\u201345 min",
+      "trafficWarning": "International Drive is in the heart of the tourist corridor. Traffic can be very heavy, especially on weekends. Consider staying closer to Apopka for a smoother drive to the venue."
+    },
+    {
+      "name": "Kissimmee / US-192",
+      "address": "Kissimmee, FL",
+      "icon": "🏠",
+      "estimatedTime": "~45\u201360 min",
+      "trafficWarning": "Kissimmee is popular for vacation rentals but is far from the venue. Expect 45\u201360+ minutes in traffic. If you haven\u2019t booked yet, consider staying closer to Apopka or along the FL-429 corridor."
+    },
+    {
+      "name": "Tampa",
+      "address": "Tampa, FL",
+      "icon": "🌉",
+      "estimatedTime": "~1.5 hours",
+      "note": "I-4 East \u2192 FL-429 North"
+    }
+  ]
+}

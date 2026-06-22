@@ -6,6 +6,10 @@ vi.mock("@/lib/db", () => ({
   toBool: vi.fn((r: unknown) => r),
 }));
 
+vi.mock("@/lib/api/middleware", () => ({
+  rateLimit: () => async () => null,
+}));
+
 const mockFetch = vi.fn();
 vi.stubGlobal("fetch", mockFetch);
 

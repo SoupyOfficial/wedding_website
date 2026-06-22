@@ -11,6 +11,10 @@ vi.mock("@/lib/db", () => ({
   toBoolAll: vi.fn((r: unknown[]) => r),
 }));
 
+vi.mock("@/lib/api/middleware", () => ({
+  rateLimit: () => async () => null,
+}));
+
 import { query, queryOne, execute } from "@/lib/db";
 const mockQuery = vi.mocked(query);
 const mockQueryOne = vi.mocked(queryOne);

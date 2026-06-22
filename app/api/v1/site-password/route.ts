@@ -3,6 +3,7 @@ import { getSettings } from "@/lib/services/settings.service";
 import { cookies } from "next/headers";
 import { rateLimit } from "@/lib/api/middleware";
 import { successResponse, errorResponse } from "@/lib/api";
+import bcrypt from "bcryptjs";
 
 export const dynamic = "force-dynamic";
 
@@ -25,12 +26,19 @@ export async function POST(req: NextRequest) {
       return errorResponse("Invalid password.", 400);
     }
 
-    if (password !== settings.sitePassword) {
+    // Support both bcrypt hashed and legacy plaintext passwords
+    const storedPassword = settings.sitePassword;
+    const isHashed = storedPassword.startsWith("$2");
+    const isValid = isHashed
+      ? await bcrypt.compare(password, storedPassword)
+      : password === storedPassword;
+
+    if (!isValid) {
       return errorResponse("Incorrect password.", 401);
     }
 
     const cookieStore = await cookies();
-    cookieStore.set("site-password", "verified", {
+    cookieStore.set("site-access", "granted", {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",

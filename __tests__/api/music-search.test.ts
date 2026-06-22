@@ -3,6 +3,10 @@ import { NextRequest } from "next/server";
 
 // ─── music/search ──────────────────────────────────
 
+vi.mock("@/lib/api/middleware", () => ({
+  rateLimit: () => async () => null,
+}));
+
 const mockFetch = vi.fn();
 vi.stubGlobal("fetch", mockFetch);
 

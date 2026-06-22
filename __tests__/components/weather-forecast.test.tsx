@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, fireEvent, waitFor, act } from "@testing-library/react";
 import "@testing-library/jest-dom";
 
@@ -25,7 +25,7 @@ function makeHourly(overrides: Partial<Record<string, number>> = {}) {
   }));
 }
 
-function makeWeatherData(overrides: Record<string, unknown> = {}) {
+function makeWeatherData(overrides: Partial<Record<string, number>> = {}) {
   return {
     success: true,
     data: {

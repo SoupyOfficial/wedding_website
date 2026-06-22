@@ -30,7 +30,7 @@ describe("Admin Messages [id]", () => {
     });
 
     it("returns 404 when message not found", async () => {
-      mockExecute.mockResolvedValue({ rowsAffected: 0, rows: [], columns: [], lastInsertRowid: undefined });
+      mockExecute.mockResolvedValue({ rowsAffected: 0, lastInsertRowid: undefined });
       const req = new NextRequest("http://l", {
         method: "PUT",
         body: JSON.stringify({ isRead: true }),
@@ -40,7 +40,7 @@ describe("Admin Messages [id]", () => {
     });
 
     it("updates isRead successfully", async () => {
-      mockExecute.mockResolvedValue({ rowsAffected: 1, rows: [], columns: [], lastInsertRowid: undefined });
+      mockExecute.mockResolvedValue({ rowsAffected: 1, lastInsertRowid: undefined });
       mockQueryOne.mockResolvedValue({ id: "m1", isRead: 1 } as never);
       const req = new NextRequest("http://l", {
         method: "PUT",
@@ -65,14 +65,14 @@ describe("Admin Messages [id]", () => {
 
   describe("DELETE", () => {
     it("returns 404 when message not found", async () => {
-      mockExecute.mockResolvedValue({ rowsAffected: 0, rows: [], columns: [], lastInsertRowid: undefined });
+      mockExecute.mockResolvedValue({ rowsAffected: 0, lastInsertRowid: undefined });
       const req = new Request("http://l", { method: "DELETE" });
       const res = await DELETE(req, params("m1"));
       expect(res.status).toBe(404);
     });
 
     it("deletes message successfully", async () => {
-      mockExecute.mockResolvedValue({ rowsAffected: 1, rows: [], columns: [], lastInsertRowid: undefined });
+      mockExecute.mockResolvedValue({ rowsAffected: 1, lastInsertRowid: undefined });
       const req = new Request("http://l", { method: "DELETE" });
       const res = await DELETE(req, params("m1"));
       const data = await res.json();
@@ -90,7 +90,7 @@ describe("Admin Messages [id]", () => {
 
   describe("Mark Read (POST)", () => {
     it("marks message as read", async () => {
-      mockExecute.mockResolvedValue({ rowsAffected: 1, rows: [], columns: [], lastInsertRowid: undefined });
+      mockExecute.mockResolvedValue({ rowsAffected: 1, lastInsertRowid: undefined });
       const req = new Request("http://l", { method: "POST" });
       const res = await MarkRead(req, params("m1"));
       const data = await res.json();

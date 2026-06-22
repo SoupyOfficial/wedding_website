@@ -24,9 +24,9 @@ export interface SongRequestInput {
  */
 export async function createRequest(input: SongRequestInput): Promise<SongRequest | null> {
   const { guestName, songTitle, artist, artworkUrl, previewUrl } = input;
-  const trimmedName = guestName.trim();
-  const trimmedTitle = songTitle.trim();
-  const trimmedArtist = (artist || "").trim();
+  const trimmedName = guestName.trim().slice(0, 100);
+  const trimmedTitle = songTitle.trim().slice(0, 200);
+  const trimmedArtist = (artist || "").trim().slice(0, 150);
 
   const existing = await queryOne<SongRequest>(
     "SELECT id FROM SongRequest WHERE guestName = ? AND songTitle = ? AND artist = ? LIMIT 1",

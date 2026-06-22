@@ -1,8 +1,11 @@
 import { NextRequest } from "next/server";
 import { getSettings } from "@/lib/services/settings.service";
+import { rateLimit } from "@/lib/api/middleware";
 import { successResponse, errorResponse } from "@/lib/api";
 
 export const dynamic = "force-dynamic";
+
+const limiter = rateLimit({ windowMs: 300_000, maxRequests: 10 });
 
 /**
  * GET /api/v1/weather
@@ -95,6 +98,8 @@ function weatherCodeToEmoji(code: number): string {
 }
 
 export async function GET(req: NextRequest) {
+  const limited = await limiter(req, {});
+  if (limited) return limited;
   try {
     const settings = await getSettings("weddingDate", "venueName");
 

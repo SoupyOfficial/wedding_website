@@ -1,9 +1,12 @@
 import { NextRequest } from "next/server";
+import { rateLimit } from "@/lib/api/middleware";
 import { successResponse, errorResponse } from "@/lib/api";
 import { getFeatureFlag } from "@/lib/config/feature-flags";
 import { getVisibleRequests, createRequest } from "@/lib/services/song-request.service";
 
 export const dynamic = "force-dynamic";
+
+const postLimiter = rateLimit({ windowMs: 60_000, maxRequests: 3 });
 
 export async function GET() {
   try {
@@ -18,6 +21,8 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
+  const limited = await postLimiter(req, {});
+  if (limited) return limited;
   try {
     const enabled = await getFeatureFlag("songRequestsEnabled");
     if (!enabled) return errorResponse("Song requests are currently disabled.", 403);

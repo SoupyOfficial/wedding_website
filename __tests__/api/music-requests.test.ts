@@ -14,6 +14,10 @@ vi.mock("@/lib/config/feature-flags", () => ({
   getFeatureFlag: vi.fn().mockResolvedValue(true),
 }));
 
+vi.mock("@/lib/api/middleware", () => ({
+  rateLimit: () => async () => null,
+}));
+
 import { query, queryOne, execute } from "@/lib/db";
 import { getFeatureFlag } from "@/lib/config/feature-flags";
 import { GET, POST } from "@/app/api/v1/music/requests/route";

@@ -1,9 +1,14 @@
 import { NextRequest } from "next/server";
 import { queryOne, execute, generateId } from "@/lib/db";
+import { rateLimit } from "@/lib/api/middleware";
 import { successResponse, errorResponse } from "@/lib/api";
 import type { RegistryItem } from "@/lib/db-types";
 
+const limiter = rateLimit({ windowMs: 60_000, maxRequests: 5 });
+
 export async function POST(req: NextRequest) {
+  const limited = await limiter(req, {});
+  if (limited) return limited;
   try {
     const body = await req.json();
     const { id, amount, guestName, guestEmail } = body;

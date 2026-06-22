@@ -33,6 +33,22 @@ const nextConfig = {
             key: "Permissions-Policy",
             value: "camera=(), microphone=(), geolocation=()",
           },
+          {
+            key: "Content-Security-Policy",
+            value: [
+              "default-src 'self'",
+              // 'unsafe-inline' is required for Next.js 14 App Router RSC hydration scripts
+              "script-src 'self' 'unsafe-inline'",
+              "style-src 'self' 'unsafe-inline'",
+              "img-src 'self' https: data: blob:",
+              "font-src 'self'",
+              "connect-src 'self' https://api.open-meteo.com https://archive-api.open-meteo.com https://itunes.apple.com https://vitals.vercel-insights.com",
+              "frame-src https://www.google.com",
+              "frame-ancestors 'none'",
+              "base-uri 'self'",
+              "form-action 'self'",
+            ].join("; "),
+          },
         ],
       },
     ];

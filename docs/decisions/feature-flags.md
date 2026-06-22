@@ -1,6 +1,6 @@
 # Decision: Feature Flags
 
-## Choice: 19 runtime-toggleable boolean flags stored in DB with hardcoded defaults
+## Choice: 20 runtime-toggleable boolean flags stored in DB with hardcoded defaults
 
 ### Why
 
@@ -14,7 +14,7 @@
 | ---- | ------- | -------- |
 | rsvpEnabled | true | RSVP page + submission endpoint |
 | guestBookEnabled | true | Guest book page + entry endpoint |
-| photoUploadEnabled | true | Photo upload on gallery page |
+| photoUploadEnabled | false | Photo upload on gallery page |
 | songRequestsEnabled | true | Song request form on music page |
 | registrySyncEnabled | false | Registry auto-sync (unused) |
 | musicPageEnabled | true | Entire music page |
@@ -28,9 +28,10 @@
 | faqPageEnabled | true | FAQ page |
 | contactPageEnabled | true | Contact form page |
 | photosOfUsPageEnabled | true | Photos of Us page |
-| guestPhotoSharingEnabled | true | Guest photo sharing feature |
+| timelineEnabled | true | Our Story timeline display |
+| guestPhotoSharingEnabled | false | Guest photo sharing feature |
 | liveGuestCountEnabled | false | Live guest count display |
-| massEmailEnabled | false | Admin mass email campaigns |
+| massEmailEnabled | true | Admin mass email campaigns |
 
 ### How It Works
 
@@ -43,7 +44,7 @@
 ### Tradeoffs Accepted
 
 - **No caching**: Every page load queries the DB for flags. At this traffic level (wedding guests, not millions), this is fine.
-- **14 of 19 flags are page toggles**: These could arguably be a simpler "enabled pages" list instead of individual flags.
+- **15 of 20 flags are page toggles**: These could arguably be a simpler "enabled pages" list instead of individual flags.
 - **registrySyncEnabled and massEmailEnabled** reference features that don't fully exist yet.
 
 ### Simplification Candidates

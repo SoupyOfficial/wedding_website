@@ -40,22 +40,22 @@
 │  │  auth  │ │          │ │          │ │             │ │
 │  └────────┘ └──────────┘ └──────────┘ └─────────────┘ │
 │  ┌────────┐ ┌──────────┐ ┌──────────┐                 │
-│  │ api/   │ │ events/  │ │constants │                 │
-│  │response│ │event-bus │ │          │                 │
-│  │ratelim │ │          │ │          │                 │
+│  │ api/   │ │services/ │ │constants │                 │
+│  │response│ │  guest-  │ │          │                 │
+│  │ratelim │ │  book    │ │          │                 │
 │  └────────┘ └──────────┘ └──────────┘                 │
 ├─────────────────────────────────────────────────────────┤
 │                  prisma/schema.prisma                   │
-│                  20 models, SQLite                      │
+│                  23 models, SQLite                      │
 └─────────────────────────────────────────────────────────┘
 ```
 
-## Data Models (20)
+## Data Models (23)
 
 **Core:** SiteSettings (singleton, ~49 fields), Guest, WeddingPartyMember, TimelineEvent
 **Content:** FAQ, Photo, PhotoTag, Entertainment, Hotel, MealOption
-**Interactive:** GuestBookEntry, SongRequest, DJList, ContactMessage, RegistryItem
-**System:** FeatureFlag, EmailTemplate, EmailCampaign, WebhookLog, IntegrationConfig, AdminActivityLog
+**Interactive:** GuestBookEntry, SongRequest, DJList, ContactMessage, RegistryItem, RegistryContribution
+**System:** FeatureFlag, EmailTemplate, EmailCampaign, EmailLog, WebhookLog, IntegrationConfig, AdminActivityLog
 
 ## Request Flow
 
@@ -69,7 +69,7 @@ Browser → middleware.ts
 
 ## Feature Flag System
 
-19 runtime toggles stored in DB, with hardcoded defaults. Every public page calls `checkFeatureFlag()` at the server component level — returns `<PageDisabled />` JSX if disabled, `null` if enabled.
+20 runtime toggles stored in DB, with hardcoded defaults. Every public page calls `checkFeatureFlag()` at the server component level — returns `<PageDisabled />` JSX if disabled, `null` if enabled.
 
 ## File Count Summary
 
@@ -100,5 +100,4 @@ See `docs/decisions/` for reasoning. Key candidates:
 - db-types.ts could auto-generate from schema
 - Two identical iTunes search endpoints (public + admin)
 - toBool/toBoolAll pattern needed only because SQLite lacks booleans
-- Event bus has subscribers but unclear if any are wired up in prod
 - Travel page has ~500 lines of hardcoded Orlando/FL content

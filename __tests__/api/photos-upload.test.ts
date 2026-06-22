@@ -1,18 +1,21 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { NextRequest } from "next/server";
 
-vi.mock("@/lib/db", () => ({
-  execute: vi.fn().mockResolvedValue({ rowsAffected: 1, lastInsertRowid: undefined }),
-  generateId: vi.fn().mockReturnValue("test-id"),
-  now: vi.fn().mockReturnValue("2026-06-15T00:00:00.000Z"),
+// ─── Mock the photo service (not the provider) ──────────────────────
+// The route imports uploadPhoto & PhotoValidationError from the service.
+// Mocking at this layer bypasses jsdom FormData/Content-Type issues and
+// gives us full control over return values.
+vi.mock("@/lib/services/photo.service", () => ({
+  uploadPhoto: vi.fn(),
+  PhotoValidationError: class PhotoValidationError extends Error {
+    constructor(message: string) {
+      super(message);
+      this.name = "PhotoValidationError";
+    }
+  },
 }));
 
-vi.mock("@/lib/providers", () => ({
-  getProvider: vi.fn().mockReturnValue({
-    upload: vi.fn().mockResolvedValue({ url: "http://img.jpg", key: "uploads/img.jpg" }),
-  }),
-}));
-
+// ─── Other mocks the route depends on ──────────────────────────────
 vi.mock("@/lib/api/middleware", () => ({
   rateLimit: () => vi.fn().mockResolvedValue(null),
 }));
@@ -22,80 +25,101 @@ vi.mock("@/lib/config/feature-flags", () => ({
 }));
 
 import { getFeatureFlag } from "@/lib/config/feature-flags";
+import { uploadPhoto, PhotoValidationError } from "@/lib/services/photo.service";
 import { POST } from "@/app/api/v1/photos/upload/route";
+
+const mockUploadPhoto = vi.mocked(uploadPhoto);
+
+// ─── Helpers ────────────────────────────────────────────────────────
+
+/** Build a FormData with optional file fields. If `file` is omitted, no file is added. */
+function buildFormData(opts?: { name?: string; type?: string }) {
+  const fd = new FormData();
+  if (opts) {
+    const content = new Uint8Array([1, 2, 3]);
+    const file = new File([content], opts.name ?? "photo.jpg", { type: opts.type ?? "image/jpeg" });
+    fd.append("file", file);
+  }
+  fd.append("caption", "Test photo");
+  fd.append("uploaderName", "Guest");
+  return fd;
+}
+
+/**
+ * jsdom's NextRequest cannot parse FormData bodies because the Content-Type
+ * header isn't set correctly. We mock formData() on the prototype so the
+ * route can read form fields — then uploadPhoto (mocked above) handles the rest.
+ */
+function mockFormData(fd: FormData) {
+  return vi
+    .spyOn(NextRequest.prototype, "formData")
+    .mockResolvedValue(fd);
+}
 
 beforeEach(() => {
   vi.clearAllMocks();
   vi.mocked(getFeatureFlag).mockResolvedValue(true);
 });
 
-function makeUploadReq(fileOpts?: { name?: string; type?: string; size?: number; content?: string }) {
-  const opts = { name: "photo.jpg", type: "image/jpeg", size: 1000, content: "data", ...fileOpts };
-  const formData = new FormData();
-  const file = new File([opts.content], opts.name, { type: opts.type });
-  // Override size if needed
-  Object.defineProperty(file, "size", { value: opts.size });
-  formData.append("file", file);
-  formData.append("caption", "Test photo");
-  formData.append("uploaderName", "Guest");
-  return new NextRequest("http://l/api/v1/photos/upload", {
-    method: "POST",
-    body: formData,
-  });
-}
-
 describe("Photos Upload", () => {
   it("returns 403 when feature disabled", async () => {
     vi.mocked(getFeatureFlag).mockResolvedValue(false);
-    const res = await POST(makeUploadReq());
+    mockFormData(buildFormData({}));
+    const req = new NextRequest("http://l/api/v1/photos/upload", { method: "POST" });
+    const res = await POST(req);
     expect(res.status).toBe(403);
   });
 
   it("returns 400 when no file provided", async () => {
-    const formData = new FormData();
-    const req = new NextRequest("http://l/api/v1/photos/upload", {
-      method: "POST",
-      body: formData,
-    });
+    mockFormData(buildFormData(/* no file */));
+    const req = new NextRequest("http://l/api/v1/photos/upload", { method: "POST" });
     const res = await POST(req);
     expect(res.status).toBe(400);
   });
 
   it("returns 400 for non-image file type", async () => {
-    const res = await POST(makeUploadReq({ name: "doc.pdf", type: "application/pdf" }));
+    mockUploadPhoto.mockRejectedValue(
+      new PhotoValidationError("File must be an image.")
+    );
+    mockFormData(buildFormData({ name: "doc.pdf", type: "application/pdf" }));
+    const req = new NextRequest("http://l/api/v1/photos/upload", { method: "POST" });
+    const res = await POST(req);
     expect(res.status).toBe(400);
   });
 
-  // File.size property override doesn't work reliably in jsdom
-  // The size check is a simple comparison in the route code and works in production
-
   it("returns 400 for disallowed extension", async () => {
-    const res = await POST(makeUploadReq({ name: "photo.bmp", type: "image/bmp" }));
+    mockUploadPhoto.mockRejectedValue(
+      new PhotoValidationError("Only JPG, PNG, GIF, and WebP files are allowed.")
+    );
+    mockFormData(buildFormData({ name: "photo.bmp", type: "image/bmp" }));
+    const req = new NextRequest("http://l/api/v1/photos/upload", { method: "POST" });
+    const res = await POST(req);
     expect(res.status).toBe(400);
   });
 
   it("uploads successfully", async () => {
-    const res = await POST(makeUploadReq());
+    mockUploadPhoto.mockResolvedValue({ id: "test-id", url: "http://img.jpg" });
+    mockFormData(buildFormData({}));
+    const req = new NextRequest("http://l/api/v1/photos/upload", { method: "POST" });
+    const res = await POST(req);
     const data = await res.json();
     expect(res.status).toBe(201);
     expect(data.data.url).toBe("http://img.jpg");
   });
 
   it("returns 503 when storage not configured", async () => {
-    const { getProvider } = await import("@/lib/providers");
-    vi.mocked(getProvider).mockReturnValue({
-      upload: vi.fn().mockRejectedValue(new Error("Storage not configured")),
-    } as never);
-    const res = await POST(makeUploadReq());
+    mockUploadPhoto.mockRejectedValue(new Error("Storage not configured"));
+    mockFormData(buildFormData({}));
+    const req = new NextRequest("http://l/api/v1/photos/upload", { method: "POST" });
+    const res = await POST(req);
     expect(res.status).toBe(503);
   });
 
   it("returns 500 on generic upload error", async () => {
-    const { getProvider } = await import("@/lib/providers");
-    vi.mocked(getProvider).mockReturnValue({
-      upload: vi.fn().mockRejectedValue(new Error("network timeout")),
-    } as never);
-    const res = await POST(makeUploadReq());
+    mockUploadPhoto.mockRejectedValue(new Error("network timeout"));
+    mockFormData(buildFormData({}));
+    const req = new NextRequest("http://l/api/v1/photos/upload", { method: "POST" });
+    const res = await POST(req);
     expect(res.status).toBe(500);
   });
 });

@@ -23,7 +23,7 @@ beforeEach(() => vi.clearAllMocks());
 
 describe("Music Request Approve", () => {
   it("approves with default (no body)", async () => {
-    mockExecute.mockResolvedValue({ rowsAffected: 1, rows: [], columns: [], lastInsertRowid: undefined });
+    mockExecute.mockResolvedValue({ rowsAffected: 1, lastInsertRowid: undefined });
     const req = new NextRequest("http://l", { method: "POST" });
     const res = await songApprove(req, params("sr1"));
     const data = await res.json();
@@ -32,7 +32,7 @@ describe("Music Request Approve", () => {
   });
 
   it("approves with explicit body", async () => {
-    mockExecute.mockResolvedValue({ rowsAffected: 1, rows: [], columns: [], lastInsertRowid: undefined });
+    mockExecute.mockResolvedValue({ rowsAffected: 1, lastInsertRowid: undefined });
     const req = new NextRequest("http://l", {
       method: "POST",
       body: JSON.stringify({ approved: false }),
@@ -52,7 +52,7 @@ describe("Music Request Approve", () => {
 
 describe("Music Request Visibility", () => {
   it("toggles visibility with default (no body)", async () => {
-    mockExecute.mockResolvedValue({ rowsAffected: 1, rows: [], columns: [], lastInsertRowid: undefined });
+    mockExecute.mockResolvedValue({ rowsAffected: 1, lastInsertRowid: undefined });
     mockQueryOne.mockResolvedValue({ id: "sr1", isVisible: true } as never);
     const req = new NextRequest("http://l", { method: "POST" });
     const res = await songVisibility(req, params("sr1"));
@@ -61,7 +61,7 @@ describe("Music Request Visibility", () => {
   });
 
   it("toggles visibility with explicit body", async () => {
-    mockExecute.mockResolvedValue({ rowsAffected: 1, rows: [], columns: [], lastInsertRowid: undefined });
+    mockExecute.mockResolvedValue({ rowsAffected: 1, lastInsertRowid: undefined });
     mockQueryOne.mockResolvedValue({ id: "sr1", isVisible: false } as never);
     const req = new NextRequest("http://l", {
       method: "POST",
@@ -73,7 +73,7 @@ describe("Music Request Visibility", () => {
   });
 
   it("defaults to visible when body isVisible is not boolean", async () => {
-    mockExecute.mockResolvedValue({ rowsAffected: 1, rows: [], columns: [], lastInsertRowid: undefined });
+    mockExecute.mockResolvedValue({ rowsAffected: 1, lastInsertRowid: undefined });
     mockQueryOne.mockResolvedValue({ id: "sr1", isVisible: true } as never);
     const req = new NextRequest("http://l", {
       method: "POST",
@@ -84,7 +84,7 @@ describe("Music Request Visibility", () => {
   });
 
   it("handles null updated record", async () => {
-    mockExecute.mockResolvedValue({ rowsAffected: 1, rows: [], columns: [], lastInsertRowid: undefined });
+    mockExecute.mockResolvedValue({ rowsAffected: 1, lastInsertRowid: undefined });
     mockQueryOne.mockResolvedValue(null);
     const req = new NextRequest("http://l", { method: "POST" });
     const res = await songVisibility(req, params("sr1"));
