@@ -49,7 +49,7 @@ export default function AdminPhotosPage() {
   const photos = data.photos;
   const allTags = data.tags;
 
-  const [filter, setFilter] = useState<"all" | "pending" | "approved">("all");
+  const [filter, setFilter] = useState<"all" | "pending" | "approved" | "guest-uploads">("all");
   const [tagFilter, setTagFilter] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -185,11 +185,13 @@ export default function AdminPhotosPage() {
   const filtered = photos.filter((p) => {
     if (filter === "pending" && p.approved) return false;
     if (filter === "approved" && !p.approved) return false;
+    if (filter === "guest-uploads" && p.category !== "guest-uploads") return false;
     if (tagFilter && !p.tags.some((t) => t.id === tagFilter)) return false;
     return true;
   });
 
   const pendingCount = photos.filter((p) => !p.approved).length;
+  const guestUploadCount = photos.filter((p) => p.category === "guest-uploads").length;
 
   return (
     <div>
@@ -301,6 +303,7 @@ export default function AdminPhotosPage() {
             { value: "all" as const, label: "All" },
             { value: "pending" as const, label: `Pending${pendingCount > 0 ? ` (${pendingCount})` : ""}` },
             { value: "approved" as const, label: "Approved" },
+            { value: "guest-uploads" as const, label: `Guest Uploads${guestUploadCount > 0 ? ` (${guestUploadCount})` : ""}` },
           ]}
           active={filter}
           onChange={setFilter}
@@ -320,6 +323,15 @@ export default function AdminPhotosPage() {
               }`}
             >
               <img src={photo.url} alt={photo.caption || "Photo"} className="w-full h-48 object-cover" />
+
+              {/* Guest upload badge */}
+              {photo.category === "guest-uploads" && (
+                <div className="absolute top-2 left-2">
+                  <span className="text-[10px] px-1.5 py-0.5 bg-purple-500/80 text-white rounded-full font-medium">
+                    Guest Upload
+                  </span>
+                </div>
+              )}
 
               {/* Tags below image */}
               {photo.tags.length > 0 && (

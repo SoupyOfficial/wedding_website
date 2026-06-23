@@ -4,7 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import { clsx } from "clsx";
-import { publicNavLinks, type PublicNavLink } from "@/lib/config/navigation";
+import { AnimatePresence, motion } from "framer-motion";
+import { publicNavLinks } from "@/lib/config/navigation";
 
 interface NavigationProps {
   weddingDate?: string | null;
@@ -17,14 +18,10 @@ export default function Navigation({ weddingDate, featureFlags = {}, coupleName 
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
-  const isPostWedding = weddingDate
-    ? new Date(weddingDate) < new Date()
-    : false;
+  const isPostWedding = weddingDate ? new Date(weddingDate) < new Date() : false;
 
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
-    };
+    const handleScroll = () => setIsScrolled(window.scrollY > 50);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
@@ -39,7 +36,12 @@ export default function Navigation({ weddingDate, featureFlags = {}, coupleName 
       if (e.key === "Escape") setIsMobileOpen(false);
     };
     document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
+    // prevent body scroll when overlay is open
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = "";
+    };
   }, [isMobileOpen]);
 
   const filteredLinks = publicNavLinks.filter((link) => {
@@ -66,10 +68,10 @@ export default function Navigation({ weddingDate, featureFlags = {}, coupleName 
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 lg:h-20">
-          {/* Logo / Home Link */}
+          {/* Logo */}
           <Link
             href="/"
-            className="text-gold font-serif text-xl lg:text-2xl font-bold hover:text-gold-light transition-colors"
+            className="text-gold font-serif text-xl lg:text-2xl font-bold hover:text-gold-light transition-colors z-[60] relative"
           >
             {initials}
           </Link>
@@ -96,14 +98,16 @@ export default function Navigation({ weddingDate, featureFlags = {}, coupleName 
           {/* Mobile Menu Button */}
           <button
             onClick={() => setIsMobileOpen(!isMobileOpen)}
-            className="lg:hidden text-ivory p-2 hover:text-gold transition-colors"
+            className="lg:hidden text-ivory p-2 hover:text-gold transition-colors z-[60] relative"
             aria-label={isMobileOpen ? "Close menu" : "Open menu"}
+            aria-expanded={isMobileOpen}
           >
-            <svg
+            <motion.svg
               className="w-6 h-6"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
+              animate={isMobileOpen ? "open" : "closed"}
             >
               {isMobileOpen ? (
                 <path
@@ -120,41 +124,83 @@ export default function Navigation({ weddingDate, featureFlags = {}, coupleName 
                   d="M4 6h16M4 12h16M4 18h16"
                 />
               )}
-            </svg>
+            </motion.svg>
           </button>
         </div>
       </div>
 
-      {/* Mobile Menu */}
-      <div
-        className={clsx(
-          "lg:hidden transition-all duration-300 overflow-hidden",
-          isMobileOpen ? "max-h-screen" : "max-h-0"
+      {/* Full-Screen Mobile Overlay */}
+      <AnimatePresence>
+        {isMobileOpen && (
+          <motion.div
+            key="mobile-nav"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="lg:hidden fixed inset-0 z-[55] bg-midnight/98 backdrop-blur-xl flex flex-col"
+          >
+            {/* Star decoration */}
+            <div
+              className="absolute inset-0 opacity-10 pointer-events-none"
+              style={{
+                backgroundImage:
+                  "radial-gradient(1px 1px at 20% 30%, white, transparent), radial-gradient(1px 1px at 60% 20%, white, transparent), radial-gradient(1px 1px at 80% 60%, white, transparent), radial-gradient(1px 1px at 40% 70%, white, transparent), radial-gradient(1px 1px at 10% 80%, white, transparent), radial-gradient(1px 1px at 90% 40%, white, transparent)",
+              }}
+            />
+
+            <div className="flex flex-col h-full px-8 pt-24 pb-12 overflow-y-auto">
+              {/* Couple name */}
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.05 }}
+                className="text-center mb-10"
+              >
+                <span className="text-gold font-serif text-2xl">{displayName}</span>
+                <div className="w-16 h-px bg-gold/30 mx-auto mt-3" />
+              </motion.div>
+
+              {/* Nav links */}
+              <nav className="flex flex-col gap-1 flex-1">
+                {filteredLinks.map((link, i) => (
+                  <motion.div
+                    key={link.href}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.07 + i * 0.03 }}
+                  >
+                    <Link
+                      href={link.href}
+                      aria-current={pathname === link.href ? "page" : undefined}
+                      className={clsx(
+                        "block px-4 py-3 rounded-xl text-lg font-serif transition-all duration-200",
+                        pathname === link.href
+                          ? "text-gold bg-gold/10 border border-gold/20"
+                          : "text-ivory/80 hover:text-gold hover:bg-gold/5"
+                      )}
+                    >
+                      {link.label}
+                    </Link>
+                  </motion.div>
+                ))}
+              </nav>
+
+              {/* Footer */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.3 }}
+                className="pt-8 text-center"
+              >
+                <p className="text-ivory/20 text-xs tracking-widest uppercase">
+                  With love
+                </p>
+              </motion.div>
+            </div>
+          </motion.div>
         )}
-      >
-        <div className="bg-midnight/98 backdrop-blur-lg border-t border-gold/10 px-4 py-4 space-y-1">
-          <div className="text-center mb-4">
-            <span className="text-gold font-serif text-lg">
-              {displayName}
-            </span>
-          </div>
-          {filteredLinks.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className={clsx(
-                "block px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200",
-                pathname === link.href
-                  ? "text-gold bg-gold/10"
-                  : "text-ivory/80 hover:text-gold hover:bg-gold/5"
-              )}
-              aria-current={pathname === link.href ? "page" : undefined}
-            >
-              {link.label}
-            </Link>
-          ))}
-        </div>
-      </div>
+      </AnimatePresence>
     </nav>
   );
 }

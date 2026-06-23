@@ -23,10 +23,12 @@ interface Guest {
   tableNumber: number | null;
   group: string | null;
   notes: string | null;
+  inviteToken: string | null;
   createdAt: string;
 }
 
 const EMPTY_GUEST: Omit<Guest, "id" | "createdAt" | "rsvpRespondedAt"> = {
+  inviteToken: null,
   firstName: "",
   lastName: "",
   email: null,
@@ -53,11 +55,54 @@ export default function AdminGuestsPage() {
   const [isNew, setIsNew] = useState(false);
   const [formError, setFormError] = useState("");
   const [saving, setSaving] = useState(false);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [generatingTokens, setGeneratingTokens] = useState(false);
+  const [duplicateWarning, setDuplicateWarning] = useState<{ name: string; reason: string } | null>(null);
+  const [bypassDuplicate, setBypassDuplicate] = useState(false);
+  const [sendingReminder, setSendingReminder] = useState(false);
+  const [reminderResult, setReminderResult] = useState<{ sent?: number; errors?: string[] } | null>(null);
+
+  async function sendReminderEmails() {
+    setSendingReminder(true);
+    setReminderResult(null);
+    try {
+      const res = await fetch("/api/v1/admin/guests/send-reminder", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({}),
+      });
+      const data = await res.json();
+      setReminderResult(data);
+      setTimeout(() => setReminderResult(null), 5000);
+    } finally {
+      setSendingReminder(false);
+    }
+  }
+
+  async function generateAllTokens() {
+    setGeneratingTokens(true);
+    try {
+      await fetch("/api/v1/admin/guests/generate-tokens", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({}) });
+      refetch();
+    } finally {
+      setGeneratingTokens(false);
+    }
+  }
+
+  function copyInviteLink(guest: Guest) {
+    if (!guest.inviteToken) return;
+    const url = `${window.location.origin}/?invite=${guest.inviteToken}`;
+    navigator.clipboard.writeText(url);
+    setCopiedId(guest.id);
+    setTimeout(() => setCopiedId(null), 2000);
+  }
 
   function openNew() {
     setEditing({ id: "", createdAt: "", rsvpRespondedAt: null, ...EMPTY_GUEST } as Guest);
     setIsNew(true);
     setFormError("");
+    setDuplicateWarning(null);
+    setBypassDuplicate(false);
   }
 
   function openEdit(g: Guest) {
@@ -79,6 +124,25 @@ export default function AdminGuestsPage() {
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();
     if (!editing) return;
+
+    // Duplicate check on new guest creation
+    if (isNew && !bypassDuplicate) {
+      const dupRes = await fetch("/api/v1/admin/guests/check-duplicate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ firstName: editing.firstName, lastName: editing.lastName, email: editing.email }),
+      });
+      const dupData = await dupRes.json();
+      if (dupData.duplicates?.length > 0) {
+        const dup = dupData.duplicates[0];
+        setDuplicateWarning({
+          name: dup.existingName,
+          reason: dup.matchReason === "exact_email" ? "same email address" : "same name",
+        });
+        return;
+      }
+    }
+
     setSaving(true);
     setFormError("");
 
@@ -155,8 +219,44 @@ export default function AdminGuestsPage() {
       <AdminPageHeader
         title="Guest Manager"
         subtitle={`${guests.length} guests \u2022 ${attendingCount} attending \u2022 ${declinedCount} declined \u2022 ${pendingCount} pending`}
-        actions={<button onClick={openNew} className="btn-gold px-4 py-2 text-sm">+ Add Guest</button>}
+        actions={
+          <div className="flex items-center gap-2 flex-wrap">
+            <button
+              onClick={generateAllTokens}
+              disabled={generatingTokens}
+              className="btn-outline px-4 py-2 text-sm"
+              title="Generate invite link tokens for all guests"
+            >
+              {generatingTokens ? "Generating\u2026" : "\ud83d\udd17 Generate Invite Links"}
+            </button>
+            <a
+              href={`/api/v1/admin/guests/export${filter !== "all" ? `?status=${filter}` : ""}`}
+              download
+              className="btn-outline px-4 py-2 text-sm"
+              title="Export visible guest list as CSV"
+            >
+              \u2b07\ufe0f Export CSV
+            </a>
+            <button
+              onClick={sendReminderEmails}
+              disabled={sendingReminder}
+              className="btn-outline px-4 py-2 text-sm disabled:opacity-50"
+              title="Send RSVP reminder to all pending guests with email"
+            >
+              {sendingReminder ? "Sending…" : "📧 Send Reminder"}
+            </button>
+            <button onClick={openNew} className="btn-gold px-4 py-2 text-sm">+ Add Guest</button>
+          </div>
+        }
       />
+
+      {/* Reminder feedback */}
+      {reminderResult && (
+        <div className={`mb-4 p-3 rounded text-sm ${reminderResult.errors?.length ? "bg-red-500/10 border border-red-500/20 text-red-300" : "bg-green-500/10 border border-green-500/20 text-green-300"}`}>
+          ✅ Reminder sent to {reminderResult.sent} guest{reminderResult.sent !== 1 ? "s" : ""}.
+          {reminderResult.errors && reminderResult.errors.length > 0 && ` ${reminderResult.errors.length} failed.`}
+        </div>
+      )}
 
       {/* Filters */}
       <div className="flex flex-wrap gap-4 mb-6">
@@ -234,6 +334,15 @@ export default function AdminGuestsPage() {
                   <td className="px-4 py-3 text-ivory/50">{guest.plusOneAllowed ? guest.plusOneName || "Allowed" : "—"}</td>
                   <td className="px-4 py-3 text-ivory/50">{guest.tableNumber || "—"}</td>
                   <td className="px-4 py-3 text-right space-x-2">
+                    {guest.inviteToken && (
+                      <button
+                        onClick={() => copyInviteLink(guest)}
+                        className="text-ivory/30 hover:text-gold text-xs transition-colors"
+                        title="Copy invite link"
+                      >
+                        {copiedId === guest.id ? "✓ Copied" : "🔗"}
+                      </button>
+                    )}
                     <button onClick={() => openEdit(guest)} className="text-gold/60 hover:text-gold text-xs transition-colors">Edit</button>
                     <ConfirmButton onConfirm={() => handleDelete(guest.id)} message="Are you sure you want to remove this guest?" className="text-red-400/60 hover:text-red-400 text-xs transition-colors">Remove</ConfirmButton>
                   </td>
@@ -253,6 +362,30 @@ export default function AdminGuestsPage() {
           maxWidth="max-w-2xl"
         >
             {formError && <Alert type="error" message={formError} className="mb-3" />}
+            {duplicateWarning && !bypassDuplicate && (
+              <div className="mb-3 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg text-sm">
+                <p className="text-yellow-400 font-medium mb-1">⚠️ Possible duplicate detected</p>
+                <p className="text-ivory/70 text-xs mb-2">
+                  A guest named <strong>{duplicateWarning.name}</strong> already exists with the {duplicateWarning.reason}.
+                </p>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => { setBypassDuplicate(true); setDuplicateWarning(null); }}
+                    className="text-xs px-3 py-1 bg-yellow-500/20 text-yellow-400 rounded hover:bg-yellow-500/30"
+                  >
+                    Add Anyway
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setDuplicateWarning(null)}
+                    className="text-xs px-3 py-1 text-ivory/40 hover:text-ivory"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            )}
             <form onSubmit={handleSave} className="space-y-4">
               <div className="grid md:grid-cols-2 gap-4">
                 <div>

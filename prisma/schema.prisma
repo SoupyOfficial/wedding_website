@@ -56,6 +56,22 @@ model SiteSettings {
   entertainmentNote      String    @default("Our reception will be a celebration filled with music, dancing, games, and memories! We want everyone to have an incredible time.")
   raffleTicketCount      Int       @default(2)
   hideUnconfirmedWeddingParty Boolean @default(false)
+  // Budget
+  totalBudget            Float?
+  // Rehearsal Dinner
+  rehearsalDinnerDate    DateTime?
+  rehearsalDinnerTime    String?
+  rehearsalDinnerVenue   String?
+  rehearsalDinnerAddress String?
+  // Reception (if separate from ceremony details)
+  receptionTime          String?
+  receptionVenue         String?
+  receptionAddress       String?
+  // Day-After Brunch
+  dayAfterBrunchDate     DateTime?
+  dayAfterBrunchTime     String?
+  dayAfterBrunchVenue    String?
+  dayAfterBrunchAddress  String?
   updatedAt              DateTime  @updatedAt
 }
 
@@ -81,6 +97,7 @@ model Guest {
   tableNumber     Int?
   notes           String?
   rsvpRespondedAt DateTime?
+  inviteToken     String?   @unique
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 }
@@ -171,17 +188,18 @@ model FAQ {
 // Photos
 // ─────────────────────────────────────────────
 model Photo {
-  id         String     @id @default(cuid())
-  url        String
-  caption    String     @default("")
-  category   String     @default("gallery")
-  sortOrder  Int        @default(0)
-  approved   Boolean    @default(false)
-  uploadedBy String?
-  storageKey String?
-  takenAt    DateTime?
-  createdAt  DateTime   @default(now())
-  tags       PhotoTag[] @relation("PhotoToPhotoTag")
+  id              String     @id @default(cuid())
+  url             String
+  caption         String     @default("")
+  category        String     @default("gallery")
+  sortOrder       Int        @default(0)
+  approved        Boolean    @default(false)
+  uploadedBy      String?
+  submittedByName String?
+  storageKey      String?
+  takenAt         DateTime?
+  createdAt       DateTime   @default(now())
+  tags            PhotoTag[] @relation("PhotoToPhotoTag")
 }
 
 model PhotoTag {
@@ -378,4 +396,62 @@ model RegistryContribution {
   amount         Float?
   status         String   @default("confirmed")
   createdAt      DateTime @default(now())
+}
+
+// ─────────────────────────────────────────────
+// Budget Tracker
+// ─────────────────────────────────────────────
+model BudgetItem {
+  id            String    @id @default(cuid())
+  category      String
+  name          String
+  vendorName    String    @default("")
+  estimatedCost Float     @default(0)
+  actualCost    Float?
+  depositAmount Float?
+  depositPaid   Boolean   @default(false)
+  dueDate       DateTime?
+  notes         String    @default("")
+  paid          Boolean   @default(false)
+  sortOrder     Int       @default(0)
+  vendorId      String?
+  vendor        Vendor?   @relation(fields: [vendorId], references: [id], onDelete: SetNull)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+// ─────────────────────────────────────────────
+// Vendor Manager
+// ─────────────────────────────────────────────
+model Vendor {
+  id                  String       @id @default(cuid())
+  name                String
+  category            String
+  contactName         String       @default("")
+  phone               String       @default("")
+  email               String       @default("")
+  website             String       @default("")
+  instagram           String       @default("")
+  contractStatus      String       @default("none") // none, signed, complete
+  depositDueDate      DateTime?
+  finalPaymentDueDate DateTime?
+  totalCost           Float?
+  notes               String       @default("")
+  budgetItems         BudgetItem[]
+  createdAt           DateTime     @default(now())
+  updatedAt           DateTime     @updatedAt
+}
+
+// ─────────────────────────────────────────────
+// Seating Chart Tables
+// ─────────────────────────────────────────────
+model SeatingTable {
+  id        String   @id @default(cuid())
+  name      String
+  capacity  Int      @default(8)
+  shape     String   @default("round") // round, rect
+  sortOrder Int      @default(0)
+  notes     String   @default("")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

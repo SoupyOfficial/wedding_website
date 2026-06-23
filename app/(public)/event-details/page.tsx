@@ -5,6 +5,8 @@ import { checkFeatureFlag } from "@/lib/feature-gate";
 import { getFeatureFlag } from "@/lib/config/feature-flags";
 import SectionDivider from "@/components/SectionDivider";
 import { PageHeader } from "@/components/ui";
+import PrintButton from "@/components/PrintButton";
+import AddToCalendar from "@/components/AddToCalendar";
 
 export const metadata = {
   title: "Event Details",
@@ -18,8 +20,60 @@ export default async function EventDetailsPage() {
   const settings = await getSettings(
     "ceremonyType", "venueName", "venueAddress", "weddingDate",
     "weddingTime", "rsvpDeadline", "dressCode", "parkingInfo",
-    "childrenPolicy", "weatherInfo"
+    "childrenPolicy", "weatherInfo", "coupleName",
+    "receptionTime", "receptionVenue",
+    "rehearsalDinnerDate", "rehearsalDinnerTime", "rehearsalDinnerVenue",
+    "dayAfterBrunchDate", "dayAfterBrunchTime", "dayAfterBrunchVenue"
   );
+
+  // Build Google Calendar URL helper
+  function gcalUrl(title: string, start: string, end: string, location: string, details: string) {
+    const base = "https://calendar.google.com/calendar/render?action=TEMPLATE";
+    return `${base}&text=${encodeURIComponent(title)}&dates=${start}/${end}&location=${encodeURIComponent(location)}&details=${encodeURIComponent(details)}`;
+  }
+
+  function toGcalDate(d: Date) {
+    return d.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
+  }
+
+  const weddingBase = settings?.weddingDate ? new Date(settings.weddingDate) : null;
+  const venueLoc = `${settings?.venueName || "The Highland Manor"}, ${settings?.venueAddress || "Apopka, Florida"}`;
+  const couple = settings?.coupleName || "Jacob & Ashley";
+
+  const calendarEvents = [
+    {
+      slug: "ceremony",
+      label: "Wedding Ceremony",
+      available: !!weddingBase,
+      googleUrl: weddingBase
+        ? gcalUrl(`${couple} — Wedding Ceremony`, toGcalDate(weddingBase), toGcalDate(new Date(weddingBase.getTime() + 90 * 60 * 1000)), venueLoc, `Wedding ceremony of ${couple}`)
+        : "",
+    },
+    {
+      slug: "reception",
+      label: "Wedding Reception",
+      available: !!weddingBase,
+      googleUrl: weddingBase
+        ? gcalUrl(`${couple} — Wedding Reception`, toGcalDate(new Date(weddingBase.getTime() + 120 * 60 * 1000)), toGcalDate(new Date(weddingBase.getTime() + 6 * 60 * 60 * 1000)), settings?.receptionVenue ? `${settings.receptionVenue}` : venueLoc, `Reception for ${couple}`)
+        : "",
+    },
+    {
+      slug: "rehearsal",
+      label: "Rehearsal Dinner",
+      available: !!settings?.rehearsalDinnerDate,
+      googleUrl: settings?.rehearsalDinnerDate
+        ? gcalUrl(`${couple} — Rehearsal Dinner`, toGcalDate(new Date(settings.rehearsalDinnerDate)), toGcalDate(new Date(new Date(settings.rehearsalDinnerDate).getTime() + 2 * 60 * 60 * 1000)), settings?.rehearsalDinnerVenue || venueLoc, `Rehearsal dinner for ${couple}`)
+        : "",
+    },
+    {
+      slug: "brunch",
+      label: "Day-After Brunch",
+      available: !!settings?.dayAfterBrunchDate,
+      googleUrl: settings?.dayAfterBrunchDate
+        ? gcalUrl(`${couple} — Day-After Brunch`, toGcalDate(new Date(settings.dayAfterBrunchDate)), toGcalDate(new Date(new Date(settings.dayAfterBrunchDate).getTime() + 2 * 60 * 60 * 1000)), settings?.dayAfterBrunchVenue || venueLoc, `Day-after brunch with ${couple}`)
+        : "",
+    },
+  ];
 
   const timelineEvents = await query<TimelineEvent>(
     "SELECT * FROM TimelineEvent WHERE eventType = ? ORDER BY sortOrder ASC",
@@ -31,7 +85,30 @@ export default async function EventDetailsPage() {
   return (
     <div className="pt-8 pb-16">
       <div className="section-padding">
-        <PageHeader title="Event Details" className="mb-16" />
+        {/* Print-only header */}
+        <div className="print-header print-show hidden">
+          <h1 style={{ fontSize: "24pt", fontFamily: "Georgia, serif" }}>
+            {settings?.coupleName || "Jacob & Ashley"}
+          </h1>
+          {settings?.weddingDate && (
+            <p style={{ fontSize: "14pt", marginTop: "0.25rem" }}>
+              {new Date(settings.weddingDate).toLocaleDateString("en-US", {
+                weekday: "long", year: "numeric", month: "long", day: "numeric",
+              })}
+            </p>
+          )}
+          <p style={{ fontSize: "12pt", marginTop: "0.25rem" }}>
+            {settings?.venueName || "The Highland Manor"} — {settings?.venueAddress || "Apopka, Florida"}
+          </p>
+        </div>
+
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-16 gap-4 no-print">
+          <PageHeader title="Event Details" className="mb-0" />
+          <div className="flex items-center gap-3">
+            <AddToCalendar events={calendarEvents} />
+            <PrintButton />
+          </div>
+        </div>
 
         {/* Venue Info */}
         <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto mb-16">
@@ -231,7 +308,7 @@ export default async function EventDetailsPage() {
         <SectionDivider />
 
         {/* Venue Map */}
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-4xl mx-auto no-print">
           <h2 className="heading-gold text-3xl text-center mb-4">
             📍 Find the Venue
           </h2>

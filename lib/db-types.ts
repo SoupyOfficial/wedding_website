@@ -48,6 +48,18 @@ export interface SiteSettings {
   entertainmentNote: string;
   raffleTicketCount: number;
   hideUnconfirmedWeddingParty: boolean;
+  totalBudget: number | null;
+  rehearsalDinnerDate: string | null;
+  rehearsalDinnerTime: string | null;
+  rehearsalDinnerVenue: string | null;
+  rehearsalDinnerAddress: string | null;
+  receptionTime: string | null;
+  receptionVenue: string | null;
+  receptionAddress: string | null;
+  dayAfterBrunchDate: string | null;
+  dayAfterBrunchTime: string | null;
+  dayAfterBrunchVenue: string | null;
+  dayAfterBrunchAddress: string | null;
   updatedAt: string;
 }
 
@@ -78,6 +90,7 @@ export interface Guest {
   tableNumber: number | null;
   notes: string | null;
   rsvpRespondedAt: string | null;
+  inviteToken: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -166,6 +179,7 @@ export interface Photo {
   sortOrder: number;
   approved: boolean;
   uploadedBy: string | null;
+  submittedByName: string | null;
   storageKey: string | null;
   takenAt: string | null;
   createdAt: string;
@@ -312,6 +326,53 @@ export interface RegistryContribution {
   amount: number | null;
   status: string;
   createdAt: string;
+}
+
+export interface BudgetItem {
+  id: string;
+  category: string;
+  name: string;
+  vendorName: string;
+  estimatedCost: number;
+  actualCost: number | null;
+  depositAmount: number | null;
+  depositPaid: boolean;
+  dueDate: string | null;
+  notes: string;
+  paid: boolean;
+  sortOrder: number;
+  vendorId: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Vendor {
+  id: string;
+  name: string;
+  category: string;
+  contactName: string;
+  phone: string;
+  email: string;
+  website: string;
+  instagram: string;
+  contractStatus: string;
+  depositDueDate: string | null;
+  finalPaymentDueDate: string | null;
+  totalCost: number | null;
+  notes: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface SeatingTable {
+  id: string;
+  name: string;
+  capacity: number;
+  shape: string;
+  sortOrder: number;
+  notes: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 // ─── Manual additions (derived types) ────────────────────────────────

@@ -2,6 +2,7 @@ import { query } from "@/lib/db";
 import GalleryClient from "./GalleryClient";
 import { PageHeader } from "@/components/ui";
 import { checkFeatureFlag } from "@/lib/feature-gate";
+import { getFeatureFlag } from "@/lib/config/feature-flags";
 import type { Photo, PhotoTag } from "@/lib/db-types";
 
 export const metadata = {
@@ -12,6 +13,7 @@ export const metadata = {
 export default async function GalleryPage() {
   const gate = await checkFeatureFlag("galleryPageEnabled");
   if (gate) return gate;
+  const photoSharingEnabled = await getFeatureFlag("guestPhotoSharingEnabled");
   // Get approved photos
   const photos = await query<Photo>(
     "SELECT * FROM Photo WHERE approved = 1 ORDER BY createdAt DESC"
@@ -73,23 +75,25 @@ export default async function GalleryPage() {
           }))}
         />
 
-        <div className="text-center mt-12">
-          <div className="card-celestial inline-block max-w-md">
-            <div className="text-3xl mb-3">📸</div>
-            <h3 className="text-gold font-serif text-lg mb-2">
-              Share Your Photos
-            </h3>
-            <p className="text-ivory/60 text-sm mb-4">
-              Have photos from the wedding? We&apos;d love to see them!
-            </p>
-            <a
-              href="/photos-of-us"
-              className="btn-outline inline-block text-sm px-6 py-2"
-            >
-              Upload Photos
-            </a>
+        {photoSharingEnabled && (
+          <div className="text-center mt-12">
+            <div className="card-celestial inline-block max-w-md">
+              <div className="text-3xl mb-3">📸</div>
+              <h3 className="text-gold font-serif text-lg mb-2">
+                Share Your Photos
+              </h3>
+              <p className="text-ivory/60 text-sm mb-4">
+                Have photos from the wedding? We&apos;d love to see them!
+              </p>
+              <a
+                href="/photos-of-us"
+                className="btn-outline inline-block text-sm px-6 py-2"
+              >
+                Upload Photos
+              </a>
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

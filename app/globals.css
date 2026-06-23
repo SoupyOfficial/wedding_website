@@ -119,20 +119,38 @@
 }
 
 @media print {
+  * {
+    background: transparent !important;
+    color: black !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+
   body {
     background: white !important;
     color: black !important;
+    font-family: Georgia, serif;
+    font-size: 12pt;
   }
 
   nav,
   footer,
-  .no-print {
+  .no-print,
+  [data-starry-sky],
+  canvas {
     display: none !important;
   }
 
   .card-celestial {
-    border: 1px solid #ccc !important;
+    border: 1px solid #999 !important;
     background: white !important;
+    page-break-inside: avoid;
+    margin-bottom: 1rem;
+  }
+
+  h1, h2, h3 {
+    color: black !important;
+    page-break-after: avoid;
   }
 
   a {
@@ -140,9 +158,24 @@
     text-decoration: underline !important;
   }
 
+  /* suppress href echo for map/directions links */
   a::after {
-    content: " (" attr(href) ")";
-    font-size: 0.8em;
+    content: none;
+  }
+
+  .print-show {
+    display: block !important;
+  }
+
+  .print-header {
+    text-align: center;
+    border-bottom: 2px solid #999;
+    padding-bottom: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  @page {
+    margin: 1in;
   }
 }
 

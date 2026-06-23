@@ -1,7 +1,9 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import { getSettings } from "@/lib/services/settings.service";
 import { sanitizeHtml } from "@/lib/sanitize";
 import CountdownTimer from "@/components/CountdownTimer";
+import GuestWelcome from "@/components/GuestWelcome";
 
 export const metadata = {
   title: "Home",
@@ -42,6 +44,11 @@ export default async function HomePage() {
         </div>
 
         <div className="animate-fade-in-up space-y-8 max-w-3xl">
+          {/* Personalized guest greeting */}
+          <Suspense fallback={null}>
+            <GuestWelcome />
+          </Suspense>
+
           {/* Tagline */}
           <p className="text-ivory/70 text-lg md:text-xl tracking-widest uppercase">
             {isPostWedding

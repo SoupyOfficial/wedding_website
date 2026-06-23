@@ -20,3 +20,5 @@ export function adminAuth(req: NextRequest & { auth?: { user?: unknown } | null 
 
   return null;
 }
+
+export const requireAdmin = adminAuth;
