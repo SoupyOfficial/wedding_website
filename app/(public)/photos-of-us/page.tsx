@@ -2,8 +2,8 @@ import { checkFeatureFlag } from "@/lib/feature-gate";
 import PhotosOfUsClient from "./PhotosOfUsClient";
 
 export const metadata = {
-  title: "Photos of Us",
-  description: "Share your photos from the wedding celebration.",
+  title: "Our Photos",
+  description: "A curated collection of our favorite moments together.",
 };
 
 export default async function PhotosOfUsPage() {

@@ -46,16 +46,17 @@
 │  └────────┘ └──────────┘ └──────────┘                 │
 ├─────────────────────────────────────────────────────────┤
 │                  prisma/schema.prisma                   │
-│                  23 models, SQLite                      │
+│                  26 models, SQLite                      │
 └─────────────────────────────────────────────────────────┘
 ```
 
-## Data Models (23)
+## Data Models (26)
 
 **Core:** SiteSettings (singleton, ~49 fields), Guest, WeddingPartyMember, TimelineEvent
 **Content:** FAQ, Photo, PhotoTag, Entertainment, Hotel, MealOption
 **Interactive:** GuestBookEntry, SongRequest, DJList, ContactMessage, RegistryItem, RegistryContribution
 **System:** FeatureFlag, EmailTemplate, EmailCampaign, EmailLog, WebhookLog, IntegrationConfig, AdminActivityLog
+**Planning:** BudgetItem, Vendor, SeatingTable
 
 ## Request Flow
 
@@ -69,17 +70,17 @@ Browser → middleware.ts
 
 ## Feature Flag System
 
-20 runtime toggles stored in DB, with hardcoded defaults. Every public page calls `checkFeatureFlag()` at the server component level — returns `<PageDisabled />` JSX if disabled, `null` if enabled.
+21 runtime toggles stored in DB, with hardcoded defaults. Every public page calls `checkFeatureFlag()` at the server component level — returns `<PageDisabled />` JSX if disabled, `null` if enabled.
 
 ## File Count Summary
 
 | Directory         | Files | Purpose                    |
 |-------------------|-------|----------------------------|
-| lib/              | ~20   | Core logic, types, utils   |
-| components/       | ~17   | Shared UI                  |
+| lib/              | ~40   | Core logic, types, utils   |
+| components/       | ~19   | Shared UI                  |
 | app/(public)/     | ~26   | Public pages + clients     |
 | app/admin/        | ~16   | Admin dashboard pages      |
-| app/api/v1/       | ~25   | REST endpoints             |
+| app/api/v1/       | ~65   | REST endpoints             |
 | __tests__/        | ~35   | Test suite                 |
 | prisma/           | ~3    | Schema + migrations        |
 | scripts/          | ~5    | Seed, migrate, generate    |

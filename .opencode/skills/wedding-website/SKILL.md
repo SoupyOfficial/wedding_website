@@ -36,11 +36,12 @@ colors: {
 }
 ```
 
-## Database Models (20)
+## Database Models (26)
 **Core:** SiteSettings (singleton, ~49 fields), Guest, WeddingPartyMember, TimelineEvent
 **Content:** FAQ, Photo, PhotoTag, Entertainment, Hotel, MealOption
-**Interactive:** GuestBookEntry, SongRequest, DJList, ContactMessage, RegistryItem
-**System:** FeatureFlag, EmailTemplate, EmailCampaign, WebhookLog, IntegrationConfig, AdminActivityLog
+**Interactive:** GuestBookEntry, SongRequest, DJList, ContactMessage, RegistryItem, RegistryContribution
+**System:** FeatureFlag, EmailTemplate, EmailCampaign, EmailLog, WebhookLog, IntegrationConfig, AdminActivityLog
+**Planning:** BudgetItem, Vendor, SeatingTable
 
 ## Public Pages
 | Route | Description |

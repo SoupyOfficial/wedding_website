@@ -27,7 +27,10 @@ All plans are in this directory. Decisions captured from planning session on 202
 | 14 | [Mobile Nav Improvement](14-mobile-nav-improvement.md) | Full-screen overlay animation | Low-Medium |
 | 15 | [Skeleton Loaders + Error States](15-skeleton-loaders.md) | Both loading skeletons and error states with retry | Low |
 | 16 | [Open Graph per Page](16-open-graph-per-page.md) | Dynamic generated OG image with couple name/date overlaid | Low-Medium |
+| 17 | [UX/Design Optimization](17-ux-design-optimization.md) | Homepage below-fold, nav restructure, schedule page, FAQ anchors, RSVP countdown, documentation fixes | Medium-High |
 
 ## Deferred
 
 - **RSVP Confirmation Page** — RSVP is intentionally disabled. Revisit when RSVP is re-enabled closer to the wedding.
+- **Phase 8 (Unplugged Ceremony Notice)** — Requires Prisma schema change to add `unpluggedCeremonyNotice` field to SiteSettings
+- **Phase 7 dress code images** — Requires Prisma schema change to add `dressCodeImages` field to SiteSettings

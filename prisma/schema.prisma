@@ -38,6 +38,8 @@ model SiteSettings {
   childrenPolicy         String    @default("Children are welcome! Details to come.")
   parkingInfo            String    @default("Yes, free parking is available on-site at The Highland Manor.")
   weatherInfo            String    @default("Central Florida can be warm and humid. The ceremony is outdoors, so we recommend light, breathable fabrics. The reception is indoors and air-conditioned.")
+  unpluggedCeremonyNotice String   @default("We kindly ask that you put away phones and cameras during the ceremony. Our professional photographer will capture every moment, and we'll share the photos with you afterward!")
+  dressCodeImages        String    @default("")
   sitePasswordEnabled    Boolean   @default(false)
   sitePassword           String    @default("")
   notifyOnRsvp           Boolean   @default(true)

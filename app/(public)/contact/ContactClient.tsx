@@ -243,10 +243,10 @@ export default function ContactClient() {
                   → RSVP to our wedding
                 </a>
                 <a
-                  href="/event-details"
+                  href="/schedule"
                   className="block text-ivory/70 hover:text-gold text-sm transition-colors"
                 >
-                  → View event details
+                  → View schedule & venue details
                 </a>
                 <a
                   href="/travel"

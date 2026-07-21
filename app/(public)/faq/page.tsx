@@ -4,6 +4,16 @@ import type { FAQ } from "@/lib/db-types";
 import { sanitizeHtml } from "@/lib/sanitize";
 import { checkFeatureFlag } from "@/lib/feature-gate";
 import { PageHeader } from "@/components/ui";
+import CopyFaqLink from "@/components/CopyFaqLink";
+
+function slugify(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-")
+    .trim();
+}
 
 export const metadata = {
   title: "FAQ",
@@ -50,15 +60,19 @@ export default async function FAQPage() {
           {faqs.map((faq: { id: string; question: string; answer: string; sortOrder: number }) => (
             <details
               key={faq.id}
-              className="group card-celestial cursor-pointer"
+              id={slugify(faq.question)}
+              className="group card-celestial cursor-pointer scroll-mt-20"
             >
               <summary className="flex items-center justify-between list-none">
                 <h3 className="text-gold font-serif text-lg pr-4">
                   {faq.question}
                 </h3>
-                <span className="text-gold text-xl transition-transform duration-300 group-open:rotate-45 flex-shrink-0">
-                  +
-                </span>
+                <div className="flex items-center gap-1">
+                  <CopyFaqLink slug={slugify(faq.question)} />
+                  <span className="text-gold text-xl transition-transform duration-300 group-open:rotate-45 flex-shrink-0">
+                    +
+                  </span>
+                </div>
               </summary>
               <div className="mt-4 pt-4 border-t border-gold/10">
                 <p className="text-ivory/70 leading-relaxed">{faq.answer}</p>

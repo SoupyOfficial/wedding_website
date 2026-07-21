@@ -7,7 +7,7 @@ import type { Photo, PhotoTag } from "@/lib/db-types";
 
 export const metadata = {
   title: "Gallery",
-  description: "Photos from our journey together and wedding celebrations.",
+  description: "Everyone's photos from the wedding and celebrations — guest uploads and our favorites.",
 };
 
 export default async function GalleryPage() {

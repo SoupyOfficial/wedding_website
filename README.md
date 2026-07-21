@@ -58,7 +58,7 @@ app/
 components/            # Shared UI components (StarrySky, Navigation, etc.)
 lib/                   # Auth config, DB client, providers, utilities
 prisma/
-├── schema.prisma      # Database schema (20 models)
+├── schema.prisma      # Database schema (26 models)
 └── seed.ts            # Seed script with sample data
 middleware.ts          # Auth + site password middleware
 ```

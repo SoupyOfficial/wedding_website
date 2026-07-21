@@ -55,6 +55,8 @@ export async function PUT(req: NextRequest) {
       ["weatherInfo", body.weatherInfo ?? ""],
       ["parkingInfo", body.parkingInfo ?? ""],
       ["childrenPolicy", body.childrenPolicy ?? ""],
+      ["unpluggedCeremonyNotice", body.unpluggedCeremonyNotice ?? ""],
+      ["dressCodeImages", body.dressCodeImages ?? ""],
       ["faqContent", body.faqContent ?? ""],
       ["photoShareLink", body.photoShareLink ?? ""],
       ["ogImage", body.ogImage ?? ""],

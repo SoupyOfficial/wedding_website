@@ -51,6 +51,9 @@ export default function Navigation({ weddingDate, featureFlags = {}, coupleName 
     return true;
   });
 
+  const primaryLinks = filteredLinks.filter((link) => link.primary);
+  const secondaryLinks = filteredLinks.filter((link) => !link.primary);
+
   const displayName = coupleName || "Jacob & Ashley";
   const initials = displayName
     .split(/\s*&\s*/)
@@ -78,7 +81,7 @@ export default function Navigation({ weddingDate, featureFlags = {}, coupleName 
 
           {/* Desktop Navigation */}
           <div className="hidden lg:flex flex-1 items-center justify-evenly ml-6">
-            {filteredLinks.map((link) => (
+            {primaryLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
@@ -161,9 +164,9 @@ export default function Navigation({ weddingDate, featureFlags = {}, coupleName 
                 <div className="w-16 h-px bg-gold/30 mx-auto mt-3" />
               </motion.div>
 
-              {/* Nav links */}
+              {/* Primary nav links */}
               <nav className="flex flex-col gap-1 flex-1">
-                {filteredLinks.map((link, i) => (
+                {primaryLinks.map((link, i) => (
                   <motion.div
                     key={link.href}
                     initial={{ opacity: 0, x: -20 }}
@@ -184,6 +187,43 @@ export default function Navigation({ weddingDate, featureFlags = {}, coupleName 
                     </Link>
                   </motion.div>
                 ))}
+
+                {/* Secondary links */}
+                {secondaryLinks.length > 0 && (
+                  <>
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: 0.3 }}
+                      className="mt-4 pt-4 border-t border-gold/10"
+                    >
+                      <span className="text-ivory/30 text-xs tracking-widest uppercase px-4">
+                        More
+                      </span>
+                    </motion.div>
+                    {secondaryLinks.map((link, i) => (
+                      <motion.div
+                        key={link.href}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.34 + i * 0.03 }}
+                      >
+                        <Link
+                          href={link.href}
+                          aria-current={pathname === link.href ? "page" : undefined}
+                          className={clsx(
+                            "block px-4 py-2 rounded-xl text-base transition-all duration-200",
+                            pathname === link.href
+                              ? "text-gold bg-gold/5 border border-gold/10"
+                              : "text-ivory/60 hover:text-gold hover:bg-gold/5"
+                          )}
+                        >
+                          {link.label}
+                        </Link>
+                      </motion.div>
+                    ))}
+                  </>
+                )}
               </nav>
 
               {/* Footer */}

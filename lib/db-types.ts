@@ -30,6 +30,8 @@ export interface SiteSettings {
   childrenPolicy: string;
   parkingInfo: string;
   weatherInfo: string;
+  unpluggedCeremonyNotice: string;
+  dressCodeImages: string;
   sitePasswordEnabled: boolean;
   sitePassword: string;
   notifyOnRsvp: boolean;

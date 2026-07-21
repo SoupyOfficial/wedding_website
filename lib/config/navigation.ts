@@ -9,6 +9,8 @@ export interface PublicNavLink {
   hidePostWedding?: boolean;
   showPostWedding?: boolean;
   featureFlag?: string;
+  /** When true, shows in the primary nav bar (limit to 5-6 items). Other links go in footer/homepage tiles. */
+  primary?: boolean;
 }
 
 export interface AdminNavItem {
@@ -19,17 +21,18 @@ export interface AdminNavItem {
 
 export const publicNavLinks: PublicNavLink[] = [
   { href: "/", label: "Home" },
-  { href: "/our-story", label: "Our Story", featureFlag: "ourStoryPageEnabled" },
+  { href: "/our-story", label: "Our Story", featureFlag: "ourStoryPageEnabled", primary: true },
+  { href: "/schedule", label: "Schedule", featureFlag: "eventDetailsPageEnabled", primary: true },
   { href: "/event-details", label: "Event Details", featureFlag: "eventDetailsPageEnabled" },
-  { href: "/travel", label: "Travel & Stay", featureFlag: "travelPageEnabled" },
+  { href: "/travel", label: "Travel & Stay", featureFlag: "travelPageEnabled", primary: true },
   { href: "/wedding-party", label: "Wedding Party", featureFlag: "weddingPartyPageEnabled" },
   { href: "/entertainment", label: "Entertainment", featureFlag: "entertainmentPageEnabled" },
   { href: "/music", label: "Song Requests", featureFlag: "musicPageEnabled" },
-  { href: "/rsvp", label: "RSVP", hidePostWedding: true, featureFlag: "rsvpEnabled" },
+  { href: "/rsvp", label: "RSVP", hidePostWedding: true, featureFlag: "rsvpEnabled", primary: true },
   { href: "/registry", label: "Registry", featureFlag: "registryPageEnabled" },
-  { href: "/faq", label: "FAQ", featureFlag: "faqPageEnabled" },
+  { href: "/faq", label: "FAQ", featureFlag: "faqPageEnabled", primary: true },
   { href: "/gallery", label: "Gallery", featureFlag: "galleryPageEnabled" },
-  { href: "/photos-of-us", label: "Photos of Us", featureFlag: "photosOfUsPageEnabled" },
+  { href: "/photos-of-us", label: "Our Photos", featureFlag: "photosOfUsPageEnabled" },
   { href: "/guest-book", label: "Guest Book", featureFlag: "guestBookEnabled" },
   { href: "/contact", label: "Contact", featureFlag: "contactPageEnabled" },
 ];

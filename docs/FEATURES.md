@@ -238,7 +238,7 @@ View all contact form submissions. Mark messages as read. No reply capability (e
 
 ### Features (`/admin/features`)
 
-Toggle any of the 20 feature flags on or off with immediate effect — no deploy required. See [ARCHITECTURE.md](ARCHITECTURE.md) for the full flag list.
+Toggle any of the 21 feature flags on or off with immediate effect — no deploy required. See [ARCHITECTURE.md](ARCHITECTURE.md) for the full flag list.
 
 ### Settings (`/admin/settings`)
 

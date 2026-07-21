@@ -4,17 +4,20 @@ import { getSettings } from "@/lib/services/settings.service";
 import { sanitizeHtml } from "@/lib/sanitize";
 import CountdownTimer from "@/components/CountdownTimer";
 import GuestWelcome from "@/components/GuestWelcome";
+import HomeSections from "@/components/HomeSections";
 
 export const metadata = {
   title: "Home",
-  description: "Welcome to our wedding celebration!",
+  description:
+    "Jacob & Ashley are getting married! Join us November 13, 2026 at The Highland Manor in Apopka, Florida. RSVP, event details, travel info, and more.",
 };
 
 export default async function HomePage() {
   const settings = await getSettings(
     "weddingDate", "heroTagline", "heroTaglinePostWedding",
     "coupleName", "venueName", "venueAddress",
-    "weddingHashtag", "postWeddingContent", "preWeddingContent"
+    "weddingHashtag", "postWeddingContent", "preWeddingContent",
+    "rsvpDeadline"
   );
 
   const weddingDate = settings?.weddingDate;
@@ -98,6 +101,23 @@ export default async function HomePage() {
             </p>
           )}
 
+          {/* RSVP Deadline Countdown */}
+          {settings?.rsvpDeadline && !isPostWedding && (() => {
+            const rsvpDate = new Date(settings.rsvpDeadline);
+            if (rsvpDate > new Date()) {
+              return (
+                <div className="pt-2">
+                  <CountdownTimer
+                    targetDate={settings.rsvpDeadline}
+                    postWeddingMessage="RSVP deadline has passed"
+                    label="Days until RSVP deadline"
+                  />
+                </div>
+              );
+            }
+            return null;
+          })()}
+
           {/* Wedding Hashtag */}
           {settings?.weddingHashtag && (
             <p className="text-gold-light text-lg font-medium tracking-wide">
@@ -158,6 +178,11 @@ export default async function HomePage() {
           </svg>
         </div>
       </section>
+
+      {/* Below-fold content: schedule, quick links, story, FAQ */}
+      <Suspense fallback={null}>
+        <HomeSections isPostWedding={isPostWedding} />
+      </Suspense>
     </div>
   );
 }

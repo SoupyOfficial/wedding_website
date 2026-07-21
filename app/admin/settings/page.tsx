@@ -28,6 +28,8 @@ interface Settings {
   weatherInfo: string;
   parkingInfo: string;
   childrenPolicy: string;
+  unpluggedCeremonyNotice: string;
+  dressCodeImages: string;
   faqContent: string;
   photoShareLink: string;
   ogImage: string;
@@ -228,6 +230,17 @@ export default function AdminSettingsPage() {
               />
             </div>
             <div>
+              <label className="block text-ivory/70 text-sm mb-1">Dress Code Images (JSON array of URLs)</label>
+              <textarea
+                value={settings.dressCodeImages}
+                onChange={(e) => updateField("dressCodeImages", e.target.value)}
+                className="input-celestial w-full min-h-[80px] font-mono text-xs"
+                rows={3}
+                placeholder='["https://example.com/formal-attire.jpg", "https://example.com/semi-formal.jpg"]'
+              />
+              <p className="text-ivory/40 text-xs mt-1">Optional. Paste a JSON array of image URLs to show visual dress code examples.</p>
+            </div>
+            <div>
               <label className="block text-ivory/70 text-sm mb-1">Parking Info</label>
               <input
                 type="text"
@@ -252,6 +265,15 @@ export default function AdminSettingsPage() {
                 value={settings.childrenPolicy}
                 onChange={(e) => updateField("childrenPolicy", e.target.value)}
                 className="input-celestial w-full"
+              />
+            </div>
+            <div>
+              <label className="block text-ivory/70 text-sm mb-1">Unplugged Ceremony Notice</label>
+              <textarea
+                value={settings.unpluggedCeremonyNotice}
+                onChange={(e) => updateField("unpluggedCeremonyNotice", e.target.value)}
+                className="input-celestial w-full min-h-[80px]"
+                rows={3}
               />
             </div>
           </div>

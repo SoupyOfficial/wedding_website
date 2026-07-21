@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 interface CountdownTimerProps {
   targetDate: string;
   postWeddingMessage?: string;
+  label?: string;
 }
 
 interface TimeLeft {
@@ -17,6 +18,7 @@ interface TimeLeft {
 export default function CountdownTimer({
   targetDate,
   postWeddingMessage = "We did it! 🎉",
+  label,
 }: CountdownTimerProps) {
   const [timeLeft, setTimeLeft] = useState<TimeLeft | null>(null);
   const [isPast, setIsPast] = useState(false);
@@ -86,19 +88,26 @@ export default function CountdownTimer({
   ];
 
   return (
-    <div className="flex justify-center space-x-4 md:space-x-8">
-      {units.map((unit) => (
-        <div key={unit.label} className="text-center">
-          <div className="bg-midnight-300/50 border border-gold/20 rounded-lg p-3 md:p-4 min-w-[70px] md:min-w-[90px] backdrop-blur-sm">
-            <span className="text-gold text-2xl md:text-4xl font-serif font-bold">
-              {String(unit.value).padStart(2, "0")}
+    <div>
+      {label && (
+        <p className="text-ivory/50 text-sm tracking-wide mb-3 text-center">
+          {label}
+        </p>
+      )}
+      <div className="flex justify-center space-x-4 md:space-x-8">
+        {units.map((unit) => (
+          <div key={unit.label} className="text-center">
+            <div className="bg-midnight-300/50 border border-gold/20 rounded-lg p-3 md:p-4 min-w-[70px] md:min-w-[90px] backdrop-blur-sm">
+              <span className="text-gold text-2xl md:text-4xl font-serif font-bold">
+                {String(unit.value).padStart(2, "0")}
+              </span>
+            </div>
+            <span className="text-ivory/60 text-xs md:text-sm mt-2 block">
+              {unit.label}
             </span>
           </div>
-          <span className="text-ivory/60 text-xs md:text-sm mt-2 block">
-            {unit.label}
-          </span>
-        </div>
-      ))}
+        ))}
+      </div>
     </div>
   );
 }

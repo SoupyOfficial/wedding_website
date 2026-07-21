@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getSettings } from "@/lib/services/settings.service";
 import { getFeatureFlags } from "@/lib/config/feature-flags";
+import { publicNavLinks } from "@/lib/config/navigation";
 
 export default async function Footer() {
   const [settings, featureFlags] = await Promise.all([
@@ -11,12 +12,14 @@ export default async function Footer() {
     getFeatureFlags(),
   ]);
 
-  const quickLinks = [
-    { href: "/rsvp", label: "RSVP", flag: "rsvpPageEnabled" },
-    { href: "/event-details", label: "Event Details", flag: "eventDetailsPageEnabled" },
-    { href: "/registry", label: "Registry", flag: "registryPageEnabled" },
-    { href: "/faq", label: "FAQ", flag: "faqPageEnabled" },
-  ].filter((link) => (featureFlags as Record<string, boolean>)[link.flag] !== false);
+  const quickLinks = publicNavLinks
+    .filter((link) => {
+      // Exclude Home (already in brand name)
+      if (link.href === "/") return false;
+      // Respect feature flags
+      if (link.featureFlag && (featureFlags as Record<string, boolean>)[link.featureFlag] === false) return false;
+      return true;
+    });
 
   return (
     <footer className="bg-midnight-500 border-t border-gold/10 relative overflow-hidden">

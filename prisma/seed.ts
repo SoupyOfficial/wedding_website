@@ -611,7 +611,7 @@ async function main() {
       slug: "day-of-reminder",
       name: "Day-Of Reminder",
       subject: "Tomorrow's the Day! — {{coupleName}}'s Wedding",
-      body: "Dear {{guestName}},\n\nThe big day is almost here! Here's a quick reminder:\n\nDate: {{weddingDate}}\nVenue: {{venueName}}\n\nPlease arrive 30 minutes before the ceremony. See the full timeline: {{websiteUrl}}/event-details\n\nWe can't wait to celebrate with you!\n\nWith love,\n{{coupleName}}",
+      body: "Dear {{guestName}},\n\nThe big day is almost here! Here's a quick reminder:\n\nDate: {{weddingDate}}\nVenue: {{venueName}}\n\nPlease arrive 30 minutes before the ceremony. See the full timeline: {{websiteUrl}}/schedule\n\nWe can't wait to celebrate with you!\n\nWith love,\n{{coupleName}}",
       category: "system",
       variables:
         '["guestName", "coupleName", "weddingDate", "venueName", "websiteUrl"]',
