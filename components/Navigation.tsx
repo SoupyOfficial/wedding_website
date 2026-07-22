@@ -152,6 +152,7 @@ export default function Navigation({ weddingDate, featureFlags = {}, coupleName 
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.2 }}
+                onClick={() => setIsMobileOpen(false)}
                 className="lg:hidden fixed inset-0 z-[55] bg-midnight/98 backdrop-blur-xl flex flex-col"
               >
                 {/* Star decoration */}
@@ -163,7 +164,10 @@ export default function Navigation({ weddingDate, featureFlags = {}, coupleName 
                   }}
                 />
 
-                <div className="flex flex-col h-full px-8 pt-24 pb-12 overflow-y-auto">
+                <div
+                  onClick={(e) => e.stopPropagation()}
+                  className="flex flex-col h-full px-8 pt-24 pb-12 overflow-y-auto"
+                >
                   {/* Couple name */}
                   <motion.div
                     initial={{ opacity: 0, y: -10 }}
