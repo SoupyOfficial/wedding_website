@@ -13,6 +13,7 @@ interface GuestData {
   phone: string | null;
   rsvpStatus: string;
   mealPreference: string | null;
+  plusOneMealPreference: string | null;
   dietaryNeeds: string | null;
   plusOneName: string | null;
   plusOneAllowed: boolean;
@@ -43,6 +44,7 @@ export default function RsvpClient({ rsvpDeadline }: { rsvpDeadline: string | nu
   const [dietaryNotes, setDietaryNotes] = useState("");
   const [plusOneName, setPlusOneName] = useState("");
   const [selectedMeal, setSelectedMeal] = useState("");
+  const [selectedPlusOneMeal, setSelectedPlusOneMeal] = useState("");
   const [songRequest, setSongRequest] = useState("");
   const [songArtist, setSongArtist] = useState("");
 
@@ -76,6 +78,7 @@ export default function RsvpClient({ rsvpDeadline }: { rsvpDeadline: string | nu
       setDietaryNotes(data.data.guest.dietaryNeeds || "");
       setPlusOneName(data.data.guest.plusOneName || "");
       setSelectedMeal(data.data.guest.mealPreference || "");
+      setSelectedPlusOneMeal(data.data.guest.plusOneMealPreference || "");
       setStep("details");
     } catch {
       setError("Something went wrong. Please try again.");
@@ -101,6 +104,7 @@ export default function RsvpClient({ rsvpDeadline }: { rsvpDeadline: string | nu
           dietaryNotes,
           plusOneName: guest.plusOneAllowed ? plusOneName : undefined,
           mealOptionId: selectedMeal || undefined,
+          plusOneMealOptionId: guest.plusOneAllowed ? (selectedPlusOneMeal || undefined) : undefined,
           songRequest: songRequest || undefined,
           songArtist: songArtist || undefined,
         }),
@@ -334,7 +338,7 @@ export default function RsvpClient({ rsvpDeadline }: { rsvpDeadline: string | nu
         )}
 
         {/* Step 3: Meal Selection */}
-        {step === "meal" && (
+        {step === "meal" && guest && (
           <div className="max-w-md mx-auto animate-fade-in-up">
             <div className="card-celestial">
               <h2 className="text-gold font-serif text-2xl text-center mb-6">
@@ -380,6 +384,43 @@ export default function RsvpClient({ rsvpDeadline }: { rsvpDeadline: string | nu
                   </button>
                 ))}
               </div>
+
+              {guest.plusOneAllowed && (
+                <div className="mb-4">
+                  <h3 className="text-gold/80 font-serif text-sm mb-3">
+                    Plus-One Meal ({plusOneName || "Guest"})
+                  </h3>
+                  <div className="space-y-2">
+                    {mealOptions.map((meal) => (
+                      <button
+                        key={`plusone-${meal.id}`}
+                        type="button"
+                        onClick={() => setSelectedPlusOneMeal(meal.id)}
+                        className={`w-full text-left p-3 rounded-lg border transition-colors focus:outline-none focus:ring-2 focus:ring-gold/50 ${
+                          selectedPlusOneMeal === meal.id
+                            ? "bg-gold/20 border-gold"
+                            : "border-gold/20 hover:border-gold/40"
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="text-gold font-serif text-sm">{meal.name}</span>
+                          <div className="flex gap-1">
+                            {meal.isVegetarian && (
+                              <span className="text-xs bg-green-900/30 text-green-400 px-2 py-0.5 rounded">V</span>
+                            )}
+                            {meal.isVegan && (
+                              <span className="text-xs bg-green-900/30 text-green-400 px-2 py-0.5 rounded">VG</span>
+                            )}
+                            {meal.isGlutenFree && (
+                              <span className="text-xs bg-yellow-900/30 text-yellow-400 px-2 py-0.5 rounded">GF</span>
+                            )}
+                          </div>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               <div className="mb-4">
                 <label className="block text-ivory/70 text-sm mb-2">
@@ -497,6 +538,14 @@ export default function RsvpClient({ rsvpDeadline }: { rsvpDeadline: string | nu
                     <span className="text-ivory/50">Meal</span>
                     <span className="text-ivory">
                       {mealOptions.find((m) => m.id === selectedMeal)?.name || "Selected"}
+                    </span>
+                  </div>
+                )}
+                {attending && guest.plusOneAllowed && selectedPlusOneMeal && (
+                  <div className="flex justify-between py-2 border-b border-gold/10">
+                    <span className="text-ivory/50">Plus-One Meal</span>
+                    <span className="text-ivory">
+                      {mealOptions.find((m) => m.id === selectedPlusOneMeal)?.name || "Selected"}
                     </span>
                   </div>
                 )}

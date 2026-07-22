@@ -85,6 +85,7 @@ export interface Guest {
   plusOneName: string | null;
   plusOneAttending: boolean;
   mealPreference: string | null;
+  plusOneMealPreference: string | null;
   dietaryNeeds: string | null;
   songRequest: string | null;
   childrenCount: number;

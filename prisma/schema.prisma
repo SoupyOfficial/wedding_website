@@ -91,8 +91,9 @@ model Guest {
   plusOneAllowed   Boolean   @default(false)
   plusOneName      String?
   plusOneAttending Boolean   @default(false)
-  mealPreference  String?
-  dietaryNeeds    String?
+  mealPreference        String?
+  plusOneMealPreference String?
+  dietaryNeeds          String?
   songRequest     String?
   childrenCount   Int       @default(0)
   childrenNames   String?

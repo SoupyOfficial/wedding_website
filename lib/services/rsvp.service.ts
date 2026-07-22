@@ -1,5 +1,6 @@
 import { query, queryOne, execute, generateId, now, toBool, toBoolAll } from "@/lib/db";
 import type { Guest, MealOption } from "@/lib/db-types";
+import { sendEmail } from "@/lib/services/email.service";
 
 export interface RsvpSubmitInput {
   guestId: string;
@@ -9,6 +10,7 @@ export interface RsvpSubmitInput {
   dietaryNotes?: string;
   plusOneName?: string;
   mealOptionId?: string;
+  plusOneMealOptionId?: string;
   songRequest?: string;
   songArtist?: string;
 }
@@ -57,6 +59,7 @@ export async function lookupGuest(name: string) {
       plusOneAllowed: guest.plusOneAllowed,
       plusOneName: guest.plusOneName,
       mealPreference: guest.mealPreference,
+      plusOneMealPreference: guest.plusOneMealPreference,
       dietaryNeeds: guest.dietaryNeeds,
       songRequest: guest.songRequest,
     },
@@ -70,7 +73,24 @@ export async function lookupGuest(name: string) {
  * Returns null if the meal option is invalid, or the updated guest summary.
  */
 export async function submitRsvp(input: RsvpSubmitInput): Promise<{ error: string } | RsvpSubmitResult> {
-  const { guestId, attending, email, phone, dietaryNotes, plusOneName, mealOptionId, songRequest, songArtist } = input;
+  const { guestId, attending, email, phone, dietaryNotes, plusOneName, mealOptionId, plusOneMealOptionId, songRequest, songArtist } = input;
+
+  const settings = await queryOne<{
+    rsvpDeadline: string | null;
+    notifyOnRsvp: number;
+    notificationEmail: string;
+    coupleName: string;
+  }>(
+    "SELECT rsvpDeadline, notifyOnRsvp, notificationEmail, coupleName FROM SiteSettings WHERE id = ?",
+    ["singleton"]
+  );
+  if (settings?.rsvpDeadline) {
+    const deadline = new Date(settings.rsvpDeadline);
+    if (new Date() > deadline) {
+      return { error: "The RSVP deadline has passed. Please contact us directly." };
+    }
+  }
+
   const rsvpStatus = attending ? "attending" : "declined";
   const timestamp = now();
 
@@ -86,6 +106,11 @@ export async function submitRsvp(input: RsvpSubmitInput): Promise<{ error: strin
     if (!meal) return { error: "Invalid meal option." };
     sets.push("mealPreference = ?"); args.push(mealOptionId);
   }
+  if (plusOneMealOptionId) {
+    const meal = await queryOne("SELECT id FROM MealOption WHERE id = ?", [plusOneMealOptionId]);
+    if (!meal) return { error: "Invalid plus-one meal option." };
+    sets.push("plusOneMealPreference = ?"); args.push(plusOneMealOptionId);
+  }
 
   args.push(guestId);
   await execute(`UPDATE Guest SET ${sets.join(", ")} WHERE id = ?`, args);
@@ -95,10 +120,41 @@ export async function submitRsvp(input: RsvpSubmitInput): Promise<{ error: strin
   toBool(guest, "plusOneAllowed", "plusOneAttending");
 
   if (songRequest && attending) {
-    await execute(
-      "INSERT INTO SongRequest (id, songTitle, artist, guestName, approved, isVisible, createdAt) VALUES (?, ?, ?, ?, 0, 0, ?)",
-      [generateId(), songRequest.trim().slice(0, 200), (songArtist || "").trim().slice(0, 150), `${guest.firstName} ${guest.lastName}`, now()]
+    const existing = await queryOne<{ id: string }>(
+      "SELECT id FROM SongRequest WHERE guestName = ? LIMIT 1",
+      [`${guest.firstName} ${guest.lastName}`]
     );
+    if (existing) {
+      await execute(
+        "UPDATE SongRequest SET songTitle = ?, artist = ? WHERE id = ?",
+        [songRequest.trim().slice(0, 200), (songArtist || "").trim().slice(0, 150), existing.id]
+      );
+    } else {
+      await execute(
+        "INSERT INTO SongRequest (id, songTitle, artist, guestName, approved, isVisible, createdAt) VALUES (?, ?, ?, ?, 0, 0, ?)",
+        [generateId(), songRequest.trim().slice(0, 200), (songArtist || "").trim().slice(0, 150), `${guest.firstName} ${guest.lastName}`, now()]
+      );
+    }
+  }
+
+  const guestEmail = email || guest.email;
+  const guestName = `${guest.firstName} ${guest.lastName}`;
+  const statusLabel = attending ? "Attending" : "Declined";
+
+  if (settings?.notifyOnRsvp && settings.notificationEmail) {
+    sendEmail({
+      to: settings.notificationEmail,
+      subject: `${statusLabel}: ${guestName} RSVP`,
+      html: `<p><strong>${guestName}</strong> has RSVP'd: <strong>${statusLabel}</strong></p>`,
+    }).catch(() => {});
+  }
+
+  if (guestEmail) {
+    sendEmail({
+      to: guestEmail,
+      subject: `RSVP Confirmed — ${settings?.coupleName || "Forever Campbells"}`,
+      html: `<p>Dear ${guest.firstName},</p><p>Thank you for your RSVP! We've received your response.</p><p>Status: <strong>${statusLabel}</strong></p><p>With love,<br/>${settings?.coupleName || "Jacob & Ashley"}</p>`,
+    }).catch(() => {});
   }
 
   return {
