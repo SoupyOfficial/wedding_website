@@ -210,6 +210,16 @@ export default function RsvpClient({ rsvpDeadline }: { rsvpDeadline: string | nu
                   {loading ? "Searching..." : "Find My Invitation"}
                 </button>
               </form>
+              <p className="text-center text-ivory/40 text-xs mt-4">
+                Visit{" "}
+                <a
+                  href={process.env.NEXT_PUBLIC_SITE_URL || "https://forevercampbells.com"}
+                  className="text-gold/60 hover:text-gold underline underline-offset-2"
+                >
+                  forevercampbells.com
+                </a>{" "}
+                for event details, travel info, and our registry.
+              </p>
             </div>
           </div>
         )}

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { clsx } from "clsx";
 import { AnimatePresence, motion } from "framer-motion";
 import { publicNavLinks } from "@/lib/config/navigation";
@@ -17,6 +18,7 @@ export default function Navigation({ weddingDate, featureFlags = {}, coupleName 
   const pathname = usePathname();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
 
   const isPostWedding = weddingDate ? new Date(weddingDate) < new Date() : false;
 
@@ -24,6 +26,10 @@ export default function Navigation({ weddingDate, featureFlags = {}, coupleName 
     const handleScroll = () => setIsScrolled(window.scrollY > 50);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  useEffect(() => {
+    setPortalTarget(document.body);
   }, []);
 
   useEffect(() => {
@@ -61,14 +67,15 @@ export default function Navigation({ weddingDate, featureFlags = {}, coupleName 
     .join(" & ");
 
   return (
-    <nav
-      className={clsx(
-        "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
-        isScrolled || pathname !== "/"
-          ? "bg-midnight/95 backdrop-blur-md shadow-lg border-b border-gold/10"
-          : "bg-transparent"
-      )}
-    >
+    <>
+      <nav
+        className={clsx(
+          "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
+          isScrolled || pathname !== "/"
+            ? "bg-midnight/95 backdrop-blur-md shadow-lg border-b border-gold/10"
+            : "bg-transparent"
+        )}
+      >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 lg:h-20">
           {/* Logo */}
@@ -132,115 +139,122 @@ export default function Navigation({ weddingDate, featureFlags = {}, coupleName 
         </div>
       </div>
 
-      {/* Full-Screen Mobile Overlay */}
-      <AnimatePresence>
-        {isMobileOpen && (
-          <motion.div
-            key="mobile-nav"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="lg:hidden fixed inset-0 z-[55] bg-midnight/98 backdrop-blur-xl flex flex-col"
-          >
-            {/* Star decoration */}
-            <div
-              className="absolute inset-0 opacity-10 pointer-events-none"
-              style={{
-                backgroundImage:
-                  "radial-gradient(1px 1px at 20% 30%, white, transparent), radial-gradient(1px 1px at 60% 20%, white, transparent), radial-gradient(1px 1px at 80% 60%, white, transparent), radial-gradient(1px 1px at 40% 70%, white, transparent), radial-gradient(1px 1px at 10% 80%, white, transparent), radial-gradient(1px 1px at 90% 40%, white, transparent)",
-              }}
-            />
-
-            <div className="flex flex-col h-full px-8 pt-24 pb-12 overflow-y-auto">
-              {/* Couple name */}
+      {/* Full-Screen Mobile Overlay — portaled to document.body to escape
+          the nav's backdrop-blur containing block (which would otherwise
+          constrain the fixed-position overlay to the 64px-tall navbar). */}
+      {portalTarget &&
+        createPortal(
+          <AnimatePresence>
+            {isMobileOpen && (
               <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.05 }}
-                className="text-center mb-10"
+                key="mobile-nav"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="lg:hidden fixed inset-0 z-[55] bg-midnight/98 backdrop-blur-xl flex flex-col"
               >
-                <span className="text-gold font-serif text-2xl">{displayName}</span>
-                <div className="w-16 h-px bg-gold/30 mx-auto mt-3" />
-              </motion.div>
+                {/* Star decoration */}
+                <div
+                  className="absolute inset-0 opacity-10 pointer-events-none"
+                  style={{
+                    backgroundImage:
+                      "radial-gradient(1px 1px at 20% 30%, white, transparent), radial-gradient(1px 1px at 60% 20%, white, transparent), radial-gradient(1px 1px at 80% 60%, white, transparent), radial-gradient(1px 1px at 40% 70%, white, transparent), radial-gradient(1px 1px at 10% 80%, white, transparent), radial-gradient(1px 1px at 90% 40%, white, transparent)",
+                  }}
+                />
 
-              {/* Primary nav links */}
-              <nav className="flex flex-col gap-1 flex-1">
-                {primaryLinks.map((link, i) => (
+                <div className="flex flex-col h-full px-8 pt-24 pb-12 overflow-y-auto">
+                  {/* Couple name */}
                   <motion.div
-                    key={link.href}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.07 + i * 0.03 }}
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.05 }}
+                    className="text-center mb-10"
                   >
-                    <Link
-                      href={link.href}
-                      aria-current={pathname === link.href ? "page" : undefined}
-                      className={clsx(
-                        "block px-4 py-3 rounded-xl text-lg font-serif transition-all duration-200",
-                        pathname === link.href
-                          ? "text-gold bg-gold/10 border border-gold/20"
-                          : "text-ivory/80 hover:text-gold hover:bg-gold/5"
-                      )}
-                    >
-                      {link.label}
-                    </Link>
+                    <span className="text-gold font-serif text-2xl">{displayName}</span>
+                    <div className="w-16 h-px bg-gold/30 mx-auto mt-3" />
                   </motion.div>
-                ))}
 
-                {/* Secondary links */}
-                {secondaryLinks.length > 0 && (
-                  <>
-                    <motion.div
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ delay: 0.3 }}
-                      className="mt-4 pt-4 border-t border-gold/10"
-                    >
-                      <span className="text-ivory/30 text-xs tracking-widest uppercase px-4">
-                        More
-                      </span>
-                    </motion.div>
-                    {secondaryLinks.map((link, i) => (
+                  {/* Primary nav links */}
+                  <nav className="flex flex-col gap-1 flex-1">
+                    {primaryLinks.map((link, i) => (
                       <motion.div
                         key={link.href}
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.34 + i * 0.03 }}
+                        transition={{ delay: 0.07 + i * 0.03 }}
                       >
                         <Link
                           href={link.href}
                           aria-current={pathname === link.href ? "page" : undefined}
                           className={clsx(
-                            "block px-4 py-2 rounded-xl text-base transition-all duration-200",
+                            "block px-4 py-3 rounded-xl text-lg font-serif transition-all duration-200",
                             pathname === link.href
-                              ? "text-gold bg-gold/5 border border-gold/10"
-                              : "text-ivory/60 hover:text-gold hover:bg-gold/5"
+                              ? "text-gold bg-gold/10 border border-gold/20"
+                              : "text-ivory/80 hover:text-gold hover:bg-gold/5"
                           )}
                         >
                           {link.label}
                         </Link>
                       </motion.div>
                     ))}
-                  </>
-                )}
-              </nav>
 
-              {/* Footer */}
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.3 }}
-                className="pt-8 text-center"
-              >
-                <p className="text-ivory/20 text-xs tracking-widest uppercase">
-                  With love
-                </p>
+                    {/* Secondary links */}
+                    {secondaryLinks.length > 0 && (
+                      <>
+                        <motion.div
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          transition={{ delay: 0.3 }}
+                          className="mt-4 pt-4 border-t border-gold/10"
+                        >
+                          <span className="text-ivory/30 text-xs tracking-widest uppercase px-4">
+                            More
+                          </span>
+                        </motion.div>
+                        {secondaryLinks.map((link, i) => (
+                          <motion.div
+                            key={link.href}
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: 0.34 + i * 0.03 }}
+                          >
+                            <Link
+                              href={link.href}
+                              aria-current={pathname === link.href ? "page" : undefined}
+                              className={clsx(
+                                "block px-4 py-2 rounded-xl text-base transition-all duration-200",
+                                pathname === link.href
+                                  ? "text-gold bg-gold/5 border border-gold/10"
+                                  : "text-ivory/60 hover:text-gold hover:bg-gold/5"
+                              )}
+                            >
+                              {link.label}
+                            </Link>
+                          </motion.div>
+                        ))}
+                      </>
+                    )}
+                  </nav>
+
+                  {/* Footer */}
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.3 }}
+                    className="pt-8 text-center"
+                  >
+                    <p className="text-ivory/20 text-xs tracking-widest uppercase">
+                      With love
+                    </p>
+                  </motion.div>
+                </div>
               </motion.div>
-            </div>
-          </motion.div>
+            )}
+          </AnimatePresence>,
+          portalTarget
         )}
-      </AnimatePresence>
     </nav>
+    </>
   );
 }

@@ -22,7 +22,7 @@ export default async function RegistryPage() {
       <div className="section-padding">
         <PageHeader
           title="Registry"
-          subtitle="Your presence is the greatest gift of all, but if you wish to celebrate with a gift, here are some ideas."
+          subtitle="Your presence means everything to us. If you'd like to help us start our new chapter, we're saving for a home together."
           className="mb-16"
         />
 
@@ -39,7 +39,7 @@ export default async function RegistryPage() {
             </h3>
             <p className="text-ivory/70 leading-relaxed">
               {settings?.registryNote ||
-                "Truly, your love and support mean the most to us. We are just grateful to have you celebrate this special day with us. If you do choose to give a gift, please know that it is cherished deeply."}
+                "Your presence at our wedding is the greatest gift. If you'd like to give something more, know that our biggest dream is starting our life together in a new home — so cash gifts are deeply appreciated. But please don't feel obligated; we're just happy to celebrate with you!"}
             </p>
           </div>
         </div>

@@ -150,10 +150,11 @@ export async function submitRsvp(input: RsvpSubmitInput): Promise<{ error: strin
   }
 
   if (guestEmail) {
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://forevercampbells.com";
     sendEmail({
       to: guestEmail,
       subject: `RSVP Confirmed — ${settings?.coupleName || "Forever Campbells"}`,
-      html: `<p>Dear ${guest.firstName},</p><p>Thank you for your RSVP! We've received your response.</p><p>Status: <strong>${statusLabel}</strong></p><p>With love,<br/>${settings?.coupleName || "Jacob & Ashley"}</p>`,
+      html: `<p>Dear ${guest.firstName},</p><p>Thank you for your RSVP! We've received your response.</p><p>Status: <strong>${statusLabel}</strong></p><p>Visit <a href="${siteUrl}">${siteUrl}</a> for event details, travel info, registry, and all the latest wedding updates.</p><p>With love,<br/>${settings?.coupleName || "Jacob & Ashley"}</p>`,
     }).catch(() => {});
   }
 

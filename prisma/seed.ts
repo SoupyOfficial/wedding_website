@@ -149,12 +149,30 @@ async function main() {
       description: null as string | null,
       status: "active",
     },
+    {
+      name: "GoFundMe",
+      url: "",
+      sortOrder: 2,
+      itemType: "fund",
+      description: "Help us start our life together in a new home.",
+      status: "active",
+      goalAmount: null as number | null,
+    },
+    {
+      name: "House Fund",
+      url: "",
+      sortOrder: 3,
+      itemType: "fund",
+      description: "Every contribution brings us closer to our dream home.",
+      status: "active",
+      goalAmount: null as number | null,
+    },
   ];
 
   for (const item of registryItems) {
     await client.execute({
-      sql: `INSERT OR IGNORE INTO RegistryItem (id, name, url, sortOrder, itemType, description, status)
-            SELECT ?, ?, ?, ?, ?, ?, ?
+      sql: `INSERT OR IGNORE INTO RegistryItem (id, name, url, sortOrder, itemType, description, status, goalAmount)
+            SELECT ?, ?, ?, ?, ?, ?, ?, ?
             WHERE NOT EXISTS (
               SELECT 1 FROM RegistryItem WHERE name = ?
             )`,
@@ -166,6 +184,7 @@ async function main() {
         item.itemType,
         item.description,
         item.status,
+        (item as any).goalAmount ?? null,
         item.name,
       ],
     });
