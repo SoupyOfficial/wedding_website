@@ -15,6 +15,7 @@ const iconMap: Record<string, string> = {
 
 export default function RegistryList({ items }: { items: RegistryItem[] }) {
   const [selectedItem, setSelectedItem] = useState<RegistryItem | null>(null);
+  const [contributionAmount, setContributionAmount] = useState("");
   const [guestName, setGuestName] = useState("");
   const [guestEmail, setGuestEmail] = useState("");
   const [loading, setLoading] = useState(false);
@@ -35,6 +36,15 @@ export default function RegistryList({ items }: { items: RegistryItem[] }) {
       setFormError("Please enter your name so we can thank you!");
       return;
     }
+
+    const amount = selectedItem.itemType === "fund"
+      ? parseFloat(contributionAmount)
+      : 1;
+
+    if (selectedItem.itemType === "fund" && (!contributionAmount || isNaN(amount) || amount <= 0)) {
+      setFormError("Please enter a valid contribution amount.");
+      return;
+    }
     
     setFormError("");
     setLoading(true);
@@ -45,7 +55,7 @@ export default function RegistryList({ items }: { items: RegistryItem[] }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 
           id: selectedItem.id, 
-          amount: 1,
+          amount,
           guestName: guestName,
           guestEmail: guestEmail 
         }),
@@ -103,14 +113,28 @@ export default function RegistryList({ items }: { items: RegistryItem[] }) {
                       </div>
                     ) : null}
                     
-                    <a 
-                      href={fund.url || "#"}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className={`btn-gold text-sm px-6 py-2 w-full mt-2 inline-block text-center ${fund.goalAmount !== null && fund.raisedAmount >= fund.goalAmount ? "opacity-50 pointer-events-none" : ""}`}
-                    >
-                      {fund.goalAmount !== null && fund.raisedAmount >= fund.goalAmount ? "Fully Funded 🎉" : "Contribute"}
-                    </a>
+                    {fund.goalAmount !== null && fund.raisedAmount >= fund.goalAmount ? (
+                      <span className="btn-gold text-sm px-6 py-2 w-full mt-2 inline-block text-center opacity-50 pointer-events-none">
+                        Fully Funded 🎉
+                      </span>
+                    ) : (
+                      <button
+                        onClick={() => { setSelectedItem(fund); setContributionAmount(""); setGuestName(""); setGuestEmail(""); setSuccess(false); setFormError(""); }}
+                        className="btn-gold text-sm px-6 py-2 w-full mt-2"
+                      >
+                        {fund.goalAmount ? "Contribute" : "Contribute Any Amount"}
+                      </button>
+                    )}
+                    {fund.url && (
+                      <a
+                        href={fund.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="block text-center text-xs text-ivory/40 hover:text-gold/60 mt-2 underline underline-offset-2"
+                      >
+                        Or donate via external link →
+                      </a>
+                    )}
                   </div>
                 </div>
               </div>
@@ -182,17 +206,24 @@ export default function RegistryList({ items }: { items: RegistryItem[] }) {
         </div>
       )}
 
-      {/* Product Purchase Modal */}
+      {/* Contribution / Purchase Modal */}
       {selectedItem && (
-        <Modal title="Confirm Purchase" onClose={() => setSelectedItem(null)}>
+        <Modal
+          title={selectedItem.itemType === "fund" ? "Contribute to Fund" : "Confirm Purchase"}
+          onClose={() => setSelectedItem(null)}
+        >
           {success ? (
             <div className="text-center py-8">
-              <div className="text-4xl mb-4">🎁</div>
+              <div className="text-4xl mb-4">{selectedItem.itemType === "fund" ? "💝" : "🎁"}</div>
               <h3 className="text-gold font-serif text-xl mb-2">Thank you!</h3>
               <p className="text-ivory/70">
-                {selectedItem.url 
-                  ? "Redirecting you to purchase..." 
-                  : "We've marked this as purchased. Thank you for taking the time to bless us!"
+                {selectedItem.itemType === "fund"
+                  ? (selectedItem.url
+                    ? "Your contribution has been recorded. Redirecting you to the external fund page..."
+                    : "Your contribution has been recorded. Thank you for your generosity!")
+                  : (selectedItem.url 
+                    ? "Redirecting you to purchase..." 
+                    : "We've marked this as purchased. Thank you for taking the time to bless us!")
                 }
               </p>
             </div>
@@ -200,11 +231,39 @@ export default function RegistryList({ items }: { items: RegistryItem[] }) {
             <div className="space-y-4">
               <div className="text-center mb-6">
                 <h3 className="text-lg text-ivory font-medium">{selectedItem.name}</h3>
+                {selectedItem.itemType === "fund" && selectedItem.description && (
+                  <p className="text-sm text-ivory/50 mt-1">{selectedItem.description}</p>
+                )}
               </div>
 
               {formError && <Alert type="error" message={formError} className="mb-4" />}
 
               <form onSubmit={handleContribute} className="space-y-4">
+                {selectedItem.itemType === "fund" && (
+                  <div>
+                    <label className="block text-ivory/70 text-sm mb-2">Contribution Amount ($) *</label>
+                    <input
+                      type="number"
+                      min="1"
+                      step="1"
+                      required
+                      value={contributionAmount}
+                      onChange={(e) => setContributionAmount(e.target.value)}
+                      className="input-celestial w-full"
+                      placeholder="100"
+                    />
+                    {selectedItem.goalAmount && (
+                      <p className="text-xs text-ivory/40 mt-1">
+                        Goal: ${selectedItem.goalAmount.toLocaleString()} — ${Math.max(0, selectedItem.goalAmount - selectedItem.raisedAmount).toLocaleString()} remaining
+                      </p>
+                    )}
+                    {!selectedItem.goalAmount && (
+                      <p className="text-xs text-ivory/40 mt-1">
+                        Every bit helps — there's no minimum or maximum.
+                      </p>
+                    )}
+                  </div>
+                )}
                 <div>
                   <label className="block text-ivory/70 text-sm mb-2">Your Name *</label>
                   <input
@@ -228,13 +287,23 @@ export default function RegistryList({ items }: { items: RegistryItem[] }) {
                 </div>
 
                 <div className="bg-royal/30 p-4 rounded-lg text-center">
-                  <p className="text-sm text-ivory/70">
-                    Please click continue to log your intent to purchase{selectedItem.url ? " — you will be redirected to buy it directly" : ""}!
-                  </p>
-                  {selectedItem.totalNeeded && (
-                    <p className="text-xs text-ivory/50 mt-2">
-                      {selectedItem.totalBought} of {selectedItem.totalNeeded} already purchased
+                  {selectedItem.itemType === "fund" ? (
+                    <p className="text-sm text-ivory/70">
+                      {contributionAmount && !isNaN(parseFloat(contributionAmount))
+                        ? `You're contributing $${parseFloat(contributionAmount).toLocaleString()}. Thank you so much!`
+                        : "Enter an amount above to contribute to this fund."}
                     </p>
+                  ) : (
+                    <>
+                      <p className="text-sm text-ivory/70">
+                        Please click continue to log your intent to purchase{selectedItem.url ? " — you will be redirected to buy it directly" : ""}!
+                      </p>
+                      {selectedItem.totalNeeded && (
+                        <p className="text-xs text-ivory/50 mt-2">
+                          {selectedItem.totalBought} of {selectedItem.totalNeeded} already purchased
+                        </p>
+                      )}
+                    </>
                   )}
                 </div>
 
