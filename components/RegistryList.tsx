@@ -73,29 +73,7 @@ export default function RegistryList({ items }: { items: RegistryItem[] }) {
 
   return (
     <div className="space-y-16">
-      {/* Stores */}
-      {stores.length > 0 && (
-        <div className="flex flex-wrap justify-center gap-8 max-w-4xl mx-auto">
-          {stores.map((registry) => (
-            <div key={registry.id} className="card-celestial text-center group hover:scale-[1.03] transition-all duration-300 w-full sm:w-64">
-              <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-royal/50 border-2 border-gold/20 flex items-center justify-center overflow-hidden">
-                {registry.iconUrl ? (
-                  <img src={registry.iconUrl} alt={registry.name} className="w-12 h-12 object-contain" />
-                ) : (
-                  <span className="text-3xl">{iconMap[registry.name.toLowerCase()] || "🏪"}</span>
-                )}
-              </div>
-              <h3 className="text-gold font-serif text-xl mb-2">{registry.name}</h3>
-              {registry.description && <p className="text-sm text-ivory/70 mb-4">{registry.description}</p>}
-              <a href={registry.url} target="_blank" rel="noopener noreferrer" className="btn-gold inline-block text-sm px-6 py-2">
-                Shop Registry
-              </a>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Funds */}
+      {/* Funds — displayed first so GoFundMe & cash funds are prominent */}
       {funds.length > 0 && (
         <div className="max-w-4xl mx-auto">
           <h2 className="text-2xl font-serif text-gold text-center mb-8">Cash Funds</h2>
@@ -138,6 +116,28 @@ export default function RegistryList({ items }: { items: RegistryItem[] }) {
               </div>
             ))}
           </div>
+        </div>
+      )}
+
+      {/* Stores */}
+      {stores.length > 0 && (
+        <div className="flex flex-wrap justify-center gap-8 max-w-4xl mx-auto">
+          {stores.map((registry) => (
+            <div key={registry.id} className="card-celestial text-center group hover:scale-[1.03] transition-all duration-300 w-full sm:w-64">
+              <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-royal/50 border-2 border-gold/20 flex items-center justify-center overflow-hidden">
+                {registry.iconUrl ? (
+                  <img src={registry.iconUrl} alt={registry.name} className="w-12 h-12 object-contain" />
+                ) : (
+                  <span className="text-3xl">{iconMap[registry.name.toLowerCase()] || "🏪"}</span>
+                )}
+              </div>
+              <h3 className="text-gold font-serif text-xl mb-2">{registry.name}</h3>
+              {registry.description && <p className="text-sm text-ivory/70 mb-4">{registry.description}</p>}
+              <a href={registry.url} target="_blank" rel="noopener noreferrer" className="btn-gold inline-block text-sm px-6 py-2">
+                Shop Registry
+              </a>
+            </div>
+          ))}
         </div>
       )}
 

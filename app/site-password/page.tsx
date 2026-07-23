@@ -101,6 +101,17 @@ export default function SitePasswordPage() {
             </a>
           </p>
         )}
+
+        <p className="text-center text-ivory/30 text-xs mt-3">
+          Visit{" "}
+          <a
+            href={process.env.NEXT_PUBLIC_SITE_URL || "https://forevercampbells.com"}
+            className="text-gold/50 hover:text-gold underline underline-offset-2"
+          >
+            forevercampbells.com
+          </a>{" "}
+          for all wedding details, RSVP, and registry.
+        </p>
       </div>
     </div>
   );

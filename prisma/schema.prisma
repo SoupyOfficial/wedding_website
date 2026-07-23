@@ -54,7 +54,7 @@ model SiteSettings {
   socialInstagram        String    @default("")
   socialFacebook         String    @default("")
   socialTikTok           String    @default("")
-  registryNote           String    @default("Your presence at our wedding is the greatest gift. If you'd like to give something more, know that our biggest dream is starting our life together in a new home — so cash gifts are deeply appreciated. But please don't feel obligated; we're just happy to celebrate with you!")
+  registryNote           String    @default("Gifts are appreciated, but our main goal is starting our life together in a new home — so cash contributions are preferred. Most of all, we're just grateful to celebrate with you!")
   entertainmentNote      String    @default("Our reception will be a celebration filled with music, dancing, games, and memories! We want everyone to have an incredible time.")
   raffleTicketCount      Int       @default(2)
   hideUnconfirmedWeddingParty Boolean @default(false)

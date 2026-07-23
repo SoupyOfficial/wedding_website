@@ -193,6 +193,12 @@ async function main() {
   // ─── FAQs ───
   const faqs = [
     {
+      question: "Where can I find all the wedding details?",
+      answer:
+        "Everything you need is at forevercampbells.com — RSVP, event schedule, travel info, registry, and more. Bookmark it and check back for updates!",
+      sortOrder: 0,
+    },
+    {
       question: "What is the dress code?",
       answer: "Formal / Semi-Formal attire. Please dress to impress!",
       sortOrder: 1,

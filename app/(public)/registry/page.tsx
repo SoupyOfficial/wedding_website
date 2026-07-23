@@ -39,7 +39,7 @@ export default async function RegistryPage() {
             </h3>
             <p className="text-ivory/70 leading-relaxed">
               {settings?.registryNote ||
-                "Your presence at our wedding is the greatest gift. If you'd like to give something more, know that our biggest dream is starting our life together in a new home — so cash gifts are deeply appreciated. But please don't feel obligated; we're just happy to celebrate with you!"}
+                "Gifts are appreciated, but our main goal is starting our life together in a new home — so cash contributions are preferred. Most of all, we're just grateful to celebrate with you!"}
             </p>
           </div>
         </div>
