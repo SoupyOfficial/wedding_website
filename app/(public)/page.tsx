@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { getSettings } from "@/lib/services/settings.service";
 import { sanitizeHtml } from "@/lib/sanitize";
-import { toEasternISO } from "@/lib/timezone";
+import { toEasternISO, formatEasternDate } from "@/lib/timezone";
 import CountdownTimer from "@/components/CountdownTimer";
 import GuestWelcome from "@/components/GuestWelcome";
 import HomeSections from "@/components/HomeSections";
@@ -99,6 +99,18 @@ export default async function HomePage() {
 
           {/* Divider */}
           <div className="gold-divider" />
+
+          {/* Wedding Date */}
+          {weddingDate && !isPostWedding && (
+            <p className="text-gold font-serif text-xl md:text-2xl text-center">
+              {formatEasternDate(weddingDate, {
+                weekday: "long",
+                month: "long",
+                day: "numeric",
+                year: "numeric",
+              })}
+            </p>
+          )}
 
           {/* Countdown or Date */}
           {combinedDateTime ? (
