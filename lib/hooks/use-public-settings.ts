@@ -11,6 +11,10 @@ export interface PublicSettings {
   contactEmailJoint: string;
   contactEmailBride: string;
   contactEmailGroom: string;
+  contactPhoneAshley: string;
+  contactPhoneJacob: string;
+  contactPhoneMaryLorraine: string;
+  contactPhoneMollie: string;
   socialInstagram: string;
   socialFacebook: string;
   socialTikTok: string;
@@ -20,6 +24,7 @@ export interface PublicSettings {
   entertainmentNote: string;
   rsvpDeadline: string | null;
   childrenPolicy: string;
+  rafflePrize: string;
 }
 
 /**

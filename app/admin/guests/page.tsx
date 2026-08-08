@@ -18,6 +18,8 @@ interface Guest {
   mealPreference: string | null;
   dietaryNeeds: string | null;
   songRequest: string | null;
+  danceSong: string | null;
+  firstDanceSong: string | null;
   childrenCount: number;
   childrenNames: string | null;
   tableNumber: number | null;
@@ -40,6 +42,8 @@ const EMPTY_GUEST: Omit<Guest, "id" | "createdAt" | "rsvpRespondedAt"> = {
   mealPreference: null,
   dietaryNeeds: null,
   songRequest: null,
+  danceSong: null,
+  firstDanceSong: null,
   childrenCount: 0,
   childrenNames: null,
   tableNumber: null,
@@ -165,6 +169,8 @@ export default function AdminGuestsPage() {
           mealPreference: editing.mealPreference || undefined,
           dietaryNeeds: editing.dietaryNeeds || undefined,
           songRequest: editing.songRequest || undefined,
+          danceSong: editing.danceSong || undefined,
+          firstDanceSong: editing.firstDanceSong || undefined,
           childrenCount: editing.childrenCount,
           childrenNames: editing.childrenNames || undefined,
           tableNumber: editing.tableNumber || undefined,
@@ -431,6 +437,14 @@ export default function AdminGuestsPage() {
                 <div>
                   <label className="block text-ivory/70 text-xs mb-1">Song Request</label>
                   <input type="text" value={editing.songRequest || ""} onChange={(e) => setField("songRequest", e.target.value || null)} className="input-celestial w-full" />
+                </div>
+                <div>
+                  <label className="block text-ivory/70 text-xs mb-1">Dance Floor Song</label>
+                  <input type="text" value={editing.danceSong || ""} onChange={(e) => setField("danceSong", e.target.value || null)} className="input-celestial w-full" />
+                </div>
+                <div>
+                  <label className="block text-ivory/70 text-xs mb-1">First Dance Song</label>
+                  <input type="text" value={editing.firstDanceSong || ""} onChange={(e) => setField("firstDanceSong", e.target.value || null)} className="input-celestial w-full" />
                 </div>
               </div>
 

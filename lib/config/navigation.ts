@@ -29,11 +29,10 @@ export const publicNavLinks: PublicNavLink[] = [
   { href: "/entertainment", label: "Entertainment", featureFlag: "entertainmentPageEnabled" },
   { href: "/music", label: "Song Requests", featureFlag: "musicPageEnabled" },
   { href: "/rsvp", label: "RSVP", hidePostWedding: true, featureFlag: "rsvpEnabled", primary: true },
-  { href: "/registry", label: "Registry", featureFlag: "registryPageEnabled" },
+  { href: "/registry", label: "Registry", featureFlag: "registryPageEnabled", primary: true },
   { href: "/faq", label: "FAQ", featureFlag: "faqPageEnabled", primary: true },
   { href: "/gallery", label: "Gallery", featureFlag: "galleryPageEnabled" },
   { href: "/photos-of-us", label: "Our Photos", featureFlag: "photosOfUsPageEnabled" },
-  { href: "/guest-book", label: "Guest Book", featureFlag: "guestBookEnabled" },
   { href: "/contact", label: "Contact", featureFlag: "contactPageEnabled" },
 ];
 
@@ -49,7 +48,6 @@ export const adminNavItems: AdminNavItem[] = [
   { href: "/admin/entertainment", label: "Entertainment", icon: "🎉" },
   { href: "/admin/music", label: "Music & DJ", icon: "🎵" },
   { href: "/admin/meals", label: "Meals", icon: "🍽️" },
-  { href: "/admin/guest-book", label: "Guest Book", icon: "📖" },
   { href: "/admin/communications", label: "Communications", icon: "✉️" },
   { href: "/admin/qr-codes", label: "QR Codes", icon: "🔲" },
   { href: "/admin/budget", label: "Budget", icon: "💰" },

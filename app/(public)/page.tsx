@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { getSettings } from "@/lib/services/settings.service";
 import { sanitizeHtml } from "@/lib/sanitize";
+import { toEasternISO } from "@/lib/timezone";
 import CountdownTimer from "@/components/CountdownTimer";
 import GuestWelcome from "@/components/GuestWelcome";
 import HomeSections from "@/components/HomeSections";
@@ -14,15 +15,27 @@ export const metadata = {
 
 export default async function HomePage() {
   const settings = await getSettings(
-    "weddingDate", "heroTagline", "heroTaglinePostWedding",
+    "weddingDate", "weddingTime", "heroTagline", "heroTaglinePostWedding",
     "coupleName", "venueName", "venueAddress",
     "weddingHashtag", "postWeddingContent", "preWeddingContent",
-    "rsvpDeadline"
+    "rsvpDeadline", "rafflePrize"
   );
 
   const weddingDate = settings?.weddingDate;
-  const isPostWedding = weddingDate
-    ? new Date(weddingDate) < new Date()
+  const weddingTime = settings?.weddingTime;
+
+  let combinedDateTime: string | undefined;
+  if (weddingDate) {
+    try {
+      const timePart = weddingTime || "16:00";
+      combinedDateTime = toEasternISO(weddingDate, timePart);
+    } catch {
+      combinedDateTime = toEasternISO(weddingDate, "16:00");
+    }
+  }
+
+  const isPostWedding = combinedDateTime
+    ? new Date(combinedDateTime) < new Date()
     : false;
 
   // Split couple name (e.g. "Jacob & Ashley") into two parts
@@ -88,9 +101,9 @@ export default async function HomePage() {
           <div className="gold-divider" />
 
           {/* Countdown or Date */}
-          {weddingDate ? (
+          {combinedDateTime ? (
             <CountdownTimer
-              targetDate={weddingDate}
+              targetDate={combinedDateTime}
               postWeddingMessage={
                 settings?.heroTaglinePostWedding || "We did it! 🎉"
               }
@@ -103,12 +116,15 @@ export default async function HomePage() {
 
           {/* RSVP Deadline Countdown */}
           {settings?.rsvpDeadline && !isPostWedding && (() => {
-            const rsvpDate = new Date(settings.rsvpDeadline);
-            if (rsvpDate > new Date()) {
+            const raw = String(settings.rsvpDeadline);
+            const datePart = raw.slice(0, 10);       // "YYYY-MM-DD"
+            const timePart = raw.slice(11, 16) || "23:59"; // "HH:MM"
+            const easternDeadline = toEasternISO(datePart, timePart);
+            if (new Date(easternDeadline) > new Date()) {
               return (
                 <div className="pt-2">
                   <CountdownTimer
-                    targetDate={settings.rsvpDeadline}
+                    targetDate={easternDeadline}
                     postWeddingMessage="RSVP deadline has passed"
                     label="Days until RSVP deadline"
                   />
@@ -141,6 +157,14 @@ export default async function HomePage() {
                 __html: sanitizeHtml(settings.preWeddingContent.replace(/\n/g, "<br />")),
               }}
             />
+          )}
+
+          {!isPostWedding && settings?.rafflePrize && (
+            <p className="text-gold/70 text-sm italic">
+              {settings.rafflePrize !== "-1"
+                ? `The first RSVPs will be entered to win: ${settings.rafflePrize}`
+                : "The first RSVPs will be entered into a special raffle — details coming soon!"}
+            </p>
           )}
 
           {/* CTA Buttons */}

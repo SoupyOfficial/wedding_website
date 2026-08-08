@@ -3,6 +3,7 @@ import { getSettings } from "@/lib/services/settings.service";
 import type { TimelineEvent } from "@/lib/db-types";
 import { checkFeatureFlag } from "@/lib/feature-gate";
 import { getFeatureFlag } from "@/lib/config/feature-flags";
+import { formatEasternDate } from "@/lib/timezone";
 import SectionDivider from "@/components/SectionDivider";
 import { PageHeader } from "@/components/ui";
 import AddToCalendar from "@/components/AddToCalendar";
@@ -214,7 +215,7 @@ export default async function SchedulePage() {
               <p className="text-ivory/70">
                 Please let us know by{" "}
                 <span className="text-gold font-semibold">
-                  {new Date(settings.rsvpDeadline).toLocaleDateString("en-US", {
+                  {formatEasternDate(String(settings.rsvpDeadline).slice(0, 10), {
                     weekday: "long",
                     month: "long",
                     day: "numeric",

@@ -21,30 +21,12 @@ beforeEach(() => {
   mockExecute.mockResolvedValue({ rowsAffected: 1, lastInsertRowid: undefined });
 });
 
-// Admin guest book list
-import { GET as gbGet } from "@/app/api/v1/admin/guest-book/route";
 // Admin guests
 import { GET as guestsGet, POST as guestsPost } from "@/app/api/v1/admin/guests/route";
 // Admin meals
 import { GET as mealsGet, POST as mealsPost } from "@/app/api/v1/admin/meals/route";
 // Admin messages
 import { GET as messagesGet } from "@/app/api/v1/admin/messages/route";
-
-describe("Admin Guest Book GET", () => {
-  it("returns all entries", async () => {
-    mockQuery.mockResolvedValue([{ id: "1", name: "Test", message: "Hello", isVisible: 1 }]);
-    const res = await gbGet();
-    const body = await res.json();
-    expect(res.status).toBe(200);
-    expect(body.data).toHaveLength(1);
-  });
-
-  it("returns 500 on error", async () => {
-    mockQuery.mockRejectedValue(new Error("fail"));
-    const res = await gbGet();
-    expect(res.status).toBe(500);
-  });
-});
 
 describe("Admin Guests GET", () => {
   it("returns all guests", async () => {

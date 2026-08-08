@@ -21,6 +21,8 @@ interface GuestRow {
   tableNumber: number | null;
   notes: string | null;
   songRequest: string | null;
+  danceSong: string | null;
+  firstDanceSong: string | null;
 }
 
 function escapeCSV(val: unknown): string {
@@ -58,7 +60,7 @@ export async function GET(req: NextRequest) {
     "First Name", "Last Name", "Email", "Phone", "Group",
     "RSVP Status", "Responded At", "Plus One Allowed", "Plus One Name", "Plus One Attending",
     "Meal Preference", "Dietary Needs", "Children Count", "Children Names",
-    "Table Number", "Song Request", "Notes",
+    "Table Number", "Song Request", "Dance Floor Song", "First Dance Song", "Notes",
   ];
 
   const rows = guests.map((g) => [
@@ -78,6 +80,8 @@ export async function GET(req: NextRequest) {
     escapeCSV(g.childrenNames),
     escapeCSV(g.tableNumber),
     escapeCSV(g.songRequest),
+    escapeCSV(g.danceSong),
+    escapeCSV(g.firstDanceSong),
     escapeCSV(g.notes),
   ].join(","));
 

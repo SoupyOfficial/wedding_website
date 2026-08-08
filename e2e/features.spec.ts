@@ -21,7 +21,6 @@ const FLAGS: { key: string; label: string }[] = [
   { key: "contactPageEnabled", label: "Contact" },
   // Features
   { key: "rsvpEnabled", label: "RSVP" },
-  { key: "guestBookEnabled", label: "Guest Book" },
   { key: "songRequestsEnabled", label: "Song Requests" },
   { key: "photoUploadEnabled", label: "Photo Uploads" },
   { key: "guestPhotoSharingEnabled", label: "Photo Sharing" },

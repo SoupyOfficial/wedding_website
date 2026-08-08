@@ -71,7 +71,7 @@ export default function ActivityLogPage() {
   const totalPages = Math.ceil(total / (result?.limit ?? 50));
 
   const ACTION_OPTIONS = ["create", "update", "delete", "approve", "reject", "login", "send"];
-  const ENTITY_OPTIONS = ["guest", "photo", "guestbook", "song", "registry", "settings", "feature", "wedding-party", "communication"];
+  const ENTITY_OPTIONS = ["guest", "photo", "song", "registry", "settings", "feature", "wedding-party", "communication"];
 
   return (
     <div>

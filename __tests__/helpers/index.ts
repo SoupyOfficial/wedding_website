@@ -68,7 +68,6 @@ export async function parseResponse<T = unknown>(
 
 export const DEFAULT_FEATURE_FLAGS = {
   rsvpEnabled: true,
-  guestBookEnabled: true,
   photoUploadEnabled: false,
   registrySyncEnabled: false,
   songRequestsEnabled: true,

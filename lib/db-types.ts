@@ -19,6 +19,10 @@ export interface SiteSettings {
   contactEmailJoint: string;
   contactEmailBride: string;
   contactEmailGroom: string;
+  contactPhoneAshley: string;
+  contactPhoneJacob: string;
+  contactPhoneMaryLorraine: string;
+  contactPhoneMollie: string;
   photoShareLink: string;
   heroTagline: string;
   heroTaglinePostWedding: string;
@@ -49,6 +53,7 @@ export interface SiteSettings {
   registryNote: string;
   entertainmentNote: string;
   raffleTicketCount: number;
+  rafflePrize: string;
   hideUnconfirmedWeddingParty: boolean;
   totalBudget: number | null;
   rehearsalDinnerDate: string | null;
@@ -88,11 +93,14 @@ export interface Guest {
   plusOneMealPreference: string | null;
   dietaryNeeds: string | null;
   songRequest: string | null;
+  danceSong: string | null;
+  firstDanceSong: string | null;
   childrenCount: number;
   childrenNames: string | null;
   tableNumber: number | null;
   notes: string | null;
   rsvpRespondedAt: string | null;
+  rsvpSubmittedAt: string | null;
   inviteToken: string | null;
   createdAt: string;
   updatedAt: string;
@@ -209,18 +217,6 @@ export interface Entertainment {
   sortOrder: number;
   isVisible: boolean;
 }
-
-export interface GuestBookEntry {
-  id: string;
-  name: string;
-  message: string;
-  isVisible: boolean;
-  createdAt: string;
-}
-
-export const GUESTBOOK_BOOLS = [
-  "isVisible",
-] as const;
 
 export interface MealOption {
   id: string;

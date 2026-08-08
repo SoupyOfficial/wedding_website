@@ -18,6 +18,15 @@ export default function ContactClient() {
   const contactEmail = settings?.contactEmailJoint || "";
   const hashtag = settings?.weddingHashtag || "#ForeverCampbells";
 
+  const phoneAshley = settings?.contactPhoneAshley || "";
+  const phoneJacob = settings?.contactPhoneJacob || "";
+  const phoneMaryLorraine = settings?.contactPhoneMaryLorraine || "";
+  const phoneMollie = settings?.contactPhoneMollie || "";
+
+  function formatTelLink(phone: string): string {
+    return `tel:+1${phone.replace(/[^\d]/g, "")}`;
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setSubmitting(true);
@@ -160,6 +169,62 @@ export default function ContactClient() {
                       >
                         {contactEmail}
                       </a>
+                    </div>
+                  </div>
+                )}
+                {(phoneAshley || phoneJacob || phoneMaryLorraine || phoneMollie) && (
+                  <div className="flex items-start gap-3">
+                    <span className="text-xl">📞</span>
+                    <div className="flex-1">
+                      <p className="text-ivory/70 text-sm font-medium">
+                        Phone Contacts
+                      </p>
+                      <div className="space-y-2 mt-1">
+                        {phoneAshley && (
+                          <div>
+                            <p className="text-gold text-sm">Ashley — Call or Text</p>
+                            <a
+                              href={formatTelLink(phoneAshley)}
+                              className="text-ivory/70 hover:text-gold text-sm transition-colors"
+                            >
+                              {phoneAshley}
+                            </a>
+                          </div>
+                        )}
+                        {phoneJacob && (
+                          <div>
+                            <p className="text-gold text-sm">Jacob — Text Only</p>
+                            <a
+                              href={formatTelLink(phoneJacob)}
+                              className="text-ivory/70 hover:text-gold text-sm transition-colors"
+                            >
+                              {phoneJacob}
+                            </a>
+                          </div>
+                        )}
+                        {phoneMaryLorraine && (
+                          <div>
+                            <p className="text-gold text-sm">Mary Lorraine — Call or Text</p>
+                            <a
+                              href={formatTelLink(phoneMaryLorraine)}
+                              className="text-ivory/70 hover:text-gold text-sm transition-colors"
+                            >
+                              {phoneMaryLorraine}
+                            </a>
+                          </div>
+                        )}
+                        {phoneMollie && (
+                          <div>
+                            <p className="text-gold text-sm">Mollie — Call or Text</p>
+                            <a
+                              href={formatTelLink(phoneMollie)}
+                              className="text-ivory/70 hover:text-gold text-sm transition-colors"
+                            >
+                              {phoneMollie}
+                            </a>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 )}

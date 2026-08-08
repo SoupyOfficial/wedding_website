@@ -19,6 +19,8 @@ const config = {
     mealPreference: { toSql: T.nullable },
     dietaryNeeds: { toSql: T.nullable },
     songRequest: { toSql: T.nullable },
+    danceSong: { toSql: T.nullable },
+    firstDanceSong: { toSql: T.nullable },
     childrenCount: {},
     childrenNames: { toSql: T.nullable },
     tableNumber: { toSql: T.nullable },

@@ -52,12 +52,28 @@ export default function AdminWeddingPartyPage() {
 
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();
-    if (!editing) return;
+    if (!editing || saving) return;
+
+    if (isNew) {
+      const duplicate = members.find(
+        (m) =>
+          m.name.trim().toLowerCase() === editing.name.trim().toLowerCase() &&
+          m.role.trim().toLowerCase() === editing.role.trim().toLowerCase() &&
+          m.side === editing.side
+      );
+      if (duplicate) {
+        alert(
+          `A member named "${duplicate.name}" with role "${duplicate.role}" already exists on the ${duplicate.side}'s side.`
+        );
+        return;
+      }
+    }
+
     setSaving(true);
     try {
       const url = isNew ? "/api/v1/admin/wedding-party" : `/api/v1/admin/wedding-party/${editing.id}`;
       const method = isNew ? "POST" : "PUT";
-      await fetch(url, {
+      const res = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -72,9 +88,18 @@ export default function AdminWeddingPartyPage() {
           confirmed: editing.confirmed,
         }),
       });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: "Save failed." }));
+        alert(err.error || "Save failed. Please try again.");
+        return;
+      }
+
       closeEditor();
       refetch();
-    } catch { /* silently fail */ } finally {
+    } catch {
+      alert("Network error. Please try again.");
+    } finally {
       setSaving(false);
     }
   }

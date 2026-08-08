@@ -18,6 +18,8 @@ interface GuestData {
   plusOneName: string | null;
   plusOneAllowed: boolean;
   rsvpRespondedAt: string | null;
+  danceSong: string | null;
+  firstDanceSong: string | null;
 }
 
 interface MealOption {
@@ -29,7 +31,7 @@ interface MealOption {
   isGlutenFree: boolean;
 }
 
-export default function RsvpClient({ rsvpDeadline }: { rsvpDeadline: string | null }) {
+export default function RsvpClient({ rsvpDeadline, rafflePrize }: { rsvpDeadline: string | null; rafflePrize: string }) {
   const [step, setStep] = useState<Step>("lookup");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -47,6 +49,9 @@ export default function RsvpClient({ rsvpDeadline }: { rsvpDeadline: string | nu
   const [selectedPlusOneMeal, setSelectedPlusOneMeal] = useState("");
   const [songRequest, setSongRequest] = useState("");
   const [songArtist, setSongArtist] = useState("");
+  const [danceSong, setDanceSong] = useState("");
+  const [firstDanceSong, setFirstDanceSong] = useState("");
+  const [isFirstRsvp, setIsFirstRsvp] = useState(false);
 
   async function handleLookup(e: React.FormEvent) {
     e.preventDefault();
@@ -79,6 +84,8 @@ export default function RsvpClient({ rsvpDeadline }: { rsvpDeadline: string | nu
       setPlusOneName(data.data.guest.plusOneName || "");
       setSelectedMeal(data.data.guest.mealPreference || "");
       setSelectedPlusOneMeal(data.data.guest.plusOneMealPreference || "");
+      setDanceSong(data.data.guest.danceSong || "");
+      setFirstDanceSong(data.data.guest.firstDanceSong || "");
       setStep("details");
     } catch {
       setError("Something went wrong. Please try again.");
@@ -107,6 +114,8 @@ export default function RsvpClient({ rsvpDeadline }: { rsvpDeadline: string | nu
           plusOneMealOptionId: guest.plusOneAllowed ? (selectedPlusOneMeal || undefined) : undefined,
           songRequest: songRequest || undefined,
           songArtist: songArtist || undefined,
+          danceSong: danceSong || undefined,
+          firstDanceSong: firstDanceSong || undefined,
         }),
       });
 
@@ -117,6 +126,7 @@ export default function RsvpClient({ rsvpDeadline }: { rsvpDeadline: string | nu
         return;
       }
 
+      setIsFirstRsvp(data.data?.isFirstRsvp || false);
       setStep("done");
     } catch {
       setError("Something went wrong. Please try again.");
@@ -143,6 +153,15 @@ export default function RsvpClient({ rsvpDeadline }: { rsvpDeadline: string | nu
                 })}
               </span>
             </p>
+            {rafflePrize && rafflePrize !== "-1" ? (
+              <p className="text-gold/70 text-sm mt-1 italic">
+                The first RSVPs will be entered to win: {rafflePrize}
+              </p>
+            ) : (
+              <p className="text-gold/70 text-sm mt-1 italic">
+                The first RSVPs will be entered into a special raffle — details coming soon!
+              </p>
+            )}
           </div>
         )}
 
@@ -315,6 +334,10 @@ export default function RsvpClient({ rsvpDeadline }: { rsvpDeadline: string | nu
                   </div>
                 )}
 
+                <p className="text-ivory/40 text-xs italic">
+                  Plus ones & children are by invite only. All those invited will be addressed by name on your invitation.
+                </p>
+
                 <div className="flex gap-3 pt-2">
                   <button
                     type="button"
@@ -398,7 +421,7 @@ export default function RsvpClient({ rsvpDeadline }: { rsvpDeadline: string | nu
               {guest.plusOneAllowed && (
                 <div className="mb-4">
                   <h3 className="text-gold/80 font-serif text-sm mb-3">
-                    Plus-One Meal ({plusOneName || "Guest"})
+                    Plus One Meal ({plusOneName || "Guest"})
                   </h3>
                   <div className="space-y-2">
                     {mealOptions.map((meal) => (
@@ -469,7 +492,7 @@ export default function RsvpClient({ rsvpDeadline }: { rsvpDeadline: string | nu
           <div className="max-w-md mx-auto animate-fade-in-up">
             <div className="card-celestial">
               <h2 className="text-gold font-serif text-2xl text-center mb-2">
-                Song Request
+                Song Requests
               </h2>
               <p className="text-center text-ivory/50 text-sm mb-6">
                 Help us build the perfect playlist!
@@ -499,6 +522,35 @@ export default function RsvpClient({ rsvpDeadline }: { rsvpDeadline: string | nu
                     className="input-celestial w-full"
                     placeholder="Artist name"
                   />
+                </div>
+              </div>
+
+              <div className="border-t border-gold/10 pt-4 mb-6">
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-ivory/70 text-sm mb-2">
+                      What song will get you on the dance floor?
+                    </label>
+                    <input
+                      type="text"
+                      value={danceSong}
+                      onChange={(e) => setDanceSong(e.target.value)}
+                      className="input-celestial w-full"
+                      placeholder="Song title & artist"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-ivory/70 text-sm mb-2">
+                      What was your first dance song?
+                    </label>
+                    <input
+                      type="text"
+                      value={firstDanceSong}
+                      onChange={(e) => setFirstDanceSong(e.target.value)}
+                      className="input-celestial w-full"
+                      placeholder="Song title & artist"
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -582,6 +634,18 @@ export default function RsvpClient({ rsvpDeadline }: { rsvpDeadline: string | nu
                     </span>
                   </div>
                 )}
+                {attending && danceSong && (
+                  <div className="flex justify-between py-2 border-b border-gold/10">
+                    <span className="text-ivory/50">Dance Floor Song</span>
+                    <span className="text-ivory text-right">{danceSong}</span>
+                  </div>
+                )}
+                {attending && firstDanceSong && (
+                  <div className="flex justify-between py-2 border-b border-gold/10">
+                    <span className="text-ivory/50">First Dance Song</span>
+                    <span className="text-ivory text-right">{firstDanceSong}</span>
+                  </div>
+                )}
               </div>
 
               <div className="flex gap-3">
@@ -622,6 +686,11 @@ export default function RsvpClient({ rsvpDeadline }: { rsvpDeadline: string | nu
                   ? "Your RSVP has been received. We can't wait to celebrate with you under the stars!"
                   : "We're sorry you can't make it, but we appreciate you letting us know. You'll be in our hearts."}
               </p>
+              {attending && isFirstRsvp && (
+                <p className="text-gold/80 text-sm mb-6 italic">
+                  You&apos;re one of the first to RSVP — you&apos;ve been entered into our special raffle!
+                </p>
+              )}
               <a href="/" className="btn-outline inline-block px-6 py-2">
                 Back to Home
               </a>

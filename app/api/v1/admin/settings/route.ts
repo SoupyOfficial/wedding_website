@@ -42,6 +42,10 @@ export async function PUT(req: NextRequest) {
       ["contactEmailJoint", body.contactEmailJoint ?? ""],
       ["contactEmailBride", body.contactEmailBride ?? ""],
       ["contactEmailGroom", body.contactEmailGroom ?? ""],
+      ["contactPhoneAshley", body.contactPhoneAshley ?? ""],
+      ["contactPhoneJacob", body.contactPhoneJacob ?? ""],
+      ["contactPhoneMaryLorraine", body.contactPhoneMaryLorraine ?? ""],
+      ["contactPhoneMollie", body.contactPhoneMollie ?? ""],
       ["weddingHashtag", body.weddingHashtag ?? ""],
       ["sitePasswordEnabled", body.sitePasswordEnabled ? 1 : 0],
       ["rsvpDeadline", body.rsvpDeadline ? new Date(body.rsvpDeadline).toISOString() : null],
@@ -73,6 +77,7 @@ export async function PUT(req: NextRequest) {
       ["registryNote", body.registryNote ?? ""],
       ["entertainmentNote", body.entertainmentNote ?? ""],
       ["raffleTicketCount", body.raffleTicketCount ?? 2],
+      ["rafflePrize", body.rafflePrize ?? "-1"],
       ["hideUnconfirmedWeddingParty", (body.hideUnconfirmedWeddingParty ?? false) ? 1 : 0],
     ];
 

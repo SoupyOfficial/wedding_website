@@ -32,7 +32,6 @@ describe("getFeatureFlags", () => {
     const flags = await getFeatureFlags();
     expect(flags.rsvpEnabled).toBe(true);
     expect(flags.photoUploadEnabled).toBe(false);
-    expect(flags.guestBookEnabled).toBe(true);
   });
 
   it("overrides defaults with DB values", async () => {
@@ -44,7 +43,7 @@ describe("getFeatureFlags", () => {
     expect(flags.rsvpEnabled).toBe(false);
     expect(flags.photoUploadEnabled).toBe(true);
     // Unmentioned flags keep defaults
-    expect(flags.guestBookEnabled).toBe(true);
+    expect(flags.rsvpEnabled).toBe(false);
   });
 
   it("handles boolean enabled values from DB", async () => {

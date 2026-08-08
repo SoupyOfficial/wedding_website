@@ -16,6 +16,10 @@ const PUBLIC_FIELDS = [
   "contactEmailJoint",
   "contactEmailBride",
   "contactEmailGroom",
+  "contactPhoneAshley",
+  "contactPhoneJacob",
+  "contactPhoneMaryLorraine",
+  "contactPhoneMollie",
   "socialInstagram",
   "socialFacebook",
   "socialTikTok",
@@ -25,6 +29,7 @@ const PUBLIC_FIELDS = [
   "entertainmentNote",
   "rsvpDeadline",
   "childrenPolicy",
+  "rafflePrize",
 ] as const;
 
 /**

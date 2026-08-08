@@ -27,6 +27,10 @@ model SiteSettings {
   contactEmailJoint      String    @default("")
   contactEmailBride      String    @default("")
   contactEmailGroom      String    @default("")
+  contactPhoneAshley     String    @default("")
+  contactPhoneJacob      String    @default("")
+  contactPhoneMaryLorraine String  @default("")
+  contactPhoneMollie     String    @default("")
   photoShareLink         String    @default("")
   heroTagline            String    @default("We're getting married!")
   heroTaglinePostWedding String    @default("We did it!")
@@ -57,6 +61,7 @@ model SiteSettings {
   registryNote           String    @default("Gifts are appreciated, but our main goal is starting our life together in a new home — so cash contributions are preferred. Most of all, we're just grateful to celebrate with you!")
   entertainmentNote      String    @default("Our reception will be a celebration filled with music, dancing, games, and memories! We want everyone to have an incredible time.")
   raffleTicketCount      Int       @default(2)
+  rafflePrize            String    @default("-1")
   hideUnconfirmedWeddingParty Boolean @default(false)
   // Budget
   totalBudget            Float?
@@ -95,11 +100,14 @@ model Guest {
   plusOneMealPreference String?
   dietaryNeeds          String?
   songRequest     String?
+  danceSong       String?
+  firstDanceSong  String?
   childrenCount   Int       @default(0)
   childrenNames   String?
   tableNumber     Int?
   notes           String?
   rsvpRespondedAt DateTime?
+  rsvpSubmittedAt DateTime?
   inviteToken     String?   @unique
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
@@ -227,17 +235,6 @@ model Entertainment {
   icon        String?
   sortOrder   Int     @default(0)
   isVisible   Boolean @default(true)
-}
-
-// ─────────────────────────────────────────────
-// Guest Book
-// ─────────────────────────────────────────────
-model GuestBookEntry {
-  id        String   @id @default(cuid())
-  name      String
-  message   String
-  isVisible Boolean  @default(true)
-  createdAt DateTime @default(now())
 }
 
 // ─────────────────────────────────────────────

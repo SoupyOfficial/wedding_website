@@ -12,7 +12,7 @@ vi.mock("@/lib/config/feature-flags", () => ({
   getFeatureFlag: vi.fn(),
   setFeatureFlag: vi.fn(),
   isFeatureFlagKey: vi.fn((key: string) => [
-    "rsvpEnabled", "guestBookEnabled", "photoUploadEnabled", "songRequestsEnabled",
+    "rsvpEnabled", "photoUploadEnabled", "songRequestsEnabled",
   ].includes(key)),
 }));
 
@@ -29,12 +29,12 @@ beforeEach(() => {
 
 describe("GET /api/v1/admin/features", () => {
   it("returns all feature flags", async () => {
-    mockGetFeatureFlags.mockResolvedValue({ rsvpEnabled: true, guestBookEnabled: false } as any);
+    mockGetFeatureFlags.mockResolvedValue({ rsvpEnabled: true, photoUploadEnabled: false } as any);
     const res = await GET();
     const body = await res.json();
     expect(res.status).toBe(200);
     expect(body.data.rsvpEnabled).toBe(true);
-    expect(body.data.guestBookEnabled).toBe(false);
+    expect(body.data.photoUploadEnabled).toBe(false);
   });
 
   it("returns 500 on error", async () => {

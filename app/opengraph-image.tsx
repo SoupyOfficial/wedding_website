@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 import { ImageResponse } from "next/og";
 import { getSettings } from "@/lib/services/settings.service";
+import { formatEasternDate } from "@/lib/timezone";
 
 export const runtime = "nodejs";
 export const alt = "Forever Campbells Wedding";
@@ -12,11 +13,7 @@ export default async function OGImage() {
 
   const coupleName = settings?.coupleName || "Jacob & Ashley";
   const weddingDate = settings?.weddingDate
-    ? new Date(settings.weddingDate).toLocaleDateString("en-US", {
-        month: "long",
-        day: "numeric",
-        year: "numeric",
-      })
+    ? formatEasternDate(String(settings.weddingDate).slice(0, 10))
     : null;
   const venue = settings?.venueName || null;
   const location = settings?.venueAddress || null;

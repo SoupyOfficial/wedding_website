@@ -503,11 +503,6 @@ async function main() {
       description: "Enable RSVP form on the public site",
     },
     {
-      key: "guestBookEnabled",
-      enabled: 1,
-      description: "Enable guest book signing on the public site",
-    },
-    {
       key: "photoUploadEnabled",
       enabled: 1,
       description: "Allow guests to upload photos",

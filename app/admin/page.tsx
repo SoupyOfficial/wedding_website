@@ -18,8 +18,6 @@ export default async function AdminDashboard() {
     rsvpPendingR,
     totalPhotosR,
     pendingPhotosR,
-    guestBookEntriesR,
-    pendingGuestBookR,
     songRequestsR,
     contactMessagesR,
     unreadMessagesR,
@@ -32,8 +30,6 @@ export default async function AdminDashboard() {
     queryOne<{ cnt: number }>("SELECT COUNT(*) as cnt FROM Guest WHERE rsvpStatus = ?", ["pending"]),
     queryOne<{ cnt: number }>("SELECT COUNT(*) as cnt FROM Photo"),
     queryOne<{ cnt: number }>("SELECT COUNT(*) as cnt FROM Photo WHERE approved = 0"),
-    queryOne<{ cnt: number }>("SELECT COUNT(*) as cnt FROM GuestBookEntry"),
-    queryOne<{ cnt: number }>("SELECT COUNT(*) as cnt FROM GuestBookEntry WHERE isVisible = 0"),
     queryOne<{ cnt: number }>("SELECT COUNT(*) as cnt FROM SongRequest"),
     queryOne<{ cnt: number }>("SELECT COUNT(*) as cnt FROM ContactMessage"),
     queryOne<{ cnt: number }>("SELECT COUNT(*) as cnt FROM ContactMessage WHERE isRead = 0"),
@@ -51,8 +47,6 @@ export default async function AdminDashboard() {
   const rsvpPending = cnt(rsvpPendingR);
   const totalPhotos = cnt(totalPhotosR);
   const pendingPhotos = cnt(pendingPhotosR);
-  const guestBookEntries = cnt(guestBookEntriesR);
-  const pendingGuestBook = cnt(pendingGuestBookR);
   const songRequests = cnt(songRequestsR);
   const contactMessages = cnt(contactMessagesR);
   const unreadMessages = cnt(unreadMessagesR);
@@ -105,7 +99,6 @@ export default async function AdminDashboard() {
 
   const actions = [
     { label: "Photos", sublabel: `${pendingPhotos} pending approval`, icon: "📸", href: "/admin/photos", urgent: pendingPhotos > 0 },
-    { label: "Guest Book", sublabel: `${pendingGuestBook} pending`, icon: "📖", href: "/admin/guest-book", urgent: pendingGuestBook > 0 },
     { label: "Messages", sublabel: `${unreadMessages} unread`, icon: "✉️", href: "/admin/communications", urgent: unreadMessages > 0 },
     { label: "Song Requests", sublabel: `${songRequests} total`, icon: "🎵", href: "/admin/music", urgent: false },
   ];
@@ -203,7 +196,6 @@ export default async function AdminDashboard() {
         <div className="grid md:grid-cols-2 gap-4 text-sm">
           {[
             ["Total Photos", totalPhotos],
-            ["Guest Book Entries", guestBookEntries],
             ["Song Requests", songRequests],
             ["Contact Messages", contactMessages],
           ].map(([label, val]) => (

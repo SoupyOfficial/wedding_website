@@ -1,6 +1,7 @@
 import { query, queryOne, execute, generateId, now, toBool, toBoolAll } from "@/lib/db";
 import type { Guest, MealOption } from "@/lib/db-types";
 import { sendEmail } from "@/lib/services/email.service";
+import { isEasternPast } from "@/lib/timezone";
 
 export interface RsvpSubmitInput {
   guestId: string;
@@ -13,10 +14,13 @@ export interface RsvpSubmitInput {
   plusOneMealOptionId?: string;
   songRequest?: string;
   songArtist?: string;
+  danceSong?: string;
+  firstDanceSong?: string;
 }
 
 export interface RsvpSubmitResult {
   guest: Pick<Guest, "id" | "firstName" | "lastName" | "rsvpStatus">;
+  isFirstRsvp?: boolean;
 }
 
 /**
@@ -62,6 +66,8 @@ export async function lookupGuest(name: string) {
       plusOneMealPreference: guest.plusOneMealPreference,
       dietaryNeeds: guest.dietaryNeeds,
       songRequest: guest.songRequest,
+      danceSong: guest.danceSong,
+      firstDanceSong: guest.firstDanceSong,
     },
     mealOptions,
   };
@@ -73,7 +79,7 @@ export async function lookupGuest(name: string) {
  * Returns null if the meal option is invalid, or the updated guest summary.
  */
 export async function submitRsvp(input: RsvpSubmitInput): Promise<{ error: string } | RsvpSubmitResult> {
-  const { guestId, attending, email, phone, dietaryNotes, plusOneName, mealOptionId, plusOneMealOptionId, songRequest, songArtist } = input;
+  const { guestId, attending, email, phone, dietaryNotes, plusOneName, mealOptionId, plusOneMealOptionId, songRequest, songArtist, danceSong, firstDanceSong } = input;
 
   const settings = await queryOne<{
     rsvpDeadline: string | null;
@@ -85,8 +91,10 @@ export async function submitRsvp(input: RsvpSubmitInput): Promise<{ error: strin
     ["singleton"]
   );
   if (settings?.rsvpDeadline) {
-    const deadline = new Date(settings.rsvpDeadline);
-    if (new Date() > deadline) {
+    const raw = String(settings.rsvpDeadline);
+    const datePart = raw.slice(0, 10);        // "YYYY-MM-DD"
+    const timePart = raw.slice(11, 16) || "23:59"; // "HH:MM"
+    if (isEasternPast(datePart, timePart)) {
       return { error: "The RSVP deadline has passed. Please contact us directly." };
     }
   }
@@ -94,8 +102,16 @@ export async function submitRsvp(input: RsvpSubmitInput): Promise<{ error: strin
   const rsvpStatus = attending ? "attending" : "declined";
   const timestamp = now();
 
+  const existingGuest = await queryOne<Guest>("SELECT rsvpSubmittedAt FROM Guest WHERE id = ?", [guestId]);
+  const isFirstRsvp = !!(attending && existingGuest && !existingGuest.rsvpSubmittedAt);
+
   const sets: string[] = ["rsvpStatus = ?", "rsvpRespondedAt = ?", "updatedAt = ?"];
   const args: (string | number | null)[] = [rsvpStatus, timestamp, timestamp];
+
+  if (isFirstRsvp) {
+    sets.push("rsvpSubmittedAt = ?");
+    args.push(timestamp);
+  }
 
   if (email) { sets.push("email = ?"); args.push(String(email).trim().slice(0, 200)); }
   if (phone) { sets.push("phone = ?"); args.push(String(phone).trim().slice(0, 30)); }
@@ -111,6 +127,8 @@ export async function submitRsvp(input: RsvpSubmitInput): Promise<{ error: strin
     if (!meal) return { error: "Invalid plus-one meal option." };
     sets.push("plusOneMealPreference = ?"); args.push(plusOneMealOptionId);
   }
+  if (danceSong !== undefined) { sets.push("danceSong = ?"); args.push(String(danceSong).trim().slice(0, 200)); }
+  if (firstDanceSong !== undefined) { sets.push("firstDanceSong = ?"); args.push(String(firstDanceSong).trim().slice(0, 200)); }
 
   args.push(guestId);
   await execute(`UPDATE Guest SET ${sets.join(", ")} WHERE id = ?`, args);
@@ -165,5 +183,6 @@ export async function submitRsvp(input: RsvpSubmitInput): Promise<{ error: strin
       lastName: guest.lastName,
       rsvpStatus: guest.rsvpStatus,
     },
+    isFirstRsvp,
   };
 }

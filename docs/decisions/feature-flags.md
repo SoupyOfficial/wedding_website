@@ -1,6 +1,6 @@
 # Decision: Feature Flags
 
-## Choice: 21 runtime-toggleable boolean flags stored in DB with hardcoded defaults
+## Choice: 20 runtime-toggleable boolean flags stored in DB with hardcoded defaults
 
 ### Why
 
@@ -44,11 +44,11 @@
 ### Tradeoffs Accepted
 
 - **No caching**: Every page load queries the DB for flags. At this traffic level (wedding guests, not millions), this is fine.
-- **15 of 21 flags are page toggles**: These could arguably be a simpler "enabled pages" list instead of individual flags.
+- **13 of 20 flags are page toggles**: These could arguably be a simpler "enabled pages" list instead of individual flags.
 - **registrySyncEnabled and massEmailEnabled** reference features that don't fully exist yet.
 
 ### Simplification Candidates
 
-- Collapse the 14 `*PageEnabled` flags into a single `enabledPages: string[]` setting on SiteSettings. One field instead of 14 rows.
+- Collapse the 13 `*PageEnabled` flags into a single `enabledPages: string[]` setting on SiteSettings. One field instead of 13 rows.
 - Remove flags for unimplemented features (registrySync, massEmail) to reduce confusion.
 - Add a `postWeddingDefaults` preset that bulk-toggles flags for after the wedding.

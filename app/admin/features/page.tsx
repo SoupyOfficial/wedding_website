@@ -35,7 +35,6 @@ const FLAG_GROUPS: { title: string; items: FlagConfig[] }[] = [
     title: "Features",
     items: [
       { key: "rsvpEnabled", label: "RSVP", description: "Allow guests to RSVP and manage their attendance" },
-      { key: "guestBookEnabled", label: "Guest Book", description: "Allow guests to sign the guest book" },
       { key: "songRequestsEnabled", label: "Song Requests", description: "Allow guests to submit music requests for the reception" },
       { key: "photoUploadEnabled", label: "Photo Uploads", description: "Allow guests to upload photos from the event" },
       { key: "guestPhotoSharingEnabled", label: "Photo Sharing", description: "Allow guests to view each others uploaded photos" },

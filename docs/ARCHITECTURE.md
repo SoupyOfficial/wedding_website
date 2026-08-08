@@ -70,7 +70,7 @@ Browser → middleware.ts
 
 ## Feature Flag System
 
-21 runtime toggles stored in DB, with hardcoded defaults. Every public page calls `checkFeatureFlag()` at the server component level — returns `<PageDisabled />` JSX if disabled, `null` if enabled.
+20 runtime toggles stored in DB, with hardcoded defaults. Every public page calls `checkFeatureFlag()` at the server component level — returns `<PageDisabled />` JSX if disabled, `null` if enabled.
 
 ## File Count Summary
 
@@ -89,16 +89,20 @@ Browser → middleware.ts
 
 1. **SiteSettings** — 49-field singleton, 30+ fields in PUT handler
 2. **Weather API** — dual-mode (forecast vs historical), WMO code mapping, hour parsing
-3. **Travel page** — hardcoded venue-specific content (airports, theme parks, restaurants)
-4. **Admin CRUD** — 15 nearly-identical route files with same GET/POST/PUT/DELETE pattern
-5. **db-types.ts** — 300 lines manually duplicating Prisma schema as TS interfaces
-6. **Apple Music** — JWT token gen, playlist pagination, two separate search proxies (public + admin)
+3. **Admin CRUD** — 15 nearly-identical route files with same GET/POST/PUT/DELETE pattern
 
-## Simplification Signals
+## Resolved Simplifications
 
-See `docs/decisions/` for reasoning. Key candidates:
-- Admin API routes share 80%+ pattern → generic CRUD handler
-- db-types.ts could auto-generate from schema
-- Two identical iTunes search endpoints (public + admin)
-- toBool/toBoolAll pattern needed only because SQLite lacks booleans
-- Travel page has ~500 lines of hardcoded Orlando/FL content
+These hotspots identified in the May 2026 audit have been addressed:
+- ✅ **Apple Music search consolidated** — Public and admin endpoints share `lib/itunes-search.ts`
+- ✅ **Travel content extracted** — Data in `lib/config/travel-content.data.json`, types only in `.ts`
+- ✅ **db-types.ts auto-generated** — Run `npm run generate:types` after schema changes
+- ✅ **Travel page decomposed** — 600-line page split into 4 sub-components under 200 lines each
+- ✅ **Admin settings decomposed** — 631-line page split into 8 section components under 150 lines each
+- ✅ **Event bus references removed** — `lib/events/` never existed; decision doc updated to "Deferred"
+
+## Remaining Complexity Hotspots
+
+- Admin API routes share 80%+ pattern → generic CRUD handler (`lib/api/crud-handler.ts`) partially addresses this
+- SiteSettings 49-field singleton with flat PUT handler
+- toBool/toBoolAll pattern needed because SQLite lacks native booleans

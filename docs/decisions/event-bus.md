@@ -1,39 +1,28 @@
 # Decision: Event Bus
 
-## Choice: In-process singleton event emitter for decoupled event handling
+## Status: Deferred — Not Implemented
 
-### Why
+As of the July 2026 audit cleanup, the event bus described in `lib/events/` was never implemented. The directory does not exist, no event types are defined in production code, and no subscribers are registered. The event bus concept was documented as if it existed but was purely aspirational.
 
-- Decouples side effects from main request handlers. When an RSVP is submitted, the handler doesn't need to know about notifications, analytics, or logging — it just emits `rsvp:submitted`.
-- Standard pub/sub pattern. Handlers can be added/removed without touching the emitting code.
+## Current State
 
-### Implementation
+- **No `lib/events/` directory exists**
+- **No event bus singleton or class is exported** from any module
+- **No subscribers are registered** anywhere in the application
+- **All side effects are handled inline** within request handlers (e.g., RSVP submission updates settings and creates a log entry directly)
 
-Custom EventBus class (no external dependency):
+## Evaluation
 
-- `on<T>(event, handler)` → subscribe, returns unsubscribe function
-- `emit<T>(event, payload)` → fires all handlers via Promise.all, catches errors per-handler
-- `off(event)` → remove all handlers for event
-- Singleton exported from `lib/events/event-bus.ts`
+For a single-admin wedding website with modest traffic, the decoupling benefit of an event bus does not justify the added complexity. Direct `afterRsvpSubmit()` calls or inline handling in route handlers provides sufficient separation for this project's needs.
 
-### Defined Event Types
+## If Revisited
 
-| Event | Payload | Emitted From |
-| ----- | ------- | ------------ |
-| rsvp:submitted | guestId, status, guestName, details | RSVP submit route |
-| guest:created | guestId, firstName, lastName | Admin guest create |
-| photo:uploaded | photoId, category, url | Photo upload route |
-| settings:updated | changedFields[] | Admin settings route |
-| guestbook:signed | entryId, name, message | Guestbook submit route |
+If future needs warrant an event bus (e.g., multiple side effects from a single action, cross-module notifications), consider:
+- Moving subscriber registration to a central module imported in middleware or layout
+- Using a simple `EventEmitter` from Node.js `events` module
+- Evaluating Vercel function lifecycle implications (in-process state doesn't persist between invocations)
 
-### Tradeoffs Accepted
+## Related
 
-- **In-process only**: Events don't survive server restarts or cross serverless function boundaries. On Vercel, each API route runs in its own invocation — the event bus singleton may not persist listeners between requests.
-- **No guaranteed subscribers**: Events are emitted but it's unclear which handlers (if any) are registered in production. The subscriber registration would need to happen in a module that's imported on every request.
-- **Promise.all semantics**: All handlers run in parallel. If one throws, others still complete, but the error is caught and logged silently.
-
-### Simplification Candidates
-
-- **Audit actual usage**: If no subscribers are registered in production code (only in tests), the event bus is dead infrastructure and can be removed.
-- **Replace with direct calls**: For a single-admin wedding site, the decoupling benefit may not justify the indirection. A simple `afterRsvpSubmit()` function is easier to trace.
-- **If keeping**: Move subscriber registration to a central `lib/events/subscribers.ts` that's imported in middleware or layout to ensure listeners are active.
+- [Architecture Overview](../ARCHITECTURE.md)
+- [Audit Report](../AUDIT-2026-05-27.md)

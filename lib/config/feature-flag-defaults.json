@@ -1,6 +1,5 @@
 {
   "rsvpEnabled": true,
-  "guestBookEnabled": true,
   "photoUploadEnabled": false,
   "registrySyncEnabled": false,
   "songRequestsEnabled": true,

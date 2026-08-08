@@ -259,7 +259,7 @@ export default function RegistryList({ items }: { items: RegistryItem[] }) {
                     )}
                     {!selectedItem.goalAmount && (
                       <p className="text-xs text-ivory/40 mt-1">
-                        Every bit helps — there's no minimum or maximum.
+                        Every bit helps — there&apos;s no minimum or maximum.
                       </p>
                     )}
                   </div>

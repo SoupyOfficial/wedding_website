@@ -25,27 +25,30 @@ describe("Navigation", () => {
 
   it("filters out links when feature flag is disabled", () => {
     render(
-      <Navigation featureFlags={{ ourStoryPageEnabled: false, galleryPageEnabled: false }} />
+      <Navigation featureFlags={{ ourStoryPageEnabled: false }} />
     );
     expect(screen.queryByText("Our Story")).not.toBeInTheDocument();
-    expect(screen.queryByText("Gallery")).not.toBeInTheDocument();
     // Other links should still appear
     expect(screen.getAllByText("RSVP").length).toBeGreaterThan(0);
   });
 
-  it("shows all links when all feature flags are true", () => {
+  it("shows all primary links when their feature flags are true", () => {
     render(
       <Navigation
         featureFlags={{
           ourStoryPageEnabled: true,
-          galleryPageEnabled: true,
+          eventDetailsPageEnabled: true,
+          travelPageEnabled: true,
           rsvpEnabled: true,
-          contactPageEnabled: true,
+          faqPageEnabled: true,
         }}
       />
     );
     expect(screen.getAllByText("Our Story").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("Gallery").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Schedule").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Travel & Stay").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("RSVP").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("FAQ").length).toBeGreaterThan(0);
   });
 
   it("sets aria-current on active link", () => {
