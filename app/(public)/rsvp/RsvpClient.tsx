@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { PageHeader, Alert } from "@/components/ui";
+import { formatEasternDate } from "@/lib/timezone";
 
 type Step = "lookup" | "details" | "meal" | "songs" | "confirm" | "done";
 
@@ -146,11 +147,7 @@ export default function RsvpClient({ rsvpDeadline, rafflePrize }: { rsvpDeadline
             <p className="text-ivory/60 text-sm">
               Please respond by{" "}
               <span className="text-gold font-semibold">
-                {new Date(rsvpDeadline).toLocaleDateString("en-US", {
-                  month: "long",
-                  day: "numeric",
-                  year: "numeric",
-                })}
+                {rsvpDeadline ? formatEasternDate(rsvpDeadline.slice(0, 10)) : null}
               </span>
             </p>
             {rafflePrize && rafflePrize !== "-1" ? (

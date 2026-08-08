@@ -94,12 +94,13 @@ export function formatEasternDate(
   if (!dateStr || dateStr.length < 10) return null;
   try {
     const iso = toEasternISO(dateStr.slice(0, 10));
-    return new Date(iso).toLocaleDateString(locale, {
+    return new Intl.DateTimeFormat(locale, {
+      timeZone: "America/New_York",
       month: "long",
       day: "numeric",
       year: "numeric",
       ...options,
-    });
+    }).format(new Date(iso));
   } catch {
     return null;
   }

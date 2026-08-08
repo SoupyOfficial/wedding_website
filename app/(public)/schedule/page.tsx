@@ -17,12 +17,12 @@ export const metadata = {
 
 function formatDate(dateStr: string | null | undefined): string {
   if (!dateStr) return "";
-  return new Date(dateStr).toLocaleDateString("en-US", {
+  return formatEasternDate(String(dateStr).slice(0, 10), {
     weekday: "long",
     month: "long",
     day: "numeric",
     year: "numeric",
-  });
+  }) ?? "";
 }
 
 function formatTime(timeStr: string | null | undefined): string {
