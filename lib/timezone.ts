@@ -41,7 +41,8 @@ export function isEasternDST(year: number, month: number, day: number): boolean 
  * @returns "-04:00" (EDT) or "-05:00" (EST)
  */
 export function getEasternTimeOffset(dateStr: string): string {
-  const [y, m, d] = dateStr.split("-").map(Number);
+  const clean = dateStr.slice(0, 10); // strip time component if present
+  const [y, m, d] = clean.split("-").map(Number);
   return isEasternDST(y, m, d) ? "-04:00" : "-05:00";
 }
 
@@ -57,9 +58,10 @@ export function getEasternTimeOffset(dateStr: string): string {
  *   toEasternISO("2026-10-04", "23:59")  // "2026-10-04T23:59:00-04:00" (EDT)
  */
 export function toEasternISO(dateStr: string, timeStr?: string): string {
-  const offset = getEasternTimeOffset(dateStr);
+  const clean = dateStr.slice(0, 10); // strip time component if present
+  const offset = getEasternTimeOffset(clean);
   const time = timeStr || "00:00";
-  return `${dateStr}T${time}:00${offset}`;
+  return `${clean}T${time}:00${offset}`;
 }
 
 /**
