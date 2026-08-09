@@ -10,6 +10,20 @@ const client = createClient({
   authToken: process.env.TURSO_AUTH_TOKEN,
 });
 
+
+// ─── Production safety guard ───
+// This seed overwrites SiteSettings with defaults. Never run against production
+// without explicit intent. Set SEED_ALLOW_PRODUCTION=true to bypass this guard.
+if (process.env.TURSO_DATABASE_URL && process.env.SEED_ALLOW_PRODUCTION !== "true") {
+  console.error(
+    "\n❌ REFUSING TO SEED PRODUCTION DATABASE\n" +
+    "   TURSO_DATABASE_URL is set. This script overwrites SiteSettings\n" +
+    "   and would reset production config to seed defaults.\n" +
+    "\n   To proceed anyway: SEED_ALLOW_PRODUCTION=true npm run seed\n"
+  );
+  process.exit(1);
+}
+
 async function main() {
   console.log("🌟 Seeding database...");
 
