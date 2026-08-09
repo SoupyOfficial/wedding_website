@@ -27,10 +27,10 @@ export default async function HomePage() {
   let combinedDateTime: string | undefined;
   if (weddingDate) {
     try {
-      const timePart = weddingTime || "16:00";
+      const timePart = weddingTime || "16:15";
       combinedDateTime = toEasternISO(weddingDate, timePart);
     } catch {
-      combinedDateTime = toEasternISO(weddingDate, "16:00");
+      combinedDateTime = toEasternISO(weddingDate, "16:15");
     }
   }
 

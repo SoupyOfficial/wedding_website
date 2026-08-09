@@ -23,7 +23,6 @@ export const publicNavLinks: PublicNavLink[] = [
   { href: "/", label: "Home" },
   { href: "/our-story", label: "Our Story", featureFlag: "ourStoryPageEnabled", primary: true },
   { href: "/schedule", label: "Schedule", featureFlag: "eventDetailsPageEnabled", primary: true },
-  { href: "/event-details", label: "Event Details", featureFlag: "eventDetailsPageEnabled" },
   { href: "/travel", label: "Travel & Stay", featureFlag: "travelPageEnabled", primary: true },
   { href: "/wedding-party", label: "Wedding Party", featureFlag: "weddingPartyPageEnabled" },
   { href: "/entertainment", label: "Entertainment", featureFlag: "entertainmentPageEnabled" },

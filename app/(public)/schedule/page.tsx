@@ -343,7 +343,7 @@ export default async function SchedulePage() {
             <div className="text-3xl mb-3">👗</div>
             <h3 className="heading-gold text-xl mb-2">Dress Code</h3>
             <p className="text-ivory/70">
-              {settings?.dressCode || "Formal / Semi-Formal attire"}
+              {settings?.dressCode || "Creative Cocktail meets Celestial Formal. Dress your best and go as crazy as you like to fit the celestial theme. Dressing on theme is encouraged but NOT required. No cream or ivory. No casual wear. The ceremony is outdoors — keep an eye on the weather."}
             </p>
             {(() => {
               if (!settings?.dressCodeImages) return null;

@@ -332,7 +332,7 @@ export default function RsvpClient({ rsvpDeadline, rafflePrize }: { rsvpDeadline
                 )}
 
                 <p className="text-ivory/40 text-xs italic">
-                  Plus ones & children are by invite only. All those invited will be addressed by name on your invitation.
+                  Plus ones are by invite only. All those invited will be addressed by name on your invitation.
                 </p>
 
                 <div className="flex gap-3 pt-2">

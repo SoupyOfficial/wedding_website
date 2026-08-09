@@ -7,7 +7,7 @@ export default function SitePasswordPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [coupleName, setCoupleName] = useState("Forever Campbells");
+  const [coupleName, setCoupleName] = useState("Jacob & Ashley");
   const [contactEmail, setContactEmail] = useState("");
   const router = useRouter();
 

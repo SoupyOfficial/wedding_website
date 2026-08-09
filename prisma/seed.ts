@@ -19,9 +19,10 @@ async function main() {
   await client.execute({
     sql: `INSERT OR REPLACE INTO SiteSettings (
       id, coupleName, weddingDate, venueName, venueAddress, ceremonyType,
-      dressCode, heroTagline, heroTaglinePostWedding, childrenPolicy,
-      parkingInfo, weatherInfo, ogDescription, weddingHashtag, bannerColor, updatedAt
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      weddingTime, receptionTime, dressCode, heroTagline, heroTaglinePostWedding, childrenPolicy,
+      parkingInfo, weatherInfo, ogDescription, weddingHashtag, bannerColor,
+      unpluggedCeremonyNotice, updatedAt
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     args: [
       "singleton",
       "Jacob & Ashley",
@@ -29,15 +30,18 @@ async function main() {
       "The Highland Manor",
       "Apopka, Florida",
       "Outdoor Ceremony & Indoor Reception",
-      "Formal / Semi-Formal attire",
+      "16:15",
+      "",
+      "Creative Cocktail meets Celestial Formal. Dress your best and go as crazy as you like to fit the celestial theme. Dressing on theme is encouraged but NOT required. No cream or ivory. No casual wear. The ceremony is outdoors — keep an eye on the weather.",
       "We're getting married!",
       "We did it! 🎉",
-      "Children are welcome! Age limits and kid-specific activities to be determined. Babysitter(s) will be arranged for the event.",
+      "Children are welcome! Age limits and kid-specific activities are being planned. Family members of the bridal party will be available to help supervise.",
       "Yes, free parking is available on-site at The Highland Manor.",
       "Central Florida can be warm and humid. The ceremony is outdoors, so we recommend light, breathable fabrics. The reception is indoors and air-conditioned.",
       "We're getting married! Join us for our celebration under the stars.",
       "#ForeverCampbells",
       "gold",
+      "We kindly ask for an unplugged ceremony — please silence phones and put cameras away so we can all be present in the moment. Our professional photographer will capture every moment!",
       now,
     ],
   });
@@ -200,7 +204,7 @@ async function main() {
     },
     {
       question: "What is the dress code?",
-      answer: "Formal / Semi-Formal attire. Please dress to impress!",
+      answer: "Creative Cocktail meets Celestial Formal. Dress your best and go as crazy as you like to fit the celestial theme. Dressing on theme is encouraged but NOT required. No cream or ivory. No casual wear. The ceremony is outdoors — keep an eye on the weather.",
       sortOrder: 1,
     },
     {
@@ -212,7 +216,7 @@ async function main() {
     {
       question: "Are children welcome?",
       answer:
-        "Children are welcome! Age limits and kid-specific activities are being planned. Babysitter(s) will be arranged for the event.",
+        "Children are welcome! Age limits and kid-specific activities are being planned. Family members of the bridal party will be available to help supervise.",
       sortOrder: 3,
     },
     {
@@ -248,7 +252,7 @@ async function main() {
     {
       question: "What time should I arrive?",
       answer:
-        "Please arrive 30 minutes before the ceremony start time. Check our Event Details page for the full schedule.",
+        "Please arrive 30 minutes before the ceremony start time. Check our Schedule page for the full schedule.",
       sortOrder: 9,
     },
     {
