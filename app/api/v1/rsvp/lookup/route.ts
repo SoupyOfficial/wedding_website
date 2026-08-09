@@ -25,6 +25,11 @@ export async function GET(req: NextRequest) {
     if (!result) {
       return errorResponse("Guest not found. Please check the name on your invitation.", 404);
     }
+
+    if ("multiple" in result && result.multiple) {
+      return successResponse({ matches: result.matches, multiple: true });
+    }
+
     return successResponse(result);
   } catch (error) {
     console.error("Failed to lookup RSVP:", error);

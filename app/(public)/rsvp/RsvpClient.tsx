@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { PageHeader, Alert } from "@/components/ui";
 import { formatEasternDate } from "@/lib/timezone";
 
@@ -32,12 +32,28 @@ interface MealOption {
   isGlutenFree: boolean;
 }
 
-export default function RsvpClient({ rsvpDeadline, rafflePrize }: { rsvpDeadline: string | null; rafflePrize: string }) {
+interface MatchEntry {
+  id: string;
+  firstName: string;
+  lastName: string;
+  group: string;
+}
+
+export default function RsvpClient({
+  rsvpDeadline,
+  rafflePrize,
+  prefillName,
+}: {
+  rsvpDeadline: string | null;
+  rafflePrize: string;
+  prefillName?: string;
+}) {
   const [step, setStep] = useState<Step>("lookup");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [guest, setGuest] = useState<GuestData | null>(null);
   const [mealOptions, setMealOptions] = useState<MealOption[]>([]);
+  const [matches, setMatches] = useState<MatchEntry[]>([]);
 
   // Form states
   const [lookupName, setLookupName] = useState("");
@@ -54,19 +70,24 @@ export default function RsvpClient({ rsvpDeadline, rafflePrize }: { rsvpDeadline
   const [firstDanceSong, setFirstDanceSong] = useState("");
   const [isFirstRsvp, setIsFirstRsvp] = useState(false);
 
-  async function handleLookup(e: React.FormEvent) {
-    e.preventDefault();
+  async function performLookup(name: string) {
     setLoading(true);
     setError("");
+    setMatches([]);
 
     try {
       const res = await fetch(
-        `/api/v1/rsvp/lookup?name=${encodeURIComponent(lookupName)}`
+        `/api/v1/rsvp/lookup?name=${encodeURIComponent(name)}`
       );
       const data = await res.json();
 
       if (!res.ok) {
         setError(data.error || "Guest not found. Please check the name on your invitation.");
+        return;
+      }
+
+      if (data.data?.multiple) {
+        setMatches(data.data.matches);
         return;
       }
 
@@ -94,6 +115,27 @@ export default function RsvpClient({ rsvpDeadline, rafflePrize }: { rsvpDeadline
       setLoading(false);
     }
   }
+
+  async function handleLookup(e: React.FormEvent) {
+    e.preventDefault();
+    await performLookup(lookupName);
+  }
+
+  async function selectMatch(match: MatchEntry) {
+    setLookupName(`${match.firstName} ${match.lastName}`);
+    await performLookup(`${match.firstName} ${match.lastName}`);
+  }
+
+  const prefillDone = useRef(false);
+
+  useEffect(() => {
+    if (prefillName && !prefillDone.current) {
+      prefillDone.current = true;
+      setLookupName(prefillName);
+      performLookup(prefillName);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [prefillName]);
 
   async function handleSubmit() {
     if (!guest) return;
@@ -196,7 +238,7 @@ export default function RsvpClient({ rsvpDeadline, rafflePrize }: { rsvpDeadline
         )}
 
         {/* Step 1: Lookup */}
-        {step === "lookup" && (
+        {step === "lookup" && matches.length === 0 && (
           <div className="max-w-md mx-auto animate-fade-in-up">
             <div className="card-celestial">
               <h2 className="text-gold font-serif text-2xl text-center mb-6">
@@ -236,6 +278,44 @@ export default function RsvpClient({ rsvpDeadline, rafflePrize }: { rsvpDeadline
                 </a>{" "}
                 for event details, travel info, and our registry.
               </p>
+            </div>
+          </div>
+        )}
+
+        {/* Multi-Match Selection */}
+        {step === "lookup" && matches.length > 0 && (
+          <div className="max-w-md mx-auto animate-fade-in-up">
+            <div className="card-celestial">
+              <h2 className="text-gold font-serif text-2xl text-center mb-2">
+                Multiple Matches Found
+              </h2>
+              <p className="text-center text-ivory/50 text-sm mb-6">
+                We found multiple guests matching your search. Please select your name:
+              </p>
+              <div className="space-y-3 mb-4">
+                {matches.map((match) => (
+                  <button
+                    key={match.id}
+                    type="button"
+                    onClick={() => selectMatch(match)}
+                    className="w-full text-left p-4 rounded-lg border border-gold/20 hover:border-gold/40 transition-colors focus:outline-none focus:ring-2 focus:ring-gold/50"
+                  >
+                    <span className="text-gold font-serif">
+                      {match.firstName} {match.lastName}
+                    </span>
+                    <span className="block text-ivory/40 text-sm mt-1">
+                      {match.group}
+                    </span>
+                  </button>
+                ))}
+              </div>
+              <button
+                type="button"
+                onClick={() => setMatches([])}
+                className="btn-outline w-full py-2 text-sm"
+              >
+                Try Different Name
+              </button>
             </div>
           </div>
         )}

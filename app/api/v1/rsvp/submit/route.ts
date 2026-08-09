@@ -25,6 +25,7 @@ export async function POST(req: NextRequest) {
     const result = await submitRsvp(body);
 
     if ("error" in result) {
+      if (result.error.includes("already submitted")) return errorResponse(result.error, 409);
       const status = result.error === "Guest not found." ? 404 : 400;
       return errorResponse(result.error, status);
     }

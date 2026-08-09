@@ -33,24 +33,37 @@ export async function lookupGuest(name: string) {
   const firstName = parts[0];
   const lastName = parts.slice(1).join(" ");
 
-  let guest: Guest | null;
-  if (lastName) {
-    guest = await queryOne<Guest>(
-      "SELECT * FROM Guest WHERE firstName LIKE '%' || ? || '%' AND lastName LIKE '%' || ? || '%' LIMIT 1",
-      [firstName, lastName]
-    );
-  } else {
-    guest = await queryOne<Guest>(
-      "SELECT * FROM Guest WHERE firstName LIKE '%' || ? || '%' OR lastName LIKE '%' || ? || '%' LIMIT 1",
-      [firstName, firstName]
-    );
+  const guests = lastName
+    ? await query<Guest>(
+        "SELECT * FROM Guest WHERE firstName LIKE '%' || ? || '%' AND lastName LIKE '%' || ? || '%'",
+        [firstName, lastName]
+      )
+    : await query<Guest>(
+        "SELECT * FROM Guest WHERE firstName LIKE '%' || ? || '%' OR lastName LIKE '%' || ? || '%'",
+        [firstName, firstName]
+      );
+
+  if (guests.length === 0) return null;
+
+  if (guests.length > 1) {
+    toBoolAll(guests, "plusOneAllowed", "plusOneAttending");
+    return {
+      matches: guests.map((g) => ({
+        id: g.id,
+        firstName: g.firstName,
+        lastName: g.lastName,
+        rsvpStatus: g.rsvpStatus,
+        group: (g as any).group || "",
+      })),
+      multiple: true,
+    };
   }
 
-  if (!guest) return null;
+  const guest = guests[0];
   toBool(guest, "plusOneAllowed", "plusOneAttending");
 
   const mealOptions = await query<MealOption>(
-    "SELECT * FROM MealOption ORDER BY sortOrder ASC"
+    "SELECT * FROM MealOption WHERE isAvailable = 1 ORDER BY sortOrder ASC"
   );
   toBoolAll(mealOptions, "isVegetarian", "isVegan", "isGlutenFree", "isAvailable");
 
@@ -102,7 +115,10 @@ export async function submitRsvp(input: RsvpSubmitInput): Promise<{ error: strin
   const rsvpStatus = attending ? "attending" : "declined";
   const timestamp = now();
 
-  const existingGuest = await queryOne<Guest>("SELECT rsvpSubmittedAt FROM Guest WHERE id = ?", [guestId]);
+  const existingGuest = await queryOne<Guest>("SELECT rsvpSubmittedAt, rsvpStatus FROM Guest WHERE id = ?", [guestId]);
+  if (existingGuest && (existingGuest.rsvpStatus === "attending" || existingGuest.rsvpStatus === "declined")) {
+    return { error: "You've already submitted your RSVP. Contact us if you need to make changes." };
+  }
   const isFirstRsvp = !!(attending && existingGuest && !existingGuest.rsvpSubmittedAt);
 
   const sets: string[] = ["rsvpStatus = ?", "rsvpRespondedAt = ?", "updatedAt = ?"];
@@ -158,22 +174,61 @@ export async function submitRsvp(input: RsvpSubmitInput): Promise<{ error: strin
   const guestEmail = email || guest.email;
   const guestName = `${guest.firstName} ${guest.lastName}`;
   const statusLabel = attending ? "Attending" : "Declined";
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://forevercampbells.com";
+
+  const [confirmationTemplate, adminTemplate] = await Promise.all([
+    queryOne<{ subject: string; body: string }>(
+      "SELECT subject, body FROM EmailTemplate WHERE slug = ?",
+      ["rsvp-confirmation"]
+    ),
+    queryOne<{ subject: string; body: string }>(
+      "SELECT subject, body FROM EmailTemplate WHERE slug = ?",
+      ["rsvp-admin-notification"]
+    ),
+  ]);
+
+  const logEmailFailure = (recipient: string, subject: string, errorMsg: string) => {
+    console.error("Email send failed:", { recipient, subject, error: errorMsg });
+    execute(
+      "INSERT INTO EmailLog (id, campaignId, guestId, email, status, error, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?)",
+      [generateId(), "", guestId, recipient, "failed", String(errorMsg).slice(0, 500), now()]
+    ).catch(() => {});
+  };
 
   if (settings?.notifyOnRsvp && settings.notificationEmail) {
+    const adminSubject = adminTemplate
+      ? adminTemplate.subject.replace("{{firstName}}", guest.firstName).replace("{{status}}", statusLabel).replace("{{websiteUrl}}", siteUrl).replace("{{coupleName}}", settings.coupleName || "Jacob & Ashley")
+      : `${statusLabel}: ${guestName} RSVP`;
+    const adminHtml = adminTemplate
+      ? adminTemplate.body.replace("{{firstName}}", guest.firstName).replace("{{status}}", statusLabel).replace("{{websiteUrl}}", siteUrl).replace("{{coupleName}}", settings.coupleName || "Jacob & Ashley")
+      : `<p><strong>${guestName}</strong> has RSVP'd: <strong>${statusLabel}</strong></p>`;
+
     sendEmail({
       to: settings.notificationEmail,
-      subject: `${statusLabel}: ${guestName} RSVP`,
-      html: `<p><strong>${guestName}</strong> has RSVP'd: <strong>${statusLabel}</strong></p>`,
-    }).catch(() => {});
+      subject: adminSubject,
+      html: adminHtml,
+    }).catch((err: unknown) => {
+      const msg = err instanceof Error ? err.message : String(err);
+      logEmailFailure(settings.notificationEmail, adminSubject, msg);
+    });
   }
 
   if (guestEmail) {
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://forevercampbells.com";
+    const guestSubject = confirmationTemplate
+      ? confirmationTemplate.subject.replace("{{firstName}}", guest.firstName).replace("{{status}}", statusLabel).replace("{{websiteUrl}}", siteUrl).replace("{{coupleName}}", settings?.coupleName || "Jacob & Ashley")
+      : `RSVP Confirmed \u2014 ${settings?.coupleName || "Forever Campbells"}`;
+    const guestHtml = confirmationTemplate
+      ? confirmationTemplate.body.replace("{{firstName}}", guest.firstName).replace("{{status}}", statusLabel).replace("{{websiteUrl}}", siteUrl).replace("{{coupleName}}", settings?.coupleName || "Jacob & Ashley")
+      : `<p>Dear ${guest.firstName},</p><p>Thank you for your RSVP! We've received your response.</p><p>Status: <strong>${statusLabel}</strong></p><p>Visit <a href="${siteUrl}">${siteUrl}</a> for event details, travel info, registry, and all the latest wedding updates.</p><p>With love,<br/>${settings?.coupleName || "Jacob & Ashley"}</p>`;
+
     sendEmail({
       to: guestEmail,
-      subject: `RSVP Confirmed — ${settings?.coupleName || "Forever Campbells"}`,
-      html: `<p>Dear ${guest.firstName},</p><p>Thank you for your RSVP! We've received your response.</p><p>Status: <strong>${statusLabel}</strong></p><p>Visit <a href="${siteUrl}">${siteUrl}</a> for event details, travel info, registry, and all the latest wedding updates.</p><p>With love,<br/>${settings?.coupleName || "Jacob & Ashley"}</p>`,
-    }).catch(() => {});
+      subject: guestSubject,
+      html: guestHtml,
+    }).catch((err: unknown) => {
+      const msg = err instanceof Error ? err.message : String(err);
+      logEmailFailure(guestEmail, guestSubject, msg);
+    });
   }
 
   return {
