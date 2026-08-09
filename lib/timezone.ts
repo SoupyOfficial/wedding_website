@@ -60,8 +60,35 @@ export function getEasternTimeOffset(dateStr: string): string {
 export function toEasternISO(dateStr: string, timeStr?: string): string {
   const clean = dateStr.slice(0, 10); // strip time component if present
   const offset = getEasternTimeOffset(clean);
-  const time = timeStr || "00:00";
+  const time = normalizeTimeString(timeStr) || "00:00";
   return `${clean}T${time}:00${offset}`;
+}
+
+/**
+ * Convert a time string to HH:MM 24-hour format.
+ * Accepts: "16:00", "4:00 PM", "4:00PM", "4:00 pm", "16:00:00"
+ */
+function normalizeTimeString(time: string | undefined): string | null {
+  if (!time) return null;
+  const t = time.trim();
+
+  const is24h = /^\d{1,2}:\d{2}$/.test(t);
+  if (is24h) {
+    const [h, m] = t.split(":").map(Number);
+    return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+  }
+
+  const isAmPm = t.match(/^(\d{1,2}):(\d{2})\s*(AM|PM|am|pm)$/i);
+  if (isAmPm) {
+    let h = Number(isAmPm[1]);
+    const m = Number(isAmPm[2]);
+    const period = isAmPm[3].toUpperCase();
+    if (period === "PM" && h !== 12) h += 12;
+    if (period === "AM" && h === 12) h = 0;
+    return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+  }
+
+  return null;
 }
 
 /**
