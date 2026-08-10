@@ -18,7 +18,8 @@
     "test:e2e:ui": "npx playwright test --ui",
     "test:e2e:sync": "npx tsx e2e/sync-test-db.ts",
     "test:e2e:history": "npx tsx e2e/rotate-results.ts",
-    "generate:types": "tsx scripts/generate-db-types.ts"
+    "generate:types": "tsx scripts/generate-db-types.ts",
+    "wipe:rsvp": "npx tsx scripts/wipe-rsvp-data.ts"
   },
   "dependencies": {
     "@libsql/client": "^0.17.0",
