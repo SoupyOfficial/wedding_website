@@ -74,10 +74,10 @@ export default function TravelThingsToDo({
                     ? "one Universal theme park ticket"
                     : `${raffleTicketCount} Universal theme park tickets`}
                 </span>{" "}
-                at the reception! Make sure to attend for your chance to win a day of fun at Universal Orlando! Purchase of raffle ticket(s) is required for entry. Winners must be present to win.
+                at the reception! Purchase raffle tickets at the reception for a chance to win! All proceeds go toward our newlywed fund. Winners must be present to win.
               </p>
               <p className="text-ivory/40 text-xs mt-2 italic">
-                Subject to availability. Details will be announced at the reception.
+                Full details announced at the reception.
               </p>
             </div>
           )}
@@ -182,10 +182,10 @@ export default function TravelThingsToDo({
                 ? "a Universal theme park ticket"
                 : `${raffleTicketCount} Universal theme park tickets`}
             </span>{" "}
-            at the reception via raffle. Make sure you&apos;re there for your chance to win!
+            at the reception via raffle. Purchase raffle tickets at the reception for a chance to win! All proceeds go toward our newlywed fund. Winners must be present to win.
           </p>
           <p className="text-ivory/40 text-xs mt-2 italic">
-            Subject to availability. Winners must be present. Raffle ticket purchase required for entry. Details will be announced at the reception.
+            Full details announced at the reception.
           </p>
         </div>
       )}

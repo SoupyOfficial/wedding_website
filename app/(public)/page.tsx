@@ -69,7 +69,7 @@ export default async function HomePage() {
           <p className="text-ivory/70 text-lg md:text-xl tracking-widest uppercase">
             {isPostWedding
               ? settings?.heroTaglinePostWedding || "We did it! 🎉"
-              : settings?.heroTagline || "We're getting married!"}
+              : settings?.heroTagline || "Written in the stars"}
           </p>
 
           {/* Couple Names */}
@@ -177,6 +177,18 @@ export default async function HomePage() {
                 ? `The first RSVPs will be entered to win: ${settings.rafflePrize}`
                 : "The first RSVPs will be entered into a special raffle — details coming soon!"}
             </p>
+          )}
+          {!isPostWedding && settings?.rafflePrize && settings.rafflePrize !== "-1" && (
+            <details className="text-ivory/60 text-sm max-w-md mx-auto mt-3 group">
+              <summary className="cursor-pointer text-gold/70 hover:text-gold transition-colors text-center">
+                How does the raffle work? ▾
+              </summary>
+              <div className="mt-3 text-left space-y-2 bg-midnight-light/50 rounded-lg p-4 border border-gold/10">
+                <p>Purchase raffle tickets at the reception for your chance to win <strong className="text-gold">{settings.rafflePrize}</strong>! All proceeds go toward our newlywed fund.</p>
+                <p>Winners will be announced during the reception — you must be present to win. Multiple entries welcome — the more tickets you buy, the better your chances!</p>
+                <p className="text-ivory/40 text-xs italic">Full details will be shared at the reception. Good luck! 🍀</p>
+              </div>
+            </details>
           )}
 
           {/* CTA Buttons */}

@@ -35,8 +35,11 @@ async function main() {
       id, coupleName, weddingDate, venueName, venueAddress, ceremonyType,
       weddingTime, receptionTime, dressCode, heroTagline, heroTaglinePostWedding, childrenPolicy,
       parkingInfo, weatherInfo, ogDescription, weddingHashtag, bannerColor,
-      unpluggedCeremonyNotice, updatedAt
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      unpluggedCeremonyNotice, rafflePrize,
+      contactPhoneAshley, contactPhoneJacob, contactPhoneMaryLorraine, contactPhoneMollie,
+      dressCodePinterestLink, dressCodeImages, ourStoryContent,
+      updatedAt
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     args: [
       "singleton",
       "Jacob & Ashley",
@@ -47,8 +50,8 @@ async function main() {
       "16:15",
       "",
       "Creative Cocktail meets Celestial Formal. Dress your best and go as crazy as you like to fit the celestial theme. Dressing on theme is encouraged but NOT required. No cream or ivory. No casual wear. The ceremony is outdoors — keep an eye on the weather.",
-      "We're getting married!",
-      "We did it! 🎉",
+      "Written in the stars",
+      "The stars aligned ✨",
       "Children are welcome! Age limits and kid-specific activities are being planned. Family members of the bridal party will be available to help supervise.",
       "Yes, free parking is available on-site at The Highland Manor.",
       "Central Florida can be warm and humid. The ceremony is outdoors, so we recommend light, breathable fabrics. The reception is indoors and air-conditioned.",
@@ -56,6 +59,34 @@ async function main() {
       "#ForeverCampbells",
       "gold",
       "We kindly ask for an unplugged ceremony — please silence phones and put cameras away so we can all be present in the moment. Our professional photographer will capture every moment!",
+      "Theme Park Tickets",
+      "954-299-0036",
+      "321-698-1359",
+      "931-303-7990",
+      "321-480-9941",
+      "https://www.pinterest.com/rachelzoeg/creative-cocktail-meets-celestial-formal/",
+      JSON.stringify([
+        "https://i.pinimg.com/736x/b3/97/47/b397479ef222e1e14ad8c51437ae74d8.jpg",
+        "https://i.pinimg.com/736x/06/70/8d/06708d6e1eadd2b8c2a452bdf7f35f7a.jpg",
+        "https://i.pinimg.com/736x/57/ef/e5/57efe5ed180b104d23ed0b8e4f62cae6.jpg",
+        "https://i.pinimg.com/736x/84/63/eb/8463eb42b06d40ed6077314cd6015e55.jpg",
+        "https://i.pinimg.com/736x/d2/85/a4/d285a4c06a296c6cdb1dd52ff467f710.jpg",
+        "https://i.pinimg.com/736x/5b/39/61/5b396152689a13694577c14e06ed752c.jpg"
+      ]),
+      `<h2>Our First Date</h2>
+<p><strong>Step 1: The selfie —</strong> Jacob posted his <em>illegal</em> locker room mirror selfie and I of course had to go out of my way to message him and threaten to report him, it had nothing to do w/ how good he looked in his uniform. ;) With this, I finally scored a date </p>
+<p><strong>Step 2: First look —</strong> I'll let Google/Apple Maps take the blame for always directing my guests to the wrong side of my apartment building, but it is the reason I get to say I laid eyes on him first, leaning against the hood of his car, waiting for me to come down the wrong stairs. And when he turned, I got to see his amazing smile in person for the first time ♡♡</p>
+<p><strong>Step 3: Sushi —</strong> The gentleman he is, Jacob let me choose our date, and I picked sushi. He was so sweet and let me eat most of what we ordered. It wasn't until much later I found out he was not a big fan of sushi</p>
+<p><strong>Step 4:</strong> When picking me up for the date, Jacob let me know he was pledging a frat and he was on 'duty' that night. This basically meant he was on call as an uber for the frat's activities that night. Little did we know how perfect this would be for keeping conversation + laughter flowing.</p>
+<p><strong>Step 5:</strong> We ended the date by hanging out at his apartment, meeting his roommates/friends, playing games and enjoying the night.</p>
+<h2>Universal</h2>
+<p>We may have matched on Tinder, but us both working at Universal had a huge impact on our relationship.</p>
+<p>The conversation that sparked our first date was started from me responding to a selfie he posted at work.</p>
+<p>Several of our first dates were at Universal, giving us lots of new experiences together and many opportunities to learn new things about each other.</p>
+<p>Our dates to Universal have never stopped. We have been lucky enough to bring both of our families, niece and nephews to the parks for fun and relaxation.</p>
+<p>Jacob pushed me to get the job I love at Universal, helping me grow so much as a person and adult.</p>
+<p>Jacob surprised me w/ a perfect engagement in front of the Universal globe followed by a wonderful engagement weekend at Universal and Volcano Bay with our families.</p>
+<p>We are getting our Engagement photos done at Epic Universe. ♡</p>`,
       now,
     ],
   });

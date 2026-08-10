@@ -33,9 +33,11 @@ export interface SiteSettings {
   postWeddingContent: string;
   childrenPolicy: string;
   parkingInfo: string;
+  accessibilityNote: string;
   weatherInfo: string;
   unpluggedCeremonyNotice: string;
   dressCodeImages: string;
+  dressCodePinterestLink: string;
   sitePasswordEnabled: boolean;
   sitePassword: string;
   notifyOnRsvp: boolean;

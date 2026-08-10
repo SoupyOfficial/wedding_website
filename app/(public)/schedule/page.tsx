@@ -40,7 +40,7 @@ export default async function SchedulePage() {
     "dayAfterBrunchDate", "dayAfterBrunchTime", "dayAfterBrunchVenue",
     "venueName", "venueAddress", "coupleName", "receptionVenue",
     "ceremonyType", "rsvpDeadline", "dressCode", "dressCodeImages", "parkingInfo",
-    "childrenPolicy", "weatherInfo", "unpluggedCeremonyNotice"
+    "childrenPolicy", "weatherInfo", "unpluggedCeremonyNotice", "dressCodePinterestLink", "accessibilityNote"
   );
 
   const timelineEvents = await query<TimelineEvent>(
@@ -203,6 +203,7 @@ export default async function SchedulePage() {
             <p className="text-gold/80 mt-4 text-sm">
               Dinner, Dancing &amp; Celebration
             </p>
+            <p className="text-ivory/70 text-sm mt-2 italic">An authentic, historic Apopka manor home with a wide wrap-around porch, elegant metal roof, and antique details both inside and out.</p>
           </div>
         </div>
 
@@ -367,6 +368,16 @@ export default async function SchedulePage() {
                 return null;
               }
             })()}
+          {settings?.dressCodePinterestLink && (
+            <a
+              href={settings.dressCodePinterestLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 text-gold/70 hover:text-gold text-sm mt-4 transition-colors"
+            >
+              📌 View dress code inspiration on Pinterest
+            </a>
+          )}
           </div>
 
           {/* Parking */}
@@ -383,10 +394,7 @@ export default async function SchedulePage() {
             <div className="text-3xl mb-3">♿</div>
             <h3 className="heading-gold text-xl mb-2">Accessibility</h3>
             <p className="text-ivory/70 text-sm">
-              The venue has accessible parking near the entrance with paved,
-              level paths. The ceremony and reception are on the same floor.
-              Accessible restrooms are available. If you need specific
-              accommodations, please let us know in your RSVP.
+              {settings?.accessibilityNote || "The venue has accessible parking near the entrance with paved, level paths. The ceremony and reception are on the same floor. Accessible restrooms are available. If you need specific accommodations, please let us know in your RSVP."}
             </p>
           </div>
 

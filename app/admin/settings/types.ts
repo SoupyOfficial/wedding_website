@@ -28,7 +28,9 @@ export interface Settings {
   parkingInfo: string;
   childrenPolicy: string;
   unpluggedCeremonyNotice: string;
+  accessibilityNote: string;
   dressCodeImages: string;
+  dressCodePinterestLink: string;
   faqContent: string;
   photoShareLink: string;
   ogImage: string;

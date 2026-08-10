@@ -11,7 +11,7 @@ export type CoupleSettings = Pick<
 
 export type VenueSettings = Pick<
   SiteSettings,
-  "venueName" | "venueAddress" | "ceremonyType" | "dressCode"
+  "venueName" | "venueAddress" | "ceremonyType" | "dressCode" | "dressCodePinterestLink"
 >;
 
 export type ContactSettings = Pick<
@@ -35,6 +35,7 @@ export type ContentSettings = Pick<
   | "postWeddingContent"
   | "childrenPolicy"
   | "parkingInfo"
+  | "accessibilityNote"
   | "weatherInfo"
   | "registryNote"
   | "entertainmentNote"
