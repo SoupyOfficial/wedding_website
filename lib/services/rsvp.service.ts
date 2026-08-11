@@ -12,6 +12,7 @@ export interface RsvpSubmitInput {
   plusOneName?: string;
   mealOptionId?: string;
   plusOneMealOptionId?: string;
+  bringingPlusOne?: boolean | null;
   songRequest?: string;
   songArtist?: string;
   danceSong?: string;
@@ -74,6 +75,7 @@ export async function lookupGuest(name: string) {
       lastName: guest.lastName,
       rsvpStatus: guest.rsvpStatus,
       plusOneAllowed: guest.plusOneAllowed,
+      plusOneAttending: guest.plusOneAttending,
       plusOneName: guest.plusOneName,
       mealPreference: guest.mealPreference,
       plusOneMealPreference: guest.plusOneMealPreference,
@@ -92,7 +94,7 @@ export async function lookupGuest(name: string) {
  * Returns null if the meal option is invalid, or the updated guest summary.
  */
 export async function submitRsvp(input: RsvpSubmitInput): Promise<{ error: string } | RsvpSubmitResult> {
-  const { guestId, attending, email, phone, dietaryNotes, plusOneName, mealOptionId, plusOneMealOptionId, songRequest, songArtist, danceSong, firstDanceSong } = input;
+  const { guestId, attending, email, phone, dietaryNotes, plusOneName, mealOptionId, plusOneMealOptionId, bringingPlusOne, songRequest, songArtist, danceSong, firstDanceSong } = input;
 
   const settings = await queryOne<{
     rsvpDeadline: string | null;
@@ -133,6 +135,7 @@ export async function submitRsvp(input: RsvpSubmitInput): Promise<{ error: strin
   if (phone) { sets.push("phone = ?"); args.push(String(phone).trim().slice(0, 30)); }
   if (dietaryNotes) { sets.push("dietaryNeeds = ?"); args.push(String(dietaryNotes).trim().slice(0, 500)); }
   if (plusOneName) { sets.push("plusOneName = ?"); args.push(String(plusOneName).trim().slice(0, 100)); }
+  if (bringingPlusOne !== undefined && bringingPlusOne !== null) { sets.push("plusOneAttending = ?"); args.push(bringingPlusOne ? 1 : 0); }
   if (mealOptionId) {
     const meal = await queryOne("SELECT id FROM MealOption WHERE id = ?", [mealOptionId]);
     if (!meal) return { error: "Invalid meal option." };

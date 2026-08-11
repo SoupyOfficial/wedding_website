@@ -18,6 +18,7 @@ interface GuestData {
   dietaryNeeds: string | null;
   plusOneName: string | null;
   plusOneAllowed: boolean;
+  plusOneAttending: boolean | null;
   rsvpRespondedAt: string | null;
   danceSong: string | null;
   firstDanceSong: string | null;
@@ -62,6 +63,7 @@ export default function RsvpClient({
   const [phone, setPhone] = useState("");
   const [dietaryNotes, setDietaryNotes] = useState("");
   const [plusOneName, setPlusOneName] = useState("");
+  const [bringingPlusOne, setBringingPlusOne] = useState<boolean | null>(null);
   const [selectedMeal, setSelectedMeal] = useState("");
   const [selectedPlusOneMeal, setSelectedPlusOneMeal] = useState("");
   const [songRequest, setSongRequest] = useState("");
@@ -104,6 +106,7 @@ export default function RsvpClient({
       setPhone(data.data.guest.phone || "");
       setDietaryNotes(data.data.guest.dietaryNeeds || "");
       setPlusOneName(data.data.guest.plusOneName || "");
+      setBringingPlusOne(data.data.guest.plusOneAttending ?? null);
       setSelectedMeal(data.data.guest.mealPreference || "");
       setSelectedPlusOneMeal(data.data.guest.plusOneMealPreference || "");
       setDanceSong(data.data.guest.danceSong || "");
@@ -152,7 +155,8 @@ export default function RsvpClient({
           email,
           phone,
           dietaryNotes,
-          plusOneName: guest.plusOneAllowed ? plusOneName : undefined,
+          plusOneName: guest.plusOneAllowed && bringingPlusOne ? plusOneName : undefined,
+          bringingPlusOne: guest.plusOneAllowed ? bringingPlusOne : undefined,
           mealOptionId: selectedMeal || undefined,
           plusOneMealOptionId: guest.plusOneAllowed ? (selectedPlusOneMeal || undefined) : undefined,
           songRequest: songRequest || undefined,
@@ -396,18 +400,49 @@ export default function RsvpClient({
 
                 {guest.plusOneAllowed && (
                   <div>
-                    <label htmlFor="rsvp-plusone" className="block text-ivory/70 text-sm mb-2">
-                      Plus One Name
+                    <label className="block text-ivory/70 text-sm mb-2">
+                      Are you bringing a plus one?
                     </label>
-                    <input
-                      id="rsvp-plusone"
-                      type="text"
-                      value={plusOneName}
-                      onChange={(e) => setPlusOneName(e.target.value)}
-                      className="input-celestial w-full"
-                      placeholder="Guest name"
-                      autoComplete="name"
-                    />
+                    <div className="flex gap-3">
+                      <button
+                        type="button"
+                        onClick={() => { setBringingPlusOne(true); setPlusOneName(plusOneName || ""); }}
+                        className={`flex-1 py-3 rounded-lg border transition-colors focus:outline-none focus:ring-2 focus:ring-gold/50 ${
+                          bringingPlusOne === true
+                            ? "bg-gold/20 border-gold text-gold"
+                            : "border-gold/20 text-ivory/50 hover:border-gold/40"
+                        }`}
+                      >
+                        Yes
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => { setBringingPlusOne(false); setPlusOneName(""); }}
+                        className={`flex-1 py-3 rounded-lg border transition-colors focus:outline-none focus:ring-2 focus:ring-gold/50 ${
+                          bringingPlusOne === false
+                            ? "bg-gold/20 border-gold text-gold"
+                            : "border-gold/20 text-ivory/50 hover:border-gold/40"
+                        }`}
+                      >
+                        No
+                      </button>
+                    </div>
+                    {bringingPlusOne && (
+                      <div className="mt-3">
+                        <label htmlFor="rsvp-plusone" className="block text-ivory/70 text-sm mb-2">
+                          Plus One Name
+                        </label>
+                        <input
+                          id="rsvp-plusone"
+                          type="text"
+                          value={plusOneName}
+                          onChange={(e) => setPlusOneName(e.target.value)}
+                          className="input-celestial w-full"
+                          placeholder="Guest name"
+                          autoComplete="name"
+                        />
+                      </div>
+                    )}
                   </div>
                 )}
 
