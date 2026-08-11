@@ -84,7 +84,7 @@ async function main() {
 <h2>Universal</h2>
 <p>They matched on Tinder, but both working at Universal had an even bigger impact. Their first conversation began when Ashley responded to a selfie Jacob posted at work. Many of their early dates were at the parks — endless new experiences and countless chances to learn about each other.</p>
 <p>Their Universal dates never stopped. Over the years, they've brought both families, nieces and nephews, to the parks for fun and relaxation. Jacob pushed Ashley to go after the job she loves there, helping her grow into the person she is today.</p>
-<p>Jacob proposed in front of the Universal globe, followed by an unforgettable weekend at Universal and Volcano Bay with their families. Now they're taking their engagement photos at Epic Universe. Full circle. ♡</p>`,
+<p>Jacob proposed in front of the Universal globe, followed by an unforgettable weekend at Universal and Volcano Bay with their families. They took their engagement photos at Epic Universe. Full circle. ♡</p>`,
       now,
     ],
   });
