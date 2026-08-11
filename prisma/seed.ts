@@ -74,19 +74,32 @@ async function main() {
         "https://i.pinimg.com/736x/5b/39/61/5b396152689a13694577c14e06ed752c.jpg"
       ]),
       `<h2>Our First Date</h2>
-<p><strong>Step 1: The selfie —</strong> Jacob posted his <em>illegal</em> locker room mirror selfie and I of course had to go out of my way to message him and threaten to report him, it had nothing to do w/ how good he looked in his uniform. ;) With this, I finally scored a date </p>
-<p><strong>Step 2: First look —</strong> I'll let Google/Apple Maps take the blame for always directing my guests to the wrong side of my apartment building, but it is the reason I get to say I laid eyes on him first, leaning against the hood of his car, waiting for me to come down the wrong stairs. And when he turned, I got to see his amazing smile in person for the first time ♡♡</p>
-<p><strong>Step 3: Sushi —</strong> The gentleman he is, Jacob let me choose our date, and I picked sushi. He was so sweet and let me eat most of what we ordered. It wasn't until much later I found out he was not a big fan of sushi</p>
-<p><strong>Step 4:</strong> When picking me up for the date, Jacob let me know he was pledging a frat and he was on 'duty' that night. This basically meant he was on call as an uber for the frat's activities that night. Little did we know how perfect this would be for keeping conversation + laughter flowing.</p>
-<p><strong>Step 5:</strong> We ended the date by hanging out at his apartment, meeting his roommates/friends, playing games and enjoying the night.</p>
+
+<h3>Step 1 — The Selfie</h3>
+<p>Jacob posted his <em>illegal</em> locker room mirror selfie, and I, of course, had to go out of my way to message him and threaten to report him. It had absolutely nothing to do with how good he looked in his uniform. ;)</p>
+<p>With that, I finally scored a date. ♡</p>
+
+<h3>Step 2 — First Look</h3>
+<p>I'll let Google Maps take the blame for always directing my guests to the wrong side of my apartment building — but it's the reason I get to say I laid eyes on him first. There he was, leaning against the hood of his car, waiting for me to come down the wrong stairs.</p>
+<p>When he turned around, I got to see his amazing smile in person for the very first time. ♡♡</p>
+
+<h3>Step 3 — Sushi</h3>
+<p>The gentleman he is, Jacob let me choose where we'd go for our first date. I picked sushi. He was so sweet — he let me eat most of what we ordered.</p>
+<p>It wasn't until much later that I found out… he's not a big fan of sushi.</p>
+
+<h3>Step 4 — The Best Uber Ride</h3>
+<p>When he picked me up, Jacob mentioned he was pledging a fraternity and was on "duty" that night — which basically meant he was on call as an Uber for whatever the frat needed. Little did we know, this would be the perfect recipe for endless conversation and nonstop laughter.</p>
+
+<h3>Step 5 — The After-Party</h3>
+<p>We ended the night at his apartment, hanging out with his roommates and friends, playing games, and just enjoying being together. The rest, as they say, is history.</p>
+
 <h2>Universal</h2>
-<p>We may have matched on Tinder, but us both working at Universal had a huge impact on our relationship.</p>
-<p>The conversation that sparked our first date was started from me responding to a selfie he posted at work.</p>
-<p>Several of our first dates were at Universal, giving us lots of new experiences together and many opportunities to learn new things about each other.</p>
-<p>Our dates to Universal have never stopped. We have been lucky enough to bring both of our families, niece and nephews to the parks for fun and relaxation.</p>
-<p>Jacob pushed me to get the job I love at Universal, helping me grow so much as a person and adult.</p>
-<p>Jacob surprised me w/ a perfect engagement in front of the Universal globe followed by a wonderful engagement weekend at Universal and Volcano Bay with our families.</p>
-<p>We are getting our Engagement photos done at Epic Universe. ♡</p>`,
+<p>We may have matched on Tinder, but both of us working at Universal had an even bigger impact on our relationship.</p>
+<p>The conversation that sparked our first date? It started with me responding to a selfie he posted at work. Several of our earliest dates were spent at Universal — giving us endless new experiences together and so many chances to learn new things about each other.</p>
+<p>Our Universal dates never stopped. Over the years, we've been lucky enough to bring both of our families, our niece and nephews, to the parks for fun and relaxation.</p>
+<p>Jacob pushed me to go after the job I now love at Universal, helping me grow more than I ever thought I could — as a person and as an adult.</p>
+<p>He surprised me with the most perfect proposal right in front of the Universal globe, followed by an unforgettable engagement weekend at Universal and Volcano Bay, surrounded by our families.</p>
+<p>And now? We're taking our engagement photos at Epic Universe. Full circle. ♡</p>`,
       now,
     ],
   });
