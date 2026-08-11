@@ -4,6 +4,7 @@ import { getSettings } from "@/lib/services/settings.service";
 import { getFeatureFlags } from "@/lib/config/feature-flags";
 import SectionDivider from "@/components/SectionDivider";
 import type { FAQ } from "@/lib/db-types";
+import { slugify } from "@/lib/slugify";
 
 interface HomeSectionsProps {
   isPostWedding: boolean;
@@ -281,14 +282,18 @@ export default async function HomeSections({ isPostWedding }: HomeSectionsProps)
 
                 <div className="grid md:grid-cols-3 gap-4 max-w-5xl mx-auto mb-8">
                   {faqs.slice(0, 3).map((faq) => (
-                    <div key={faq.id} className="card-celestial">
+                    <Link
+                      key={faq.id}
+                      href={`/faq#${slugify(faq.question)}`}
+                      className="card-celestial group hover:border-gold/40 hover:shadow-glow transition-all duration-300"
+                    >
                       <h3 className="text-gold font-serif text-base mb-2">
                         {faq.question}
                       </h3>
                       <p className="text-ivory/60 text-sm line-clamp-3">
                         {faq.answer}
                       </p>
-                    </div>
+                    </Link>
                   ))}
                 </div>
 

@@ -5,15 +5,8 @@ import { sanitizeHtml } from "@/lib/sanitize";
 import { checkFeatureFlag } from "@/lib/feature-gate";
 import { PageHeader } from "@/components/ui";
 import CopyFaqLink from "@/components/CopyFaqLink";
-
-function slugify(text: string): string {
-  return text
-    .toLowerCase()
-    .replace(/[^a-z0-9\s-]/g, "")
-    .replace(/\s+/g, "-")
-    .replace(/-+/g, "-")
-    .trim();
-}
+import FaqHashOpener from "@/components/FaqHashOpener";
+import { slugify } from "@/lib/slugify";
 
 export const metadata = {
   title: "FAQ",
@@ -89,6 +82,7 @@ export default async function FAQPage() {
           </a>
         </div>
       </div>
+      <FaqHashOpener />
     </div>
   );
 }
