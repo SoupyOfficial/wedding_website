@@ -87,7 +87,7 @@ async function main() {
 
 <h2>Snowboarding</h2>
 
-<p>Jacob taught Ashley how to snowboard — patiently, over many seasons — and it's become one of the things they look forward to most each winter. From those first shaky runs to chasing fresh powder on trips across the country, the mountains have been the backdrop for some of their favorite memories together. Whether it's a quick weekend getaway or a full week on the slopes, snowboarding is <em>their</em> adventure.</p>
+<p>Jacob taught Ashley how to snowboard — patiently, over many seasons — and it's become one of the things they look forward to most each winter. From those first shaky runs to chasing fresh powder on trips across the country, the mountains have been the backdrop for some of their favorite memories together. When Jacob broke his arm on the very first day of one trip, Ashley stepped up without hesitation — keeping spirits high, handling everything, and refusing to let him hang up his board for good. She's been helping him push through the ailments of old age ever since. (He's 29.) Whether it's a quick weekend getaway or a full week on the slopes, snowboarding is <em>their</em> adventure.</p>
 
 <h2>Universal</h2>
 
