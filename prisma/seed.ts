@@ -75,31 +75,23 @@ async function main() {
       ]),
       `<h2>Our First Date</h2>
 
-<h3>Step 1 — The Selfie</h3>
-<p>Jacob posted his <em>illegal</em> locker room mirror selfie, and I, of course, had to go out of my way to message him and threaten to report him. It had absolutely nothing to do with how good he looked in his uniform. ;)</p>
-<p>With that, I finally scored a date. ♡</p>
+<p><strong>1. The Selfie.</strong> Jacob posted his <em>illegal</em> locker room mirror selfie. Ashley, of course, went out of her way to message him and threaten to report him — it had nothing to do with how good he looked in uniform. She finally scored a date. ;)</p>
 
-<h3>Step 2 — First Look</h3>
-<p>I'll let Google Maps take the blame for always directing my guests to the wrong side of my apartment building — but it's the reason I get to say I laid eyes on him first. There he was, leaning against the hood of his car, waiting for me to come down the wrong stairs.</p>
-<p>When he turned around, I got to see his amazing smile in person for the very first time. ♡♡</p>
+<p><strong>2. First Look.</strong> Google Maps can take the blame for always directing guests to the wrong side of Ashley's apartment — but that's how she saw him first. Jacob was leaning against his car, waiting for her to come down the wrong stairs. When he turned, she saw that smile in person for the very first time.</p>
 
-<h3>Step 3 — Sushi</h3>
-<p>The gentleman he is, Jacob let me choose where we'd go for our first date. I picked sushi. He was so sweet — he let me eat most of what we ordered.</p>
-<p>It wasn't until much later that I found out… he's not a big fan of sushi.</p>
+<p><strong>3. Sushi.</strong> The gentleman he is, Jacob let Ashley pick their first date. She chose sushi. He sweetly let her eat most of what they ordered. It wasn't until much later that she found out he's not a big fan of sushi.</p>
 
-<h3>Step 4 — The Best Uber Ride</h3>
-<p>When he picked me up, Jacob mentioned he was pledging a fraternity and was on "duty" that night — which basically meant he was on call as an Uber for whatever the frat needed. Little did we know, this would be the perfect recipe for endless conversation and nonstop laughter.</p>
+<p><strong>4. The Best Uber Ride.</strong> Jacob was pledging a fraternity and on "duty" that night — meaning he was on call as a driver for whatever the frat needed. It turned out to be the perfect recipe for endless conversation and nonstop laughter.</p>
 
-<h3>Step 5 — The After-Party</h3>
-<p>We ended the night at his apartment, hanging out with his roommates and friends, playing games, and just enjoying being together. The rest, as they say, is history.</p>
+<p><strong>5. The After-Party.</strong> They ended the night at his apartment, hanging out with roommates and friends, playing games, and just enjoying each other. The rest, as they say, is history.</p>
 
 <h2>Universal</h2>
-<p>We may have matched on Tinder, but both of us working at Universal had an even bigger impact on our relationship.</p>
-<p>The conversation that sparked our first date? It started with me responding to a selfie he posted at work. Several of our earliest dates were spent at Universal — giving us endless new experiences together and so many chances to learn new things about each other.</p>
-<p>Our Universal dates never stopped. Over the years, we've been lucky enough to bring both of our families, our niece and nephews, to the parks for fun and relaxation.</p>
-<p>Jacob pushed me to go after the job I now love at Universal, helping me grow more than I ever thought I could — as a person and as an adult.</p>
-<p>He surprised me with the most perfect proposal right in front of the Universal globe, followed by an unforgettable engagement weekend at Universal and Volcano Bay, surrounded by our families.</p>
-<p>And now? We're taking our engagement photos at Epic Universe. Full circle. ♡</p>`,
+
+<p>They matched on Tinder, but both working at Universal had an even bigger impact. Their first conversation began when Ashley responded to a selfie Jacob posted at work. Many of their early dates were at the parks — endless new experiences and countless chances to learn about each other.</p>
+
+<p>Their Universal dates never stopped. Over the years, they've brought both families, nieces and nephews, to the parks for fun and relaxation. Jacob pushed Ashley to go after the job she loves there, helping her grow into the person she is today.</p>
+
+<p>Jacob proposed in front of the Universal globe, followed by an unforgettable weekend at Universal and Volcano Bay with their families. Now they're taking their engagement photos at Epic Universe. Full circle. ♡</p>`,
       now,
     ],
   });
