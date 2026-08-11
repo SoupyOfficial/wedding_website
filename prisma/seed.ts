@@ -12,16 +12,24 @@ const client = createClient({
 
 
 // ─── Production safety guard ───
-// This seed overwrites SiteSettings with defaults. Never run against production
-// without explicit intent. Set SEED_ALLOW_PRODUCTION=true to bypass this guard.
-if (process.env.TURSO_DATABASE_URL && process.env.SEED_ALLOW_PRODUCTION !== "true") {
-  console.error(
-    "\n❌ REFUSING TO SEED PRODUCTION DATABASE\n" +
-    "   TURSO_DATABASE_URL is set. This script overwrites SiteSettings\n" +
-    "   and would reset production config to seed defaults.\n" +
-    "\n   To proceed anyway: SEED_ALLOW_PRODUCTION=true npm run seed\n"
-  );
-  process.exit(1);
+// This seed inserts defaults into empty tables but never overwrites existing
+// data. Running against production without explicit intent is still blocked.
+// Test/staging Turso URLs (containing "test", "staging", or "localhost") pass
+// automatically. For real production, set the explicit opt-in:
+//   SEED_ALLOW_PRODUCTION=I_UNDERSTAND_THIS_WIPES_PRODUCTION_DATA
+const tursoUrl = process.env.TURSO_DATABASE_URL;
+if (tursoUrl) {
+  const isNonProd = /test|staging|localhost/i.test(new URL(tursoUrl).hostname);
+  const hasOptIn = process.env.SEED_ALLOW_PRODUCTION === "I_UNDERSTAND_THIS_WIPES_PRODUCTION_DATA";
+  if (!isNonProd && !hasOptIn) {
+    console.error(
+      "\n❌ REFUSING TO SEED PRODUCTION DATABASE\n" +
+      "   TURSO_DATABASE_URL is set and does not appear to be a test/staging DB.\n" +
+      "   This script inserts seed data and could affect production.\n" +
+      "\n   To proceed anyway: SEED_ALLOW_PRODUCTION=I_UNDERSTAND_THIS_WIPES_PRODUCTION_DATA npm run seed\n"
+    );
+    process.exit(1);
+  }
 }
 
 async function main() {
@@ -31,7 +39,7 @@ async function main() {
 
   // ─── Site Settings ───
   await client.execute({
-    sql: `INSERT OR REPLACE INTO SiteSettings (
+    sql: `INSERT OR IGNORE INTO SiteSettings (
       id, coupleName, weddingDate, venueName, venueAddress, ceremonyType,
       weddingTime, receptionTime, dressCode, heroTagline, heroTaglinePostWedding, childrenPolicy,
       parkingInfo, weatherInfo, ogDescription, weddingHashtag, bannerColor,
@@ -593,8 +601,8 @@ async function main() {
 
   for (const flag of featureFlags) {
     await client.execute({
-      sql: `INSERT OR REPLACE INTO FeatureFlag (id, key, enabled, description, updatedAt) VALUES (COALESCE((SELECT id FROM FeatureFlag WHERE key = ?), ?), ?, ?, ?, ?)`,
-      args: [flag.key, crypto.randomUUID(), flag.key, flag.enabled, flag.description, now],
+      sql: `INSERT OR IGNORE INTO FeatureFlag (id, key, enabled, description, updatedAt) VALUES (?, ?, ?, ?, ?)`,
+      args: [crypto.randomUUID(), flag.key, flag.enabled, flag.description, now],
     });
   }
 
@@ -707,10 +715,9 @@ async function main() {
 
   for (const template of emailTemplates) {
     await client.execute({
-      sql: `INSERT OR REPLACE INTO EmailTemplate (id, slug, name, subject, body, category, variables, isDefault, createdAt, updatedAt)
-            VALUES (COALESCE((SELECT id FROM EmailTemplate WHERE slug = ?), ?), ?, ?, ?, ?, ?, ?, ?, COALESCE((SELECT createdAt FROM EmailTemplate WHERE slug = ?), ?), ?)`,
+      sql: `INSERT OR IGNORE INTO EmailTemplate (id, slug, name, subject, body, category, variables, isDefault, createdAt, updatedAt)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       args: [
-        template.slug,
         crypto.randomUUID(),
         template.slug,
         template.name,
@@ -719,7 +726,6 @@ async function main() {
         template.category,
         template.variables,
         template.isDefault,
-        template.slug,
         now,
         now,
       ],
