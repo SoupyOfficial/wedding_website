@@ -85,6 +85,10 @@ async function main() {
 
 <p><strong>5. The After-Party.</strong> They ended the night at his apartment, hanging out with roommates and friends, playing games, and just enjoying each other. The rest, as they say, is history.</p>
 
+<h2>Snowboarding</h2>
+
+<p>Jacob taught Ashley how to snowboard — patiently, over many seasons — and it's become one of the things they look forward to most each winter. From those first shaky runs to chasing fresh powder on trips across the country, the mountains have been the backdrop for some of their favorite memories together. Whether it's a quick weekend getaway or a full week on the slopes, snowboarding is <em>their</em> adventure.</p>
+
 <h2>Universal</h2>
 
 <p>They matched on Tinder, but both working at Universal had an even bigger impact. Their first conversation began when Ashley responded to a selfie Jacob posted at work. Many of their early dates were at the parks — endless new experiences and countless chances to learn about each other.</p>
