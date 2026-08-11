@@ -36,7 +36,7 @@ export default async function OurStoryPage() {
             <div
               className="text-ivory/80 leading-relaxed space-y-6"
               dangerouslySetInnerHTML={{
-                __html: sanitizeHtml(settings.ourStoryContent.replace(/\n/g, "<br />")),
+                __html: sanitizeHtml(settings.ourStoryContent),
               }}
             />
           </div>

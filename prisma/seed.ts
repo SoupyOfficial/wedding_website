@@ -74,27 +74,16 @@ async function main() {
         "https://i.pinimg.com/736x/5b/39/61/5b396152689a13694577c14e06ed752c.jpg"
       ]),
       `<h2>Our First Date</h2>
-
 <p><strong>1. The Selfie.</strong> Jacob posted his <em>illegal</em> locker room mirror selfie. Ashley, of course, went out of her way to message him and threaten to report him — it had nothing to do with how good he looked in uniform. She finally scored a date. ;)</p>
-
 <p><strong>2. First Look.</strong> Google Maps can take the blame for always directing guests to the wrong side of Ashley's apartment — but that's how she saw him first. Jacob was leaning against his car, waiting for her to come down the wrong stairs. When he turned, she saw that smile in person for the very first time.</p>
-
 <p><strong>3. Sushi.</strong> The gentleman he is, Jacob let Ashley pick their first date. She chose sushi. He sweetly let her eat most of what they ordered. It wasn't until much later that she found out he's not a big fan of sushi.</p>
-
 <p><strong>4. The Best Uber Ride.</strong> Jacob was pledging a fraternity and on "duty" that night — meaning he was on call as a driver for whatever the frat needed. It turned out to be the perfect recipe for endless conversation and nonstop laughter.</p>
-
 <p><strong>5. The After-Party.</strong> They ended the night at his apartment, hanging out with roommates and friends, playing games, and just enjoying each other. The rest, as they say, is history.</p>
-
 <h2>Snowboarding</h2>
-
 <p>Jacob taught Ashley how to snowboard — patiently, over many seasons — and it's become one of the things they look forward to most each winter. From those first shaky runs to chasing fresh powder on trips across the country, the mountains have been the backdrop for some of their favorite memories together. When Jacob broke his arm on the very first day of one trip, Ashley stepped up without hesitation — keeping spirits high, handling everything, and refusing to let him hang up his board for good. She's been helping him push through the ailments of old age ever since. (He's 29.) Whether it's a quick weekend getaway or a full week on the slopes, snowboarding is <em>their</em> adventure.</p>
-
 <h2>Universal</h2>
-
 <p>They matched on Tinder, but both working at Universal had an even bigger impact. Their first conversation began when Ashley responded to a selfie Jacob posted at work. Many of their early dates were at the parks — endless new experiences and countless chances to learn about each other.</p>
-
 <p>Their Universal dates never stopped. Over the years, they've brought both families, nieces and nephews, to the parks for fun and relaxation. Jacob pushed Ashley to go after the job she loves there, helping her grow into the person she is today.</p>
-
 <p>Jacob proposed in front of the Universal globe, followed by an unforgettable weekend at Universal and Volcano Bay with their families. Now they're taking their engagement photos at Epic Universe. Full circle. ♡</p>`,
       now,
     ],
