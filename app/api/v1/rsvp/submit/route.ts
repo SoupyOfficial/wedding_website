@@ -16,16 +16,42 @@ export async function POST(req: NextRequest) {
     if (!enabled) return errorResponse("RSVP is currently closed.", 403);
 
     const body = await req.json();
-    const { guestId, attending } = body;
+    const {
+      guestId,
+      attending,
+      email,
+      phone,
+      dietaryNotes,
+      plusOneName,
+      bringingPlusOne,
+      songRequest,
+      songArtist,
+      danceSong,
+      firstDanceSong,
+    } = body;
 
     if (!guestId || typeof attending !== "boolean") {
       return errorResponse("Missing required fields.", 400);
     }
 
-    const result = await submitRsvp(body);
+    const result = await submitRsvp({
+      guestId,
+      attending,
+      email,
+      phone,
+      dietaryNotes,
+      plusOneName,
+      bringingPlusOne,
+      songRequest,
+      songArtist,
+      danceSong,
+      firstDanceSong,
+    });
 
     if ("error" in result) {
-      if (result.error.includes("already submitted")) return errorResponse(result.error, 409);
+      if (result.error.includes("already submitted") || result.error.includes("edit window")) {
+        return errorResponse(result.error, 409);
+      }
       const status = result.error === "Guest not found." ? 404 : 400;
       return errorResponse(result.error, status);
     }

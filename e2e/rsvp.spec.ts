@@ -12,7 +12,7 @@ test.describe("RSVP E2E", () => {
   test.beforeEach(async ({ request }) => {
     // Ensure a test guest exists via admin API (idempotent)
     const lookupRes = await request.get(
-      `/api/v1/rsvp/lookup?name=${encodeURIComponent(`${testGuest.firstName} ${testGuest.lastName}`)}`
+      `/api/v1/rsvp/lookup?firstName=${encodeURIComponent(testGuest.firstName)}&lastName=${encodeURIComponent(testGuest.lastName)}`
     );
     if (lookupRes.status() === 404) {
       await request.post("/api/v1/admin/guests", {
@@ -27,31 +27,16 @@ test.describe("RSVP E2E", () => {
     }
   });
 
-  test.beforeEach(async ({ request }) => {
-    // Ensure meal options exist
-    const mealsRes = await request.get("/api/v1/admin/meals");
-    const mealsData = await mealsRes.json();
-    if (!mealsData.data || mealsData.data.length === 0) {
-      await request.post("/api/v1/admin/meals", {
-        data: { name: "Steak", description: "Grilled steak", sortOrder: 1 },
-      });
-      await request.post("/api/v1/admin/meals", {
-        data: { name: "Salmon", description: "Pan-seared salmon", sortOrder: 2 },
-      });
-    }
-  });
-
   test("full RSVP flow — accepting", async ({ page }) => {
     await page.goto("/rsvp");
 
     // Should see the RSVP heading and lookup form
     await expect(page.locator("h1, h2").filter({ hasText: "RSVP" }).first()).toBeVisible();
-    await expect(page.getByPlaceholder("First and Last Name")).toBeVisible();
+    await expect(page.getByPlaceholder("First Name")).toBeVisible();
 
     // Fill in the guest name and submit
-    await page.getByPlaceholder("First and Last Name").fill(
-      `${testGuest.firstName} ${testGuest.lastName}`
-    );
+    await page.getByPlaceholder("First Name").fill(testGuest.firstName);
+    await page.getByPlaceholder("Last Name").fill(testGuest.lastName);
     await page.getByRole("button", { name: /Find My Invitation/i }).click();
 
     // Should navigate to details step
@@ -60,17 +45,11 @@ test.describe("RSVP E2E", () => {
     // Select "Joyfully Accept"
     await page.getByRole("button", { name: /Joyfully Accept/i }).click();
 
-    // Click Next to go to meal step
-    await page.getByRole("button", { name: /^Next$/i }).click();
-
-    // Should see meal options
-    await expect(page.getByText("Meal Selection")).toBeVisible({ timeout: 5000 });
-
-    // Click Next on meal step (skip to songs)
+    // Click Next to go to the songs step
     await page.getByRole("button", { name: /^Next$/i }).click();
 
     // Should see song request step
-    await expect(page.getByText("Song Request")).toBeVisible({ timeout: 5000 });
+    await expect(page.getByText("Song Requests")).toBeVisible({ timeout: 5000 });
 
     // Click Review
     await page.getByRole("button", { name: /Review/i }).click();
@@ -89,9 +68,8 @@ test.describe("RSVP E2E", () => {
   test("RSVP decline flow", async ({ page }) => {
     await page.goto("/rsvp");
 
-    await page.getByPlaceholder("First and Last Name").fill(
-      `${testGuest.firstName} ${testGuest.lastName}`
-    );
+    await page.getByPlaceholder("First Name").fill(testGuest.firstName);
+    await page.getByPlaceholder("Last Name").fill(testGuest.lastName);
     await page.getByRole("button", { name: /Find My Invitation/i }).click();
 
     // Should navigate to details
@@ -100,12 +78,12 @@ test.describe("RSVP E2E", () => {
     // Select "Regretfully Decline"
     await page.getByRole("button", { name: /Regretfully Decline/i }).click();
 
-    // Click Next — should skip meal/songs and go to confirm
+    // Click Next — songs are skipped when declining; go straight to confirm
     await page.getByRole("button", { name: /^Next$/i }).click();
 
     // Confirm shows "No" for attending
     await expect(page.getByText("Review Your RSVP")).toBeVisible({ timeout: 5000 });
-    await expect(page.getByText("No")).toBeVisible();
+    await expect(page.getByText("No", { exact: true })).toBeVisible();
 
     // Submit decline
     await page.getByRole("button", { name: /Submit RSVP/i }).click();
@@ -116,11 +94,12 @@ test.describe("RSVP E2E", () => {
   test("lookup with unknown name shows error", async ({ page }) => {
     await page.goto("/rsvp");
 
-    await page.getByPlaceholder("First and Last Name").fill("NonExistent Person");
+    await page.getByPlaceholder("First Name").fill("NonExistent");
+    await page.getByPlaceholder("Last Name").fill("Person");
     await page.getByRole("button", { name: /Find My Invitation/i }).click();
 
     // Should show not found error
-    await expect(page.getByText(/not found/i)).toBeVisible({ timeout: 10000 });
+    await expect(page.getByText(/couldn't find|not found/i)).toBeVisible({ timeout: 10000 });
   });
 
   test("RSVP page renders with progress steps", async ({ page }) => {
@@ -129,8 +108,8 @@ test.describe("RSVP E2E", () => {
     // Check progress indicators are rendered
     const steps = page.locator(".rounded-full");
     await expect(steps.first()).toBeVisible();
-    // Should have 5 steps
-    await expect(steps).toHaveCount(5);
+    // Should have 4 steps
+    await expect(steps).toHaveCount(4);
   });
 
   test("lookup requires valid input", async ({ page }) => {
@@ -140,9 +119,8 @@ test.describe("RSVP E2E", () => {
     const submitButton = page.getByRole("button", { name: /Find My Invitation/i });
     await expect(submitButton).toBeDisabled();
 
-    // Try with too short input
-    await page.getByPlaceholder("First and Last Name").fill("A");
-    // Button may be disabled due to minimum length check
+    // Try with only first name filled — button should be disabled
+    await page.getByPlaceholder("First Name").fill("A");
     await expect(submitButton).toBeDisabled();
   });
 });
@@ -159,6 +137,6 @@ test.describe("RSVP Public Page", () => {
   test("back to home link exists on done page (via URL)", async ({ page }) => {
     // Just verify the page structure is correct
     await page.goto("/rsvp");
-    await expect(page.getByPlaceholder("First and Last Name")).toBeVisible();
+    await expect(page.getByPlaceholder("First Name")).toBeVisible();
   });
 });

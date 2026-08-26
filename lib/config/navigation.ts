@@ -46,7 +46,6 @@ export const adminNavItems: AdminNavItem[] = [
   { href: "/admin/hotels", label: "Hotels", icon: "🏨" },
   { href: "/admin/entertainment", label: "Entertainment", icon: "🎉" },
   { href: "/admin/music", label: "Music & DJ", icon: "🎵" },
-  { href: "/admin/meals", label: "Meals", icon: "🍽️" },
   { href: "/admin/communications", label: "Communications", icon: "✉️" },
   { href: "/admin/qr-codes", label: "QR Codes", icon: "🔲" },
   { href: "/admin/budget", label: "Budget", icon: "💰" },

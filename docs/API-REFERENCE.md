@@ -51,7 +51,7 @@ Returns a filtered subset of `SiteSettings` safe for public consumption (exclude
 
 #### `POST /api/v1/rsvp/lookup`
 
-Look up a guest by name to start the RSVP flow.
+Look up a guest by full first and last name to start the RSVP flow. The match must be exact (case-insensitive). Partial names, empty names, or multiple matches return an error.
 
 **Rate limit:** 20 req/min
 
@@ -75,18 +75,14 @@ Look up a guest by name to start the RSVP flow.
       "plusOneAllowed": true,
       "plusOneName": null,
       "rsvpStatus": "pending",
-      "mealPreference": null,
       "dietaryNeeds": null,
       "songRequest": null
-    },
-    "mealOptions": [
-      { "id": "cuid", "name": "Chicken", "description": "...", "isVegetarian": false, "isVegan": false, "isGlutenFree": false }
-    ]
+    }
   }
 }
 ```
 
-**Response (not found):** `404` with `{ success: false, error: "Guest not found" }`
+**Response (not found / duplicate / empty):** `404` with `{ success: false, error: "Guest not found. Please check your spelling and contact the couple if you need help." }`
 
 ---
 
@@ -101,17 +97,15 @@ Submit or update an RSVP.
 {
   "guestId": "cuid",
   "attending": true,
-  "mealPreferenceId": "cuid",
   "dietaryNeeds": "No nuts",
   "songRequest": "Dancing Queen",
   "plusOneAttending": true,
-  "plusOneName": "Jane Smith",
-  "plusOneMealPreferenceId": "cuid"
+  "plusOneName": "Jane Smith"
 }
 ```
 
 **Notes:**
-- `attending: false` sets `rsvpStatus = "declined"`, ignores meal fields
+- `attending: false` sets `rsvpStatus = "declined"`
 - `songRequest` is optional; creates a `SongRequest` record if provided
 - Requires `rsvpEnabled` feature flag to be on
 
@@ -376,7 +370,7 @@ Toggle one or more feature flags.
 | `PUT` | `/api/v1/admin/guests/[id]` | Update a guest |
 | `DELETE` | `/api/v1/admin/guests/[id]` | Delete a guest |
 
-**Guest fields:** `firstName`, `lastName`, `email`, `phone`, `group`, `rsvpStatus`, `plusOneAllowed`, `plusOneName`, `mealPreference`, `dietaryNeeds`, `childrenCount`, `tableNumber`, `notes`
+**Guest fields:** `firstName`, `lastName`, `email`, `phone`, `rsvpStatus`, `plusOneAllowed`, `plusOneName`, `dietaryNeeds`, `childrenCount`, `tableNumber`, `notes`
 
 ---
 
@@ -517,20 +511,6 @@ Search the Apple Music catalog (requires `APPLE_MUSIC_*` env vars).
 Import all tracks from an Apple Music playlist URL.
 
 **Request body:** `{ "url": "https://music.apple.com/us/playlist/..." }`
-
----
-
-### Meals
-
-| Method | Path | Description |
-|--------|------|-------------|
-| `GET` | `/api/v1/admin/meals` | List all meal options |
-| `POST` | `/api/v1/admin/meals` | Create a meal option |
-| `GET` | `/api/v1/admin/meals/[id]` | Get a single option |
-| `PUT` | `/api/v1/admin/meals/[id]` | Update a meal option |
-| `DELETE` | `/api/v1/admin/meals/[id]` | Delete a meal option |
-
-**Fields:** `name`, `description`, `sortOrder`, `isAvailable`, `isVegetarian`, `isVegan`, `isGlutenFree`
 
 ---
 

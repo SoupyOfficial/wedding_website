@@ -509,47 +509,6 @@ async function main() {
     });
   }
 
-  // ─── Meal Options ───
-  const mealOptions = [
-    {
-      name: "Chicken",
-      description: "Herb-crusted chicken breast",
-      sortOrder: 1,
-    },
-    {
-      name: "Steak",
-      description: "Grilled filet mignon",
-      sortOrder: 2,
-    },
-    {
-      name: "Fish",
-      description: "Pan-seared salmon",
-      sortOrder: 3,
-    },
-    {
-      name: "Vegetarian",
-      description: "Garden vegetable medley",
-      sortOrder: 4,
-    },
-  ];
-
-  for (const option of mealOptions) {
-    await client.execute({
-      sql: `INSERT OR IGNORE INTO MealOption (id, name, description, sortOrder)
-            SELECT ?, ?, ?, ?
-            WHERE NOT EXISTS (
-              SELECT 1 FROM MealOption WHERE name = ?
-            )`,
-      args: [
-        crypto.randomUUID(),
-        option.name,
-        option.description,
-        option.sortOrder,
-        option.name,
-      ],
-    });
-  }
-
   // ─── Feature Flags ───
   const featureFlags = [
     {
@@ -778,7 +737,6 @@ async function main() {
     lastName: string;
     email: string | null;
     phone?: string | null;
-    group: string | null;
     rsvpStatus: string;
     plusOneAllowed: boolean;
     plusOneName?: string | null;
@@ -793,98 +751,98 @@ async function main() {
     // ── Already responded ──
     {
       firstName: "Robert", lastName: "Garcia", email: "robert.garcia@example.com", phone: "407-555-1001",
-      group: "Garcia Family", rsvpStatus: "attending", plusOneAllowed: false,
+      rsvpStatus: "attending", plusOneAllowed: false,
       dietaryNeeds: "No dairy", rsvpRespondedAt: "2026-06-01T12:00:00.000Z",
     },
     {
       firstName: "Maria", lastName: "Garcia", email: "maria.garcia@example.com", phone: "407-555-1002",
-      group: "Garcia Family", rsvpStatus: "attending", plusOneAllowed: false,
+      rsvpStatus: "attending", plusOneAllowed: false,
       rsvpRespondedAt: "2026-06-01T12:00:00.000Z",
     },
     {
       firstName: "Emily", lastName: "Chen", email: "emily.chen@example.com",
-      group: "College Friends", rsvpStatus: "attending", plusOneAllowed: true, plusOneName: "David Kim",
+      rsvpStatus: "attending", plusOneAllowed: true, plusOneName: "David Kim",
       dietaryNeeds: "Vegetarian", rsvpRespondedAt: "2026-06-03T14:30:00.000Z",
     },
     {
       firstName: "James", lastName: "Wilson", email: "james.wilson@example.com", phone: "321-555-2001",
-      group: "Work Friends", rsvpStatus: "declined", plusOneAllowed: false,
+      rsvpStatus: "declined", plusOneAllowed: false,
       rsvpRespondedAt: "2026-06-05T09:15:00.000Z",
     },
     {
       firstName: "Sarah", lastName: "Thompson", email: "sarah.t@example.com",
-      group: null, rsvpStatus: "attending", plusOneAllowed: true,
+      rsvpStatus: "attending", plusOneAllowed: true,
       dietaryNeeds: "Gluten-free", rsvpRespondedAt: "2026-06-10T16:45:00.000Z",
     },
-    // ── Pending — family groups ──
+    // ── Pending — family ──
     {
       firstName: "Patricia", lastName: "Campbell", email: "patricia.campbell@example.com", phone: "352-555-3001",
-      group: "Campbell Family", rsvpStatus: "pending", plusOneAllowed: false,
+      rsvpStatus: "pending", plusOneAllowed: false,
     },
     {
       firstName: "Michael", lastName: "Campbell", email: null, phone: "352-555-3002",
-      group: "Campbell Family", rsvpStatus: "pending", plusOneAllowed: false,
+      rsvpStatus: "pending", plusOneAllowed: false,
     },
     {
       firstName: "Linda", lastName: "Martinez", email: "linda.m@example.com",
-      group: "Martinez Family", rsvpStatus: "pending", plusOneAllowed: false, childrenCount: 2,
+      rsvpStatus: "pending", plusOneAllowed: false, childrenCount: 2,
       childrenNames: "Sofia, Diego",
     },
     {
       firstName: "Carlos", lastName: "Martinez", email: "carlos.m@example.com",
-      group: "Martinez Family", rsvpStatus: "pending", plusOneAllowed: false, childrenCount: 2,
+      rsvpStatus: "pending", plusOneAllowed: false, childrenCount: 2,
     },
     // ── Pending — friends ──
     {
       firstName: "Amanda", lastName: "Brooks", email: "amanda.brooks@example.com",
-      group: "College Friends", rsvpStatus: "pending", plusOneAllowed: true,
+      rsvpStatus: "pending", plusOneAllowed: true,
     },
     {
       firstName: "Ryan", lastName: "Taylor", email: "ryan.taylor@example.com", phone: "407-555-4001",
-      group: "College Friends", rsvpStatus: "pending", plusOneAllowed: false,
+      rsvpStatus: "pending", plusOneAllowed: false,
     },
     {
       firstName: "Jessica", lastName: "Moore", email: "jessica.moore@example.com",
-      group: "Book Club", rsvpStatus: "pending", plusOneAllowed: true,
+      rsvpStatus: "pending", plusOneAllowed: true,
     },
     {
       firstName: "Daniel", lastName: "Lee", email: "daniel.lee@example.com", phone: "321-555-5001",
-      group: "Work Friends", rsvpStatus: "pending", plusOneAllowed: false,
+      rsvpStatus: "pending", plusOneAllowed: false,
       dietaryNeeds: "Nut allergy",
     },
     {
       firstName: "Olivia", lastName: "Brown", email: null,
-      group: null, rsvpStatus: "pending", plusOneAllowed: true,
+      rsvpStatus: "pending", plusOneAllowed: true,
     },
     // ── Pending — with invite tokens (for token-based lookup testing) ──
     {
       firstName: "Thomas", lastName: "Anderson", email: "thomas.anderson@example.com",
-      group: "Neighbors", rsvpStatus: "pending", plusOneAllowed: false,
+      rsvpStatus: "pending", plusOneAllowed: false,
       inviteToken: "TK-ANDERSON-001",
     },
     {
       firstName: "Rachel", lastName: "Anderson", email: "rachel.anderson@example.com",
-      group: "Neighbors", rsvpStatus: "pending", plusOneAllowed: false,
+      rsvpStatus: "pending", plusOneAllowed: false,
       inviteToken: "TK-ANDERSON-002",
     },
     {
       firstName: "William", lastName: "Davis", email: "will.davis@example.com", phone: "407-555-6001",
-      group: "Softball Team", rsvpStatus: "pending", plusOneAllowed: true,
+      rsvpStatus: "pending", plusOneAllowed: true,
       inviteToken: "TK-DAVIS-001",
     },
     // ── Pending — extended family ──
     {
       firstName: "Barbara", lastName: "Johnson", email: null, phone: "352-555-7001",
-      group: "Johnson Family", rsvpStatus: "pending", plusOneAllowed: false,
+      rsvpStatus: "pending", plusOneAllowed: false,
     },
     {
       firstName: "Christopher", lastName: "Smith", email: "chris.smith@example.com",
-      group: null, rsvpStatus: "pending", plusOneAllowed: true, childrenCount: 1,
+      rsvpStatus: "pending", plusOneAllowed: true, childrenCount: 1,
       childrenNames: "Emma", dietaryNeeds: "No shellfish",
     },
     {
       firstName: "Megan", lastName: "Williams", email: "megan.w@example.com",
-      group: "Book Club", rsvpStatus: "pending", plusOneAllowed: false,
+      rsvpStatus: "pending", plusOneAllowed: false,
       dietaryNeeds: "Vegan",
     },
   ];
@@ -892,17 +850,17 @@ async function main() {
   for (const g of testGuests) {
     await client.execute({
       sql: `INSERT OR IGNORE INTO Guest (
-              id, firstName, lastName, email, phone, "group", rsvpStatus,
+              id, firstName, lastName, email, phone, rsvpStatus,
               plusOneAllowed, plusOneName, dietaryNeeds, childrenCount,
               childrenNames, inviteToken, rsvpRespondedAt, createdAt, updatedAt
             )
-            SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+            SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
             WHERE NOT EXISTS (
               SELECT 1 FROM Guest WHERE firstName = ? AND lastName = ?
             )`,
       args: [
         crypto.randomUUID(), g.firstName, g.lastName,
-        g.email ?? null, g.phone ?? null, g.group ?? null, g.rsvpStatus,
+        g.email ?? null, g.phone ?? null, g.rsvpStatus,
         g.plusOneAllowed ? 1 : 0, g.plusOneName ?? null, g.dietaryNeeds ?? null,
         g.childrenCount ?? 0, g.childrenNames ?? null, g.inviteToken ?? null,
         g.rsvpRespondedAt ?? null, now, now,

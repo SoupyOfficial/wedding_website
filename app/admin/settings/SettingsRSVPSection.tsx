@@ -25,6 +25,16 @@ export default function SettingsRSVPSection({ settings, onChange }: Props) {
           />
         </div>
         <div>
+          <label className="block text-ivory/70 text-sm mb-1">RSVP Edit Deadline</label>
+          <input
+            type="date"
+            value={settings.rsvpEditDeadline ? new Date(settings.rsvpEditDeadline).toISOString().slice(0, 10) : ""}
+            onChange={(e) => onChange("rsvpEditDeadline", new Date(e.target.value).toISOString())}
+            className="input-celestial w-full"
+          />
+          <p className="text-ivory/40 text-xs mt-1">Guests can no longer edit their RSVP after this date. Leave blank to allow edits up to the wedding.</p>
+        </div>
+        <div>
           <label className="block text-ivory/70 text-sm mb-1">Notification Email</label>
           <input
             type="email"

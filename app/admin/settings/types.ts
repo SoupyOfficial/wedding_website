@@ -18,6 +18,7 @@ export interface Settings {
   sitePassword: string;
   sitePasswordEnabled: boolean;
   rsvpDeadline: string | null;
+  rsvpEditDeadline: string | null;
   heroTagline: string;
   heroTaglinePostWedding: string;
   ourStoryContent: string;

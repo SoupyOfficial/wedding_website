@@ -26,7 +26,7 @@ GET guests:
   return guests[]
 
 POST guests:
-  body = { firstName, lastName, email?, group?, ... }
+  body = { firstName, lastName, email?, ... }
   INSERT Guest { id: generateId(), ...body, rsvpStatus: "pending", createdAt, updatedAt }
   emit "guest:created"
   return 201 guest
@@ -113,12 +113,6 @@ POST/PUT/DELETE: standard CRUD pattern
 // ─── Wedding Party ─────────────────────────────────────────────────
 // /admin/wedding-party + /admin/wedding-party/[id]
 // CRUD: name, role, side (bride/groom/special), relation, bio, photoUrl, sortOrder
-
-
-// ─── Meals ─────────────────────────────────────────────────────────
-// /admin/meals + /admin/meals/[id]
-// CRUD: name, description, isVegetarian, isVegan, isGlutenFree, isAvailable, sortOrder
-// toBool on dietary flags
 
 
 // ─── Registry ──────────────────────────────────────────────────────

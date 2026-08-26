@@ -22,16 +22,16 @@ The dashboard shows at a glance:
 Go to **Guests** in the sidebar.
 
 **Adding a guest:**
-Click "Add Guest" and fill in their name. Optional fields: email, phone, table number, group (e.g. "Bride's Family"), whether they're allowed a plus-one, internal notes.
+Click "Add Guest" and fill in their name. Optional fields: email, phone, table number, whether they're allowed a plus-one, internal notes.
 
 **Editing a guest:**
 Click the guest's name to open their record. You can update any field, including manually setting their RSVP status if they responded by phone.
 
 **Tracking RSVPs:**
-The guest list can be filtered by RSVP status (Pending / Attending / Declined). Each guest shows their meal preference and dietary needs once they've responded.
+The guest list can be filtered by RSVP status (Pending / Attending / Declined). Each guest shows their dietary needs once they've responded.
 
 **Allowing a plus-one:**
-Check "Plus One Allowed" on the guest's record. When that guest RSVPs, they'll see an option to add their plus-one's name and meal preference.
+Check "Plus One Allowed" on the guest's record. When that guest RSVPs, they'll see an option to add their plus-one's name.
 
 ---
 

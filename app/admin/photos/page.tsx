@@ -35,7 +35,7 @@ const TAG_COLORS = [
   "#EF4444", "#8B5CF6", "#EC4899", "#06B6D4",
 ];
 
-const CATEGORIES = ["ceremony", "reception", "preparation", "portrait", "detail", "other"];
+const CATEGORIES = ["ceremony", "reception", "preparation", "portrait", "our-story", "detail", "other"];
 
 export default function AdminPhotosPage() {
   const { data, loading, refetch } = useAdminMultiFetch<{

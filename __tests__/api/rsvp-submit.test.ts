@@ -51,6 +51,7 @@ describe("POST /api/v1/rsvp/submit", () => {
 
   const settingsRow = {
     rsvpDeadline: null as string | null,
+    rsvpEditDeadline: null as string | null,
     notifyOnRsvp: 0,
     notificationEmail: "",
     coupleName: "Test Couple",
@@ -66,7 +67,10 @@ describe("POST /api/v1/rsvp/submit", () => {
   // ── Basic validation ──
 
   it("submits an RSVP successfully", async () => {
-    mockQueryOne.mockResolvedValueOnce(null).mockResolvedValueOnce(guest);
+    mockQueryOne
+      .mockResolvedValueOnce(null)   // settings
+      .mockResolvedValueOnce(guest)  // existing guest (edit, no edit deadline)
+      .mockResolvedValueOnce(guest); // guest after update
     const res = await POST(makeReq({ guestId: "g1", attending: true }));
     const body = await res.json();
     expect(res.status).toBe(200);
@@ -75,8 +79,9 @@ describe("POST /api/v1/rsvp/submit", () => {
 
   it("submits a declining RSVP successfully", async () => {
     mockQueryOne
-      .mockResolvedValueOnce(null)
-      .mockResolvedValueOnce({ ...guest, rsvpStatus: "declined" });
+      .mockResolvedValueOnce(null)                                      // settings
+      .mockResolvedValueOnce({ ...guest, rsvpStatus: "declined" })      // existing guest (edit)
+      .mockResolvedValueOnce({ ...guest, rsvpStatus: "declined" });     // guest after update
     const res = await POST(makeReq({ guestId: "g1", attending: false }));
     expect(res.status).toBe(200);
     const body = await res.json();
@@ -85,14 +90,13 @@ describe("POST /api/v1/rsvp/submit", () => {
 
   it("submits RSVP with all optional fields", async () => {
     mockQueryOne
-      .mockResolvedValueOnce(null)
-      .mockResolvedValueOnce({ id: "m1" })
-      .mockResolvedValueOnce({ id: "m2" })
-      .mockResolvedValueOnce(guest);
+      .mockResolvedValueOnce(null)   // settings
+      .mockResolvedValueOnce(null)   // existing guest (first-time, no rsvpStatus)
+      .mockResolvedValueOnce(guest); // guest after update
     const res = await POST(makeReq({
       guestId: "g1", attending: true,
       email: "j@d.com", phone: "555-1234", dietaryNotes: "Vegan",
-      plusOneName: "Jane", mealOptionId: "m1", plusOneMealOptionId: "m2",
+      plusOneName: "Jane",
     }));
     expect(res.status).toBe(200);
   });
@@ -104,28 +108,6 @@ describe("POST /api/v1/rsvp/submit", () => {
 
   it("returns 400 when attending is not boolean", async () => {
     const res = await POST(makeReq({ guestId: "g1", attending: "yes" }));
-    expect(res.status).toBe(400);
-  });
-
-  // ── Meal option validation ──
-
-  it("returns 400 when main meal option is invalid", async () => {
-    mockQueryOne
-      .mockResolvedValueOnce(null)       // settings (no deadline)
-      .mockResolvedValueOnce(null);       // meal validation fails
-    const res = await POST(makeReq({
-      guestId: "g1", attending: true, mealOptionId: "bad-id",
-    }));
-    expect(res.status).toBe(400);
-  });
-
-  it("returns 400 when plus-one meal option is invalid", async () => {
-    mockQueryOne
-      .mockResolvedValueOnce(null)
-      .mockResolvedValueOnce(null);       // plusOneMealOptionId validation fails
-    const res = await POST(makeReq({
-      guestId: "g1", attending: true, plusOneMealOptionId: "bad-id",
-    }));
     expect(res.status).toBe(400);
   });
 
@@ -145,13 +127,17 @@ describe("POST /api/v1/rsvp/submit", () => {
   it("allows RSVP when deadline is in the future", async () => {
     mockQueryOne
       .mockResolvedValueOnce({ ...settingsRow, rsvpDeadline: "2026-12-31T00:00:00.000Z" })
-      .mockResolvedValueOnce(guest);
+      .mockResolvedValueOnce(guest)  // existing guest
+      .mockResolvedValueOnce(guest); // guest after update
     const res = await POST(makeReq({ guestId: "g1", attending: true }));
     expect(res.status).toBe(200);
   });
 
   it("allows RSVP when no deadline is set", async () => {
-    mockQueryOne.mockResolvedValueOnce(null).mockResolvedValueOnce(guest);
+    mockQueryOne
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce(guest)
+      .mockResolvedValueOnce(guest);
     const res = await POST(makeReq({ guestId: "g1", attending: true }));
     expect(res.status).toBe(200);
   });
@@ -159,6 +145,7 @@ describe("POST /api/v1/rsvp/submit", () => {
   it("allows RSVP when deadline is null in settings", async () => {
     mockQueryOne
       .mockResolvedValueOnce({ ...settingsRow, rsvpDeadline: null })
+      .mockResolvedValueOnce(guest)
       .mockResolvedValueOnce(guest);
     const res = await POST(makeReq({ guestId: "g1", attending: true }));
     expect(res.status).toBe(200);
@@ -183,30 +170,42 @@ describe("POST /api/v1/rsvp/submit", () => {
   // ── Song request (INSERT path) ──
 
   it("creates song request when attending and songRequest provided", async () => {
-    mockQueryOne.mockResolvedValueOnce(null).mockResolvedValueOnce(guest);
+    mockQueryOne
+      .mockResolvedValueOnce(null)   // settings
+      .mockResolvedValueOnce(guest)  // existing guest (edit, no edit deadline)
+      .mockResolvedValueOnce(guest)  // guest after update
+      .mockResolvedValueOnce(null);  // song lookup: not found → INSERT
     await POST(makeReq({ guestId: "g1", attending: true, songRequest: "My Song", songArtist: "Band" }));
     expect(mockExecute.mock.calls.length).toBeGreaterThanOrEqual(2);
   });
 
   it("creates song request with empty artist when not provided", async () => {
-    mockQueryOne.mockResolvedValueOnce(null).mockResolvedValueOnce(guest);
+    mockQueryOne
+      .mockResolvedValueOnce(null)   // settings
+      .mockResolvedValueOnce(guest)  // existing guest
+      .mockResolvedValueOnce(guest)  // guest after update
+      .mockResolvedValueOnce(null);  // song lookup: not found → INSERT
     await POST(makeReq({ guestId: "g1", attending: true, songRequest: "Just Title" }));
     expect(mockExecute.mock.calls.length).toBeGreaterThanOrEqual(2);
-    // Verify the artist arg is empty string
     const insertCall = mockExecute.mock.calls[mockExecute.mock.calls.length - 1];
     expect(insertCall[0]).toContain("INSERT INTO SongRequest");
   });
 
   it("does not create song request when declining", async () => {
-    mockQueryOne.mockResolvedValueOnce(null).mockResolvedValueOnce({ ...guest, rsvpStatus: "declined" });
+    mockQueryOne
+      .mockResolvedValueOnce(null)                                      // settings
+      .mockResolvedValueOnce({ ...guest, rsvpStatus: "declined" })      // existing guest (edit)
+      .mockResolvedValueOnce({ ...guest, rsvpStatus: "declined" });     // guest after update
     await POST(makeReq({ guestId: "g1", attending: false, songRequest: "My Song" }));
     expect(mockExecute).toHaveBeenCalledTimes(1);
   });
 
   it("does not create song request when attending but no songRequest", async () => {
-    mockQueryOne.mockResolvedValueOnce(null).mockResolvedValueOnce(guest);
+    mockQueryOne
+      .mockResolvedValueOnce(null)   // settings
+      .mockResolvedValueOnce(guest)  // existing guest
+      .mockResolvedValueOnce(guest); // guest after update
     await POST(makeReq({ guestId: "g1", attending: true }));
-    // Only one execute: the UPDATE
     expect(mockExecute).toHaveBeenCalledTimes(1);
   });
 
@@ -215,6 +214,7 @@ describe("POST /api/v1/rsvp/submit", () => {
   it("updates existing song request instead of inserting duplicate", async () => {
     mockQueryOne
       .mockResolvedValueOnce(null)                          // settings
+      .mockResolvedValueOnce(guest)                          // existing guest (edit)
       .mockResolvedValueOnce(guest)                          // guest after update
       .mockResolvedValueOnce({ id: "existing-song-id" });    // song lookup: found
     await POST(makeReq({ guestId: "g1", attending: true, songRequest: "Updated Song", songArtist: "New Band" }));
@@ -228,6 +228,7 @@ describe("POST /api/v1/rsvp/submit", () => {
   it("inserts song request when no existing song found", async () => {
     mockQueryOne
       .mockResolvedValueOnce(null)                          // settings
+      .mockResolvedValueOnce(guest)                          // existing guest (edit)
       .mockResolvedValueOnce(guest)                          // guest after update
       .mockResolvedValueOnce(null);                          // song lookup: not found
     await POST(makeReq({ guestId: "g1", attending: true, songRequest: "New Song", songArtist: "Band" }));
@@ -241,6 +242,7 @@ describe("POST /api/v1/rsvp/submit", () => {
   it("sends admin and guest notification emails when enabled", async () => {
     mockQueryOne
       .mockResolvedValueOnce({ ...settingsRow, notifyOnRsvp: 1, notificationEmail: "admin@test.com" })
+      .mockResolvedValueOnce(guest)  // existing guest (edit)
       .mockResolvedValueOnce({ ...guest, email: "john@test.com" });
     await POST(makeReq({ guestId: "g1", attending: true }));
     expect(mockSendEmail).toHaveBeenCalledWith(
@@ -254,9 +256,9 @@ describe("POST /api/v1/rsvp/submit", () => {
   it("does not send admin email when notifyOnRsvp is 0", async () => {
     mockQueryOne
       .mockResolvedValueOnce({ ...settingsRow, notifyOnRsvp: 0, notificationEmail: "admin@test.com" })
+      .mockResolvedValueOnce(guest)  // existing guest
       .mockResolvedValueOnce({ ...guest, email: "john@test.com" });
     await POST(makeReq({ guestId: "g1", attending: true }));
-    // Only guest email should be sent (not admin)
     const adminCall = mockSendEmail.mock.calls.find(c => c[0] && (c[0] as { to: string }).to === "admin@test.com");
     expect(adminCall).toBeUndefined();
   });
@@ -264,6 +266,7 @@ describe("POST /api/v1/rsvp/submit", () => {
   it("does not send admin email when notificationEmail is empty", async () => {
     mockQueryOne
       .mockResolvedValueOnce({ ...settingsRow, notifyOnRsvp: 1, notificationEmail: "" })
+      .mockResolvedValueOnce(guest)  // existing guest
       .mockResolvedValueOnce({ ...guest, email: "john@test.com" });
     await POST(makeReq({ guestId: "g1", attending: true }));
     const adminCall = mockSendEmail.mock.calls.find(c => c[0] && (c[0] as { to: string }).to === "");
@@ -273,9 +276,9 @@ describe("POST /api/v1/rsvp/submit", () => {
   it("does not send guest email when guest has no email", async () => {
     mockQueryOne
       .mockResolvedValueOnce({ ...settingsRow, notifyOnRsvp: 1, notificationEmail: "admin@test.com" })
+      .mockResolvedValueOnce(guest)  // existing guest
       .mockResolvedValueOnce({ ...guest, email: null });
     await POST(makeReq({ guestId: "g1", attending: true }));
-    // Only admin email should be sent
     expect(mockSendEmail).toHaveBeenCalledTimes(1);
     expect(mockSendEmail).toHaveBeenCalledWith(
       expect.objectContaining({ to: "admin@test.com" })
@@ -284,10 +287,10 @@ describe("POST /api/v1/rsvp/submit", () => {
 
   it("sends confirmation to guest even when declining", async () => {
     mockQueryOne
-      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce(null)                                      // settings
+      .mockResolvedValueOnce({ ...guest, rsvpStatus: "declined" })      // existing guest (edit)
       .mockResolvedValueOnce({ ...guest, rsvpStatus: "declined", email: "john@test.com" });
     await POST(makeReq({ guestId: "g1", attending: false }));
-    // Guest should get confirmation email regardless of status
     expect(mockSendEmail).toHaveBeenCalledWith(
       expect.objectContaining({ to: "john@test.com" })
     );
@@ -296,7 +299,8 @@ describe("POST /api/v1/rsvp/submit", () => {
   it("sends decline notification email to admin", async () => {
     mockQueryOne
       .mockResolvedValueOnce({ ...settingsRow, notifyOnRsvp: 1, notificationEmail: "admin@test.com" })
-      .mockResolvedValueOnce({ ...guest, rsvpStatus: "declined" });
+      .mockResolvedValueOnce({ ...guest, rsvpStatus: "declined" })      // existing guest (edit)
+      .mockResolvedValueOnce({ ...guest, rsvpStatus: "declined" });     // guest after update
     await POST(makeReq({ guestId: "g1", attending: false }));
     expect(mockSendEmail).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -310,6 +314,7 @@ describe("POST /api/v1/rsvp/submit", () => {
     mockSendEmail.mockRejectedValueOnce(new Error("SMTP down"));
     mockQueryOne
       .mockResolvedValueOnce({ ...settingsRow, notifyOnRsvp: 1, notificationEmail: "admin@test.com" })
+      .mockResolvedValueOnce(guest)  // existing guest
       .mockResolvedValueOnce({ ...guest, email: "john@test.com" });
     const res = await POST(makeReq({ guestId: "g1", attending: true }));
     expect(res.status).toBe(200);
@@ -317,7 +322,8 @@ describe("POST /api/v1/rsvp/submit", () => {
 
   it("uses email from request body over guest stored email", async () => {
     mockQueryOne
-      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce(null)   // settings
+      .mockResolvedValueOnce(guest)  // existing guest
       .mockResolvedValueOnce({ ...guest, email: "old@test.com" });
     await POST(makeReq({ guestId: "g1", attending: true, email: "new@test.com" }));
     expect(mockSendEmail).toHaveBeenCalledWith(
@@ -325,12 +331,13 @@ describe("POST /api/v1/rsvp/submit", () => {
     );
   });
 
-  // ── Re-submission with status change ──
+  // ── Re-submission with status change (edit allowed when no edit deadline) ──
 
   it("allows re-submitting from declined to attending", async () => {
     mockQueryOne
-      .mockResolvedValueOnce(null)
-      .mockResolvedValueOnce({ ...guest, rsvpStatus: "attending" });
+      .mockResolvedValueOnce(null)                          // settings
+      .mockResolvedValueOnce({ ...guest, rsvpStatus: "declined" })  // existing guest (edit)
+      .mockResolvedValueOnce({ ...guest, rsvpStatus: "attending" }); // guest after update
     const res = await POST(makeReq({ guestId: "g1", attending: true }));
     expect(res.status).toBe(200);
     expect(mockExecute).toHaveBeenCalledTimes(1);
@@ -338,8 +345,9 @@ describe("POST /api/v1/rsvp/submit", () => {
 
   it("allows re-submitting from attending to declined", async () => {
     mockQueryOne
-      .mockResolvedValueOnce(null)
-      .mockResolvedValueOnce({ ...guest, rsvpStatus: "declined" });
+      .mockResolvedValueOnce(null)                                      // settings
+      .mockResolvedValueOnce({ ...guest, rsvpStatus: "attending" })     // existing guest (edit)
+      .mockResolvedValueOnce({ ...guest, rsvpStatus: "declined" });     // guest after update
     const res = await POST(makeReq({ guestId: "g1", attending: false }));
     expect(res.status).toBe(200);
   });
@@ -347,20 +355,101 @@ describe("POST /api/v1/rsvp/submit", () => {
   // ── Optional field behavior ──
 
   it("submits with only phone (no email)", async () => {
-    mockQueryOne.mockResolvedValueOnce(null).mockResolvedValueOnce(guest);
+    mockQueryOne
+      .mockResolvedValueOnce(null)   // settings
+      .mockResolvedValueOnce(guest)  // existing guest
+      .mockResolvedValueOnce(guest); // guest after update
     const res = await POST(makeReq({ guestId: "g1", attending: true, phone: "555-1234" }));
     expect(res.status).toBe(200);
   });
 
   it("submits with only dietaryNotes", async () => {
-    mockQueryOne.mockResolvedValueOnce(null).mockResolvedValueOnce(guest);
+    mockQueryOne
+      .mockResolvedValueOnce(null)   // settings
+      .mockResolvedValueOnce(guest)  // existing guest
+      .mockResolvedValueOnce(guest); // guest after update
     const res = await POST(makeReq({ guestId: "g1", attending: true, dietaryNotes: "No dairy" }));
     expect(res.status).toBe(200);
   });
 
   it("submits with only plusOneName", async () => {
-    mockQueryOne.mockResolvedValueOnce(null).mockResolvedValueOnce(guest);
+    mockQueryOne
+      .mockResolvedValueOnce(null)   // settings
+      .mockResolvedValueOnce(guest)  // existing guest
+      .mockResolvedValueOnce(guest); // guest after update
     const res = await POST(makeReq({ guestId: "g1", attending: true, plusOneName: "Jane" }));
+    expect(res.status).toBe(200);
+  });
+
+  // ── RSVP edit deadline enforcement ──
+
+  it("allows edit when rsvpEditDeadline is null (guest already attending)", async () => {
+    mockQueryOne
+      .mockResolvedValueOnce({ ...settingsRow, rsvpEditDeadline: null })  // settings
+      .mockResolvedValueOnce({ ...guest, rsvpStatus: "attending" })        // existing guest (edit)
+      .mockResolvedValueOnce({ ...guest, rsvpStatus: "attending" });       // guest after update
+    const res = await POST(makeReq({ guestId: "g1", attending: true }));
+    expect(res.status).toBe(200);
+  });
+
+  it("allows edit when rsvpEditDeadline is null (guest already declined)", async () => {
+    mockQueryOne
+      .mockResolvedValueOnce({ ...settingsRow, rsvpEditDeadline: null })
+      .mockResolvedValueOnce({ ...guest, rsvpStatus: "declined" })
+      .mockResolvedValueOnce({ ...guest, rsvpStatus: "attending" });
+    const res = await POST(makeReq({ guestId: "g1", attending: true }));
+    expect(res.status).toBe(200);
+  });
+
+  it("allows edit when Eastern now is before rsvpEditDeadline", async () => {
+    mockQueryOne
+      .mockResolvedValueOnce({
+        ...settingsRow,
+        rsvpEditDeadline: "2099-12-31T00:00:00.000Z",
+      })
+      .mockResolvedValueOnce({ ...guest, rsvpStatus: "declined" })
+      .mockResolvedValueOnce({ ...guest, rsvpStatus: "attending" });
+    const res = await POST(makeReq({ guestId: "g1", attending: true }));
+    expect(res.status).toBe(200);
+  });
+
+  it("rejects edit with 409 when rsvpEditDeadline has passed (guest already attending)", async () => {
+    mockQueryOne
+      .mockResolvedValueOnce({
+        ...settingsRow,
+        rsvpEditDeadline: "2020-01-01T00:00:00.000Z",
+      })
+      .mockResolvedValueOnce({ ...guest, rsvpStatus: "attending" });  // existing guest (edit)
+    const res = await POST(makeReq({ guestId: "g1", attending: false }));
+    expect(res.status).toBe(409);
+    const body = await res.json();
+    expect(body.error).toContain("edit window");
+    expect(body.error).toContain("Jacob & Ashley");
+  });
+
+  it("rejects edit with 409 when rsvpEditDeadline has passed (guest already declined)", async () => {
+    mockQueryOne
+      .mockResolvedValueOnce({
+        ...settingsRow,
+        rsvpEditDeadline: "2020-01-01T00:00:00.000Z",
+      })
+      .mockResolvedValueOnce({ ...guest, rsvpStatus: "declined" });
+    const res = await POST(makeReq({ guestId: "g1", attending: true }));
+    expect(res.status).toBe(409);
+    const body = await res.json();
+    expect(body.error).toContain("edit window");
+  });
+
+  it("allows first-time pending submission when rsvpEditDeadline is in the past", async () => {
+    mockQueryOne
+      .mockResolvedValueOnce({
+        ...settingsRow,
+        rsvpDeadline: "2099-12-31T00:00:00.000Z",
+        rsvpEditDeadline: "2020-01-01T00:00:00.000Z",
+      })
+      .mockResolvedValueOnce(null)   // existing guest (pending → not an edit)
+      .mockResolvedValueOnce(guest); // guest after update
+    const res = await POST(makeReq({ guestId: "g1", attending: true }));
     expect(res.status).toBe(200);
   });
 

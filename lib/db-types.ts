@@ -11,6 +11,7 @@ export interface SiteSettings {
   weddingDate: string | null;
   weddingTime: string | null;
   rsvpDeadline: string | null;
+  rsvpEditDeadline: string | null;
   rsvpEnabled: boolean;
   venueName: string;
   venueAddress: string;
@@ -86,13 +87,10 @@ export interface Guest {
   lastName: string;
   email: string | null;
   phone: string | null;
-  group: string | null;
   rsvpStatus: string;
   plusOneAllowed: boolean;
   plusOneName: string | null;
   plusOneAttending: boolean;
-  mealPreference: string | null;
-  plusOneMealPreference: string | null;
   dietaryNeeds: string | null;
   songRequest: string | null;
   danceSong: string | null;
@@ -219,24 +217,6 @@ export interface Entertainment {
   sortOrder: number;
   isVisible: boolean;
 }
-
-export interface MealOption {
-  id: string;
-  name: string;
-  description: string;
-  isVegetarian: boolean;
-  isVegan: boolean;
-  isGlutenFree: boolean;
-  isAvailable: boolean;
-  sortOrder: number;
-}
-
-export const MEAL_BOOLS = [
-  "isVegetarian",
-  "isVegan",
-  "isGlutenFree",
-  "isAvailable",
-] as const;
 
 export interface SongRequest {
   id: string;

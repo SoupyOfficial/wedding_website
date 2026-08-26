@@ -1,5 +1,5 @@
-import { query, queryOne, execute, generateId, now, toBool, toBoolAll } from "@/lib/db";
-import type { Guest, MealOption } from "@/lib/db-types";
+import { query, queryOne, execute, generateId, now, toBool } from "@/lib/db";
+import type { Guest } from "@/lib/db-types";
 import { sendEmail } from "@/lib/services/email.service";
 import { isEasternPast } from "@/lib/timezone";
 
@@ -10,8 +10,6 @@ export interface RsvpSubmitInput {
   phone?: string;
   dietaryNotes?: string;
   plusOneName?: string;
-  mealOptionId?: string;
-  plusOneMealOptionId?: string;
   bringingPlusOne?: boolean | null;
   songRequest?: string;
   songArtist?: string;
@@ -25,48 +23,24 @@ export interface RsvpSubmitResult {
 }
 
 /**
- * Look up a guest by name for RSVP.
- * Returns the guest (with booleans converted) and available meal options,
- * or null if not found.
+ * Look up a guest by first and last name for RSVP.
+ * Requires both a non-empty first and last name and an exact, case-insensitive
+ * full-name match against the guest list (no partial matching).
+ * Returns the guest (with booleans converted), or null when either name is
+ * empty, no guest matches, or multiple guests share the exact same name.
  */
-export async function lookupGuest(name: string) {
-  const parts = name.trim().split(/\s+/);
-  const firstName = parts[0];
-  const lastName = parts.slice(1).join(" ");
+export async function lookupGuest(firstName: string, lastName: string) {
+  if (!firstName || !firstName.trim() || !lastName || !lastName.trim()) return null;
 
-  const guests = lastName
-    ? await query<Guest>(
-        "SELECT * FROM Guest WHERE firstName LIKE '%' || ? || '%' AND lastName LIKE '%' || ? || '%'",
-        [firstName, lastName]
-      )
-    : await query<Guest>(
-        "SELECT * FROM Guest WHERE firstName LIKE '%' || ? || '%' OR lastName LIKE '%' || ? || '%'",
-        [firstName, firstName]
-      );
+  const guests = await query<Guest>(
+    "SELECT * FROM Guest WHERE LOWER(firstName) = LOWER(?) AND LOWER(lastName) = LOWER(?)",
+    [firstName.trim(), lastName.trim()]
+  );
 
-  if (guests.length === 0) return null;
-
-  if (guests.length > 1) {
-    toBoolAll(guests, "plusOneAllowed", "plusOneAttending");
-    return {
-      matches: guests.map((g) => ({
-        id: g.id,
-        firstName: g.firstName,
-        lastName: g.lastName,
-        rsvpStatus: g.rsvpStatus,
-        group: (g as any).group || "",
-      })),
-      multiple: true,
-    };
-  }
+  if (guests.length === 0 || guests.length > 1) return null;
 
   const guest = guests[0];
   toBool(guest, "plusOneAllowed", "plusOneAttending");
-
-  const mealOptions = await query<MealOption>(
-    "SELECT * FROM MealOption WHERE isAvailable = 1 ORDER BY sortOrder ASC"
-  );
-  toBoolAll(mealOptions, "isVegetarian", "isVegan", "isGlutenFree", "isAvailable");
 
   return {
     guest: {
@@ -77,32 +51,30 @@ export async function lookupGuest(name: string) {
       plusOneAllowed: guest.plusOneAllowed,
       plusOneAttending: guest.plusOneAttending,
       plusOneName: guest.plusOneName,
-      mealPreference: guest.mealPreference,
-      plusOneMealPreference: guest.plusOneMealPreference,
       dietaryNeeds: guest.dietaryNeeds,
       songRequest: guest.songRequest,
       danceSong: guest.danceSong,
       firstDanceSong: guest.firstDanceSong,
     },
-    mealOptions,
   };
 }
 
 /**
  * Submit an RSVP for a guest.
- * Validates meal option, updates guest record, and optionally creates a song request.
- * Returns null if the meal option is invalid, or the updated guest summary.
+ * Updates the guest record and optionally creates a song request.
+ * Returns an error message or the updated guest summary.
  */
 export async function submitRsvp(input: RsvpSubmitInput): Promise<{ error: string } | RsvpSubmitResult> {
-  const { guestId, attending, email, phone, dietaryNotes, plusOneName, mealOptionId, plusOneMealOptionId, bringingPlusOne, songRequest, songArtist, danceSong, firstDanceSong } = input;
+  const { guestId, attending, email, phone, dietaryNotes, plusOneName, bringingPlusOne, songRequest, songArtist, danceSong, firstDanceSong } = input;
 
   const settings = await queryOne<{
     rsvpDeadline: string | null;
+    rsvpEditDeadline: string | null;
     notifyOnRsvp: number;
     notificationEmail: string;
     coupleName: string;
   }>(
-    "SELECT rsvpDeadline, notifyOnRsvp, notificationEmail, coupleName FROM SiteSettings WHERE id = ?",
+    "SELECT rsvpDeadline, rsvpEditDeadline, notifyOnRsvp, notificationEmail, coupleName FROM SiteSettings WHERE id = ?",
     ["singleton"]
   );
   if (settings?.rsvpDeadline) {
@@ -118,8 +90,17 @@ export async function submitRsvp(input: RsvpSubmitInput): Promise<{ error: strin
   const timestamp = now();
 
   const existingGuest = await queryOne<Guest>("SELECT rsvpSubmittedAt, rsvpStatus FROM Guest WHERE id = ?", [guestId]);
-  if (existingGuest && (existingGuest.rsvpStatus === "attending" || existingGuest.rsvpStatus === "declined")) {
-    return { error: "You've already submitted your RSVP. Contact us if you need to make changes." };
+  const isEdit = !!(existingGuest && (existingGuest.rsvpStatus === "attending" || existingGuest.rsvpStatus === "declined"));
+
+  // Edit gate: if this is a re-submission (guest already responded), check rsvpEditDeadline.
+  // First-time submissions (rsvpStatus "pending") are governed by rsvpDeadline above only.
+  if (isEdit && settings?.rsvpEditDeadline) {
+    const rawEdit = String(settings.rsvpEditDeadline);
+    const editDatePart = rawEdit.slice(0, 10);        // "YYYY-MM-DD"
+    const editTimePart = rawEdit.slice(11, 16) || "23:59"; // "HH:MM"
+    if (isEasternPast(editDatePart, editTimePart)) {
+      return { error: "The RSVP edit window has closed. Please contact Jacob & Ashley if you need to make changes." };
+    }
   }
   const isFirstRsvp = !!(attending && existingGuest && !existingGuest.rsvpSubmittedAt);
 
@@ -136,16 +117,6 @@ export async function submitRsvp(input: RsvpSubmitInput): Promise<{ error: strin
   if (dietaryNotes) { sets.push("dietaryNeeds = ?"); args.push(String(dietaryNotes).trim().slice(0, 500)); }
   if (plusOneName) { sets.push("plusOneName = ?"); args.push(String(plusOneName).trim().slice(0, 100)); }
   if (bringingPlusOne !== undefined && bringingPlusOne !== null) { sets.push("plusOneAttending = ?"); args.push(bringingPlusOne ? 1 : 0); }
-  if (mealOptionId) {
-    const meal = await queryOne("SELECT id FROM MealOption WHERE id = ?", [mealOptionId]);
-    if (!meal) return { error: "Invalid meal option." };
-    sets.push("mealPreference = ?"); args.push(mealOptionId);
-  }
-  if (plusOneMealOptionId) {
-    const meal = await queryOne("SELECT id FROM MealOption WHERE id = ?", [plusOneMealOptionId]);
-    if (!meal) return { error: "Invalid plus-one meal option." };
-    sets.push("plusOneMealPreference = ?"); args.push(plusOneMealOptionId);
-  }
   if (danceSong !== undefined) { sets.push("danceSong = ?"); args.push(String(danceSong).trim().slice(0, 200)); }
   if (firstDanceSong !== undefined) { sets.push("firstDanceSong = ?"); args.push(String(firstDanceSong).trim().slice(0, 200)); }
 

@@ -199,7 +199,6 @@ Pre-populate these sections with placeholder text that the couple fills in via a
   /app/admin/wedding-party/     → Manage party members & photos
   /app/admin/photos/            → Upload/manage gallery photos
   /app/admin/music/             → View song requests, manage love/hate lists
-  /app/admin/meal-options/      → Configure meal choices for RSVP dropdown
   /app/admin/guest-book/        → View/moderate guest book entries
   /app/admin/communications/    → Mass emails & guest messaging hub
   /app/admin/settings/          → Site settings, deadlines, links, site password
@@ -281,7 +280,6 @@ model Guest {
   plusOneAllowed   Boolean  @default(false)
   plusOneName      String?
   plusOneAttending Boolean  @default(false)
-  mealPreference  String?
   dietaryNeeds    String?
   songRequest     String?  // Guest's song request for the DJ
   childrenCount   Int      @default(0)
@@ -370,14 +368,6 @@ model GuestBookEntry {
   message   String
   isVisible Boolean  @default(true) // Admin can moderate/hide entries
   createdAt DateTime @default(now())
-}
-
-model MealOption {
-  id          String  @id @default(cuid())
-  name        String  // e.g., "Chicken", "Steak", "Fish", "Vegetarian"
-  description String  @default("") // e.g., "Herb-crusted chicken breast with..."
-  isAvailable Boolean @default(true)
-  sortOrder   Int     @default(0)
 }
 
 model SongRequest {
@@ -568,17 +558,16 @@ Each page pulls data from the database (via server components) and renders with 
 
 **RSVP (`/rsvp`):**
 
-- Step 1: Guest looks up their name (search by first + last name against `Guest` table)
-- Step 2: Confirm attendance (attending / declined)
-- Step 3: If attending:
-  - **Meal preference** — dropdown populated from `MealOption` model (admin configures choices like Chicken, Steak, Fish, Vegetarian)
-  - **Dietary needs** — free text field for allergies/restrictions
-  - **Plus-one name** (if `plusOneAllowed` is true for this guest) + plus-one meal preference
+- Step 1: Guest looks up their name (exact full-name match against the pre-uploaded `Guest` list)
+- Step 2: Confirm attendance (attending / declined) and provide details:
+  - **Contact info** — email and phone (optional)
+  - **Plus-one name** (if `plusOneAllowed` is true for this guest)
   - **Number of children + names**
-  - **Song request** — optional field: "What song will get you on the dance floor?" (title + artist). Saved to `songRequest` on Guest record and also creates a `SongRequest` entry for the admin music dashboard.
+  - **Dietary needs** — free text field for allergies/restrictions
+- Step 3: **Song request** — optional field: "What song will get you on the dance floor?" (title + artist). Saved to `songRequest` on Guest record and also creates a `SongRequest` entry for the admin music dashboard.
+- Step 4: Confirmation screen with summary of all selections
 - Shows RSVP deadline from `SiteSettings`
 - Disabled/shows message after deadline passes (or after wedding date)
-- Confirmation screen with summary of all selections
 - **RSVP email notification:** On submission, if `notifyOnRsvp` is true, sends an email to `notificationEmail` with guest name, status, and details. Use a lightweight approach: Resend (free tier, 100 emails/day), or nodemailer with a Gmail app password. Fallback: skip email, just log to DB and show new RSVPs prominently on admin dashboard.
 - Graceful error if name not found: "We couldn't find your name. Please contact us at [contact email]."
 
@@ -664,7 +653,7 @@ Protected by NextAuth.js credentials login. Single admin account (email + passwo
 
 **Guest Manager (`/admin/guests`):**
 
-- Full table of all guests with columns: Name, Email, RSVP Status, Plus One, Meal, Dietary, Children, Table #
+- Full table of all guests with columns: Name, Email, RSVP Status, Plus One, Dietary, Children, Table #
 - Search/filter by name, status, group
 - Add individual guest form
 - Bulk import via CSV upload (columns: firstName, lastName, email, group, plusOneAllowed)
@@ -713,12 +702,6 @@ Protected by NextAuth.js credentials login. Single admin account (email + passwo
 - **Songs We Love tab:** Add/edit/delete songs the couple wants played. Exportable list to share with DJ.
 - **Songs We Hate tab:** Add/edit/delete songs the couple does NOT want played. "Do Not Play" list for DJ.
 - Export all lists to CSV or printable format for DJ handoff.
-
-**Meal Options (`/admin/meal-options`):**
-
-- Add/edit/delete/reorder meal choices that appear in the RSVP dropdown
-- Fields per option: name (e.g., "Herb-Crusted Chicken"), description, available toggle
-- Summary count: how many guests selected each option
 
 **Guest Book Moderation (`/admin/guest-book`):**
 
@@ -937,8 +920,7 @@ On first run / database seed, populate:
 5. **FAQ** records: 10 default questions from the list above
 6. **Entertainment** records: Caricature artist, Photo booth, Tattoos & Glitter bar, Paint by numbers, Themed crossword, DJ & Dancing, Raffle for theme park ticket
 7. **TimelineEvent** placeholder records: Guest Arrival, Ceremony, Cocktail Hour, Reception, Bridal Party Entrance, First Dances, Dinner, Cake Cutting, Dancing, Late Night Snack, Send-Off
-8. **MealOption** placeholder records: e.g., "Chicken", "Steak", "Fish", "Vegetarian" (couple will customize via admin)
-9. **DJList** seed: empty (couple fills in via admin music page)
+8. **DJList** seed: empty (couple fills in via admin music page)
 10. **Photo** categories available: "hero", "our-story", "photos-of-us", "gallery", "wedding-party"
 11. **FeatureFlag** records: `rsvpEnabled` (true), `guestBookEnabled` (true), `photoUploadEnabled` (false), `registrySyncEnabled` (false), `songRequestsEnabled` (true), `entertainmentPageEnabled` (true), `guestPhotoSharingEnabled` (false), `liveGuestCountEnabled` (false), `massEmailEnabled` (true)
 12. **IntegrationConfig** records: `amazon-registry` (disabled, empty config — ready to configure via admin)

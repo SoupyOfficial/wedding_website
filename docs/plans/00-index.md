@@ -7,7 +7,7 @@ All plans are in this directory. Decisions captured from planning session on 202
 | # | Plan | Key Decisions | Complexity |
 |---|------|--------------|------------|
 | 01 | [Visual Seating Chart](01-visual-seating-chart.md) | Grid of table cards + drag-and-drop; printable place cards included | Medium-High |
-| 02 | [Dashboard Analytics](02-dashboard-analytics.md) | All four: RSVP rate, meal breakdown, trend chart, countdowns | Low-Medium |
+| 02 | [Dashboard Analytics](02-dashboard-analytics.md) | All four: RSVP rate, dietary needs breakdown, trend chart, countdowns | Low-Medium |
 | 03 | [Guest List Export](03-guest-list-export.md) | CSV only | Low |
 | 04 | [Budget Tracker](04-budget-tracker.md) | Optional ceiling (defaults to unset), line items only without it | Low-Medium |
 | 05 | [Vendor Manager](05-vendor-contact-manager.md) | Linked to budget line items | Low |

@@ -46,14 +46,14 @@
 │  └────────┘ └──────────┘ └──────────┘                 │
 ├─────────────────────────────────────────────────────────┤
 │                  prisma/schema.prisma                   │
-│                  26 models, SQLite                      │
+│                  25 models, SQLite                      │
 └─────────────────────────────────────────────────────────┘
 ```
 
-## Data Models (26)
+## Data Models (25)
 
 **Core:** SiteSettings (singleton, ~49 fields), Guest, WeddingPartyMember, TimelineEvent
-**Content:** FAQ, Photo, PhotoTag, Entertainment, Hotel, MealOption
+**Content:** FAQ, Photo, PhotoTag, Entertainment, Hotel
 **Interactive:** GuestBookEntry, SongRequest, DJList, ContactMessage, RegistryItem, RegistryContribution
 **System:** FeatureFlag, EmailTemplate, EmailCampaign, EmailLog, WebhookLog, IntegrationConfig, AdminActivityLog
 **Planning:** BudgetItem, Vendor, SeatingTable

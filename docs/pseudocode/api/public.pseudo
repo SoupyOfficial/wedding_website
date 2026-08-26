@@ -29,14 +29,12 @@ GET rsvp/lookup:
   name = searchParams.get("name")
   split into firstName, lastName
   
-  query Guest WHERE firstName LIKE %first% AND lastName LIKE %last%
-  IF no match → try swapped order (lastName LIKE %first%, firstName LIKE %last%)
-  IF still no match → 404 "Guest not found"
-
-  mealOptions = query all MealOption WHERE isAvailable = 1
-  toBool each meal option (MEAL_BOOLS)
+  query Guest WHERE LOWER(firstName) = LOWER(firstName) AND LOWER(lastName) = LOWER(lastName)
+  IF empty firstName or empty lastName → 404
+  IF no match → 404 "Guest not found"
+  IF multiple matches → 404 "Guest not found"
   
-  return { guest (sanitized), mealOptions }
+  return { guest (sanitized) }
 
 
 // ═══════════════════════════════════════════════════════════════════
@@ -50,17 +48,15 @@ POST rsvp/submit:
   rate limit: 5/min
 
   body = { guestId, attending, email?, phone?, dietaryNotes?,
-           plusOneName?, mealOptionId?, songRequest?, songArtist? }
+           plusOneName?, songRequest?, songArtist? }
 
   validate: guestId required, attending is boolean
   guest = queryOne Guest WHERE id = guestId → 404 if missing
 
-  IF mealOptionId → validate meal option exists
-
   // Dynamic UPDATE — build SET clause from provided fields
   UPDATE Guest SET
     rsvpStatus = attending ? "attending" : "declined"
-    email, phone, dietaryNotes, plusOneName, mealOptionId (if provided)
+    email, phone, dietaryNotes, plusOneName (if provided)
     rsvpSubmittedAt = now()
 
   // Side effect: create song request if attending + song provided

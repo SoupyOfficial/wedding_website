@@ -49,7 +49,6 @@ const BOOLS_NAMES: Record<string, string> = {
   Guest: "GUEST_BOOLS",
   FAQ: "FAQ_BOOLS",
   Photo: "PHOTO_BOOLS",
-  MealOption: "MEAL_BOOLS",
   SongRequest: "SONG_BOOLS",
   ContactMessage: "MESSAGE_BOOLS",
 };

@@ -16,16 +16,24 @@ vi.mock("@/lib/api/middleware", () => ({
   rateLimit: () => vi.fn().mockResolvedValue(null),
 }));
 
-import { queryOne, query } from "@/lib/db";
+import { query } from "@/lib/db";
 import { getFeatureFlag } from "@/lib/config/feature-flags";
 import { GET } from "@/app/api/v1/rsvp/lookup/route";
+import { lookupGuest } from "@/lib/services/rsvp.service";
 
-const mockQueryOne = vi.mocked(queryOne);
 const mockQuery = vi.mocked(query);
 const mockGetFeatureFlag = vi.mocked(getFeatureFlag);
 
-function makeReq(name: string) {
-  return new NextRequest(`http://localhost:3000/api/v1/rsvp/lookup?name=${encodeURIComponent(name)}`, {
+function makeReq(firstName: string, lastName: string) {
+  return new NextRequest(
+    `http://localhost:3000/api/v1/rsvp/lookup?firstName=${encodeURIComponent(firstName)}&lastName=${encodeURIComponent(lastName)}`,
+    { headers: { "x-forwarded-for": "127.0.0.1" } }
+  );
+}
+
+function makeReqMissing(param: "firstName" | "lastName") {
+  const qs = param === "firstName" ? "lastName=Doe" : "firstName=John";
+  return new NextRequest(`http://localhost:3000/api/v1/rsvp/lookup?${qs}`, {
     headers: { "x-forwarded-for": "127.0.0.1" },
   });
 }
@@ -37,79 +45,77 @@ describe("GET /api/v1/rsvp/lookup", () => {
     lastName: "Doe",
     rsvpStatus: "pending",
     plusOneAllowed: 1,
+    plusOneAttending: 0,
     plusOneName: null,
-    plusOneMealPreference: null,
-    mealPreference: null,
     dietaryNeeds: null,
     songRequest: null,
+    danceSong: null,
+    firstDanceSong: null,
   };
-
-  const mealOptions = [
-    { id: "m1", name: "Steak", description: "Grilled", isVegetarian: 0, isVegan: 0, isGlutenFree: 0, isAvailable: 1, sortOrder: 1 },
-    { id: "m2", name: "Salmon", description: "Pan-seared", isVegetarian: 0, isVegan: 0, isGlutenFree: 0, isAvailable: 1, sortOrder: 2 },
-  ];
 
   beforeEach(() => {
     vi.clearAllMocks();
     mockGetFeatureFlag.mockResolvedValue(true);
-    mockQuery.mockResolvedValue([]);
+    mockQuery.mockReset();
   });
 
   it("returns guest data when found", async () => {
-    mockQueryOne.mockResolvedValue(fullGuest);
-    const res = await GET(makeReq("John Doe"));
+    mockQuery.mockResolvedValueOnce([fullGuest]);
+    const res = await GET(makeReq("John", "Doe"));
     const body = await res.json();
     expect(res.status).toBe(200);
     expect(body.data.guest.firstName).toBe("John");
     expect(body.data.guest.lastName).toBe("Doe");
   });
 
-  it("returns meal options alongside guest data", async () => {
-    mockQueryOne.mockResolvedValue(fullGuest);
-    mockQuery.mockResolvedValue(mealOptions);
-    const res = await GET(makeReq("John Doe"));
-    const body = await res.json();
-    expect(res.status).toBe(200);
-    expect(body.data.mealOptions).toBeDefined();
-    expect(body.data.mealOptions.length).toBe(2);
-    expect(body.data.mealOptions[0].name).toBe("Steak");
-  });
-
-  it("returns plusOneMealPreference in guest result", async () => {
-    mockQueryOne.mockResolvedValue({
-      ...fullGuest,
-      plusOneMealPreference: "m1",
-    });
-    const res = await GET(makeReq("John Doe"));
-    const body = await res.json();
-    expect(res.status).toBe(200);
-    expect(body.data.guest.plusOneMealPreference).toBe("m1");
-  });
-
   it("returns dietaryNeeds and songRequest in guest result", async () => {
-    mockQueryOne.mockResolvedValue({
-      ...fullGuest,
-      dietaryNeeds: "Gluten-free",
-      songRequest: "Dancing Queen",
-    });
-    const res = await GET(makeReq("John Doe"));
+    mockQuery.mockResolvedValueOnce([{ ...fullGuest, dietaryNeeds: "Gluten-free", songRequest: "Dancing Queen" }]);
+    const res = await GET(makeReq("John", "Doe"));
     const body = await res.json();
     expect(body.data.guest.dietaryNeeds).toBe("Gluten-free");
     expect(body.data.guest.songRequest).toBe("Dancing Queen");
   });
 
   it("returns 404 when guest not found", async () => {
-    mockQueryOne.mockResolvedValue(null);
-    const res = await GET(makeReq("Unknown Person"));
+    mockQuery.mockResolvedValueOnce([]);
+    const res = await GET(makeReq("Unknown", "Person"));
     expect(res.status).toBe(404);
   });
 
-  it("returns 400 when name is too short", async () => {
-    const res = await GET(makeReq("A"));
+  // ── Strict name gate (guest-list lock) ──
+
+  it("returns null when firstName is empty — no guest, no query", async () => {
+    const result = await lookupGuest("", "Doe");
+    expect(result).toBeNull();
+    expect(mockQuery).not.toHaveBeenCalled();
+  });
+
+  it("returns null when lastName is whitespace-only — no guest, no query", async () => {
+    const result = await lookupGuest("John", "   ");
+    expect(result).toBeNull();
+    expect(mockQuery).not.toHaveBeenCalled();
+  });
+
+  it("returns 404 when name is not an exact match (partial name)", async () => {
+    mockQuery.mockResolvedValueOnce([]); // "Rob" does not match guest "Robert"
+    const res = await GET(makeReq("Rob", "Doe"));
+    expect(res.status).toBe(404);
+    // Exact equality only — no partial/LIKE matching
+    expect(mockQuery.mock.calls[0][0]).not.toContain("LIKE");
+    expect(mockQuery.mock.calls[0][1]).toEqual(["Rob", "Doe"]);
+  });
+
+  it("returns 400 when firstName is missing", async () => {
+    const res = await GET(makeReqMissing("firstName"));
     expect(res.status).toBe(400);
   });
 
-  it("returns 400 when name is empty", async () => {
+  it("returns 400 when lastName is missing", async () => {
+    const res = await GET(makeReqMissing("lastName"));
+    expect(res.status).toBe(400);
+  });
+
+  it("returns 400 when both params are missing", async () => {
     const req = new NextRequest("http://localhost:3000/api/v1/rsvp/lookup", {
       headers: { "x-forwarded-for": "127.0.0.1" },
     });
@@ -117,40 +123,46 @@ describe("GET /api/v1/rsvp/lookup", () => {
     expect(res.status).toBe(400);
   });
 
-  it("returns 400 when name is only whitespace", async () => {
-    const res = await GET(makeReq("  "));
+  it("returns 400 when firstName is only whitespace", async () => {
+    const res = await GET(makeReq("  ", "Doe"));
+    expect(res.status).toBe(400);
+  });
+
+  it("returns 400 when lastName is only whitespace", async () => {
+    const res = await GET(makeReq("John", "  "));
     expect(res.status).toBe(400);
   });
 
   it("returns 403 when RSVP is disabled", async () => {
     mockGetFeatureFlag.mockResolvedValue(false);
-    const res = await GET(makeReq("John Doe"));
+    const res = await GET(makeReq("John", "Doe"));
     expect(res.status).toBe(403);
   });
 
-  it("searches by first name only when no last name", async () => {
-    mockQueryOne.mockResolvedValue(fullGuest);
-    const res = await GET(makeReq("John"));
+  it("performs case-insensitive exact match", async () => {
+    mockQuery.mockResolvedValueOnce([fullGuest]);
+    const res = await GET(makeReq("john", "doe"));
+    const body = await res.json();
     expect(res.status).toBe(200);
-    expect(mockQueryOne).toHaveBeenCalled();
+    expect(body.data.guest.firstName).toBe("John");
+    // Verify the SQL used LOWER() for case-insensitivity
+    expect(mockQuery.mock.calls[0][0]).toContain("LOWER(firstName)");
+    expect(mockQuery.mock.calls[0][0]).toContain("LOWER(lastName)");
+    expect(mockQuery.mock.calls[0][1]).toEqual(["john", "doe"]);
   });
 
-  it("searches by full name with extra whitespace", async () => {
-    mockQueryOne.mockResolvedValue(fullGuest);
-    const res = await GET(makeReq("  John   Doe  "));
-    expect(res.status).toBe(200);
+  it("returns 404 when multiple guests share the exact same name", async () => {
+    mockQuery.mockResolvedValueOnce([
+      { ...fullGuest, id: "g1" },
+      { ...fullGuest, id: "g2", email: "other@test.com" },
+    ]);
+    const res = await GET(makeReq("John", "Doe"));
+    expect(res.status).toBe(404);
   });
 
   it("returns 500 on DB error", async () => {
-    mockQueryOne.mockRejectedValueOnce(new Error("db"));
-    const res = await GET(makeReq("John Doe"));
-    expect(res.status).toBe(500);
-  });
-
-  it("returns 500 when meal options query fails", async () => {
-    mockQueryOne.mockResolvedValue(fullGuest);
-    mockQuery.mockRejectedValueOnce(new Error("db error in meals"));
-    const res = await GET(makeReq("John Doe"));
+    mockQuery.mockRejectedValueOnce(new Error("db"));
+    const res = await GET(makeReq("John", "Doe"));
     expect(res.status).toBe(500);
   });
 });

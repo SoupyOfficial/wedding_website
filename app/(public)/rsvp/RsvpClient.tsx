@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { PageHeader, Alert } from "@/components/ui";
 import { formatEasternDate } from "@/lib/timezone";
 
-type Step = "lookup" | "details" | "meal" | "songs" | "confirm" | "done";
+type Step = "lookup" | "details" | "songs" | "confirm" | "done" | "locked";
 
 interface GuestData {
   id: string;
@@ -13,39 +13,24 @@ interface GuestData {
   email: string | null;
   phone: string | null;
   rsvpStatus: string;
-  mealPreference: string | null;
-  plusOneMealPreference: string | null;
   dietaryNeeds: string | null;
   plusOneName: string | null;
   plusOneAllowed: boolean;
   plusOneAttending: boolean | null;
   rsvpRespondedAt: string | null;
+  songRequest: string | null;
   danceSong: string | null;
   firstDanceSong: string | null;
 }
 
-interface MealOption {
-  id: string;
-  name: string;
-  description: string | null;
-  isVegetarian: boolean;
-  isVegan: boolean;
-  isGlutenFree: boolean;
-}
-
-interface MatchEntry {
-  id: string;
-  firstName: string;
-  lastName: string;
-  group: string;
-}
-
 export default function RsvpClient({
   rsvpDeadline,
+  rsvpEditDeadlineIso,
   rafflePrize,
   prefillName,
 }: {
   rsvpDeadline: string | null;
+  rsvpEditDeadlineIso: string | null;
   rafflePrize: string;
   prefillName?: string;
 }) {
@@ -53,48 +38,44 @@ export default function RsvpClient({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [guest, setGuest] = useState<GuestData | null>(null);
-  const [mealOptions, setMealOptions] = useState<MealOption[]>([]);
-  const [matches, setMatches] = useState<MatchEntry[]>([]);
 
   // Form states
-  const [lookupName, setLookupName] = useState("");
+  const [lookupFirstName, setLookupFirstName] = useState("");
+  const [lookupLastName, setLookupLastName] = useState("");
   const [attending, setAttending] = useState<boolean | null>(null);
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [dietaryNotes, setDietaryNotes] = useState("");
   const [plusOneName, setPlusOneName] = useState("");
   const [bringingPlusOne, setBringingPlusOne] = useState<boolean | null>(null);
-  const [selectedMeal, setSelectedMeal] = useState("");
-  const [selectedPlusOneMeal, setSelectedPlusOneMeal] = useState("");
   const [songRequest, setSongRequest] = useState("");
   const [songArtist, setSongArtist] = useState("");
   const [danceSong, setDanceSong] = useState("");
   const [firstDanceSong, setFirstDanceSong] = useState("");
   const [isFirstRsvp, setIsFirstRsvp] = useState(false);
 
-  async function performLookup(name: string) {
+  async function performLookup(firstName: string, lastName: string) {
     setLoading(true);
     setError("");
-    setMatches([]);
 
     try {
       const res = await fetch(
-        `/api/v1/rsvp/lookup?name=${encodeURIComponent(name)}`
+        `/api/v1/rsvp/lookup?firstName=${encodeURIComponent(firstName)}&lastName=${encodeURIComponent(lastName)}`
       );
       const data = await res.json();
 
-      if (!res.ok) {
-        setError(data.error || "Guest not found. Please check the name on your invitation.");
-        return;
-      }
-
-      if (data.data?.multiple) {
-        setMatches(data.data.matches);
+      if (!res.ok || !data.data?.guest) {
+        if (res.ok || res.status === 404) {
+          setError(
+            "We couldn't find your name on our guest list. Please make sure you've typed your full first and last name exactly as it appears on your invitation. If you're still having trouble, please contact Jacob & Ashley."
+          );
+        } else {
+          setError(data.error || "Something went wrong. Please try again.");
+        }
         return;
       }
 
       setGuest(data.data.guest);
-      setMealOptions(data.data.mealOptions || []);
       setAttending(
         data.data.guest.rsvpStatus === "attending"
           ? true
@@ -107,11 +88,17 @@ export default function RsvpClient({
       setDietaryNotes(data.data.guest.dietaryNeeds || "");
       setPlusOneName(data.data.guest.plusOneName || "");
       setBringingPlusOne(data.data.guest.plusOneAttending ?? null);
-      setSelectedMeal(data.data.guest.mealPreference || "");
-      setSelectedPlusOneMeal(data.data.guest.plusOneMealPreference || "");
+      setSongRequest(data.data.guest.songRequest || "");
       setDanceSong(data.data.guest.danceSong || "");
       setFirstDanceSong(data.data.guest.firstDanceSong || "");
-      setStep("details");
+
+      const responded = !!data.data.guest.rsvpRespondedAt;
+      const editDeadlinePassed = !!rsvpEditDeadlineIso && new Date(rsvpEditDeadlineIso).getTime() <= Date.now();
+      if (responded && editDeadlinePassed) {
+        setStep("locked");
+      } else {
+        setStep("details");
+      }
     } catch {
       setError("Something went wrong. Please try again.");
     } finally {
@@ -121,12 +108,7 @@ export default function RsvpClient({
 
   async function handleLookup(e: React.FormEvent) {
     e.preventDefault();
-    await performLookup(lookupName);
-  }
-
-  async function selectMatch(match: MatchEntry) {
-    setLookupName(`${match.firstName} ${match.lastName}`);
-    await performLookup(`${match.firstName} ${match.lastName}`);
+    await performLookup(lookupFirstName, lookupLastName);
   }
 
   const prefillDone = useRef(false);
@@ -134,8 +116,15 @@ export default function RsvpClient({
   useEffect(() => {
     if (prefillName && !prefillDone.current) {
       prefillDone.current = true;
-      setLookupName(prefillName);
-      performLookup(prefillName);
+      const trimmed = prefillName.trim();
+      const spaceIdx = trimmed.indexOf(" ");
+      if (spaceIdx > 0) {
+        const first = trimmed.slice(0, spaceIdx);
+        const last = trimmed.slice(spaceIdx + 1).trim();
+        setLookupFirstName(first);
+        setLookupLastName(last);
+        performLookup(first, last);
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [prefillName]);
@@ -157,8 +146,6 @@ export default function RsvpClient({
           dietaryNotes,
           plusOneName: guest.plusOneAllowed && bringingPlusOne ? plusOneName : undefined,
           bringingPlusOne: guest.plusOneAllowed ? bringingPlusOne : undefined,
-          mealOptionId: selectedMeal || undefined,
-          plusOneMealOptionId: guest.plusOneAllowed ? (selectedPlusOneMeal || undefined) : undefined,
           songRequest: songRequest || undefined,
           songArtist: songArtist || undefined,
           danceSong: danceSong || undefined,
@@ -209,23 +196,23 @@ export default function RsvpClient({
         )}
 
         {/* Progress Steps */}
-        {step !== "done" && (
+        {step !== "done" && step !== "locked" && (
           <div className="flex justify-center items-center gap-2 mb-12 max-w-md mx-auto">
-            {(["lookup", "details", "meal", "songs", "confirm"] as Step[]).map(
+            {(["lookup", "details", "songs", "confirm"] as Step[]).map(
               (s, i) => (
                 <div key={s} className="flex items-center gap-2">
                   <div
                     className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-colors ${
                       step === s
                         ? "bg-gold text-midnight"
-                        : (["lookup", "details", "meal", "songs", "confirm"] as Step[]).indexOf(step) > i
+                        : (["lookup", "details", "songs", "confirm"] as Step[]).indexOf(step) > i
                         ? "bg-gold/30 text-gold"
                         : "bg-royal/50 text-ivory/40"
                     }`}
                   >
                     {i + 1}
                   </div>
-                  {i < 4 && (
+                  {i < 3 && (
                     <div className="w-6 h-px bg-gold/20" />
                   )}
                 </div>
@@ -242,7 +229,7 @@ export default function RsvpClient({
         )}
 
         {/* Step 1: Lookup */}
-        {step === "lookup" && matches.length === 0 && (
+        {step === "lookup" && (
           <div className="max-w-md mx-auto animate-fade-in-up">
             <div className="card-celestial">
               <h2 className="text-gold font-serif text-2xl text-center mb-6">
@@ -250,23 +237,38 @@ export default function RsvpClient({
               </h2>
               <form onSubmit={handleLookup}>
                 <div className="mb-4">
-                  <label htmlFor="rsvp-lookup-name" className="block text-ivory/70 text-sm mb-2">
-                    Enter your name as it appears on your invitation
+                  <label htmlFor="rsvp-lookup-first" className="block text-ivory/70 text-sm mb-2">
+                    First Name
                   </label>
                   <input
-                    id="rsvp-lookup-name"
+                    id="rsvp-lookup-first"
                     type="text"
-                    value={lookupName}
-                    onChange={(e) => setLookupName(e.target.value)}
-                    placeholder="First and Last Name"
+                    value={lookupFirstName}
+                    onChange={(e) => setLookupFirstName(e.target.value)}
+                    placeholder="First Name"
                     className="input-celestial w-full"
-                    autoComplete="name"
+                    autoComplete="given-name"
+                    required
+                  />
+                </div>
+                <div className="mb-4">
+                  <label htmlFor="rsvp-lookup-last" className="block text-ivory/70 text-sm mb-2">
+                    Last Name
+                  </label>
+                  <input
+                    id="rsvp-lookup-last"
+                    type="text"
+                    value={lookupLastName}
+                    onChange={(e) => setLookupLastName(e.target.value)}
+                    placeholder="Last Name"
+                    className="input-celestial w-full"
+                    autoComplete="family-name"
                     required
                   />
                 </div>
                 <button
                   type="submit"
-                  disabled={loading || !lookupName.trim()}
+                  disabled={loading || !lookupFirstName.trim() || !lookupLastName.trim()}
                   className="btn-gold w-full py-3 disabled:opacity-50"
                 >
                   {loading ? "Searching..." : "Find My Invitation"}
@@ -282,44 +284,6 @@ export default function RsvpClient({
                 </a>{" "}
                 for event details, travel info, and our registry.
               </p>
-            </div>
-          </div>
-        )}
-
-        {/* Multi-Match Selection */}
-        {step === "lookup" && matches.length > 0 && (
-          <div className="max-w-md mx-auto animate-fade-in-up">
-            <div className="card-celestial">
-              <h2 className="text-gold font-serif text-2xl text-center mb-2">
-                Multiple Matches Found
-              </h2>
-              <p className="text-center text-ivory/50 text-sm mb-6">
-                We found multiple guests matching your search. Please select your name:
-              </p>
-              <div className="space-y-3 mb-4">
-                {matches.map((match) => (
-                  <button
-                    key={match.id}
-                    type="button"
-                    onClick={() => selectMatch(match)}
-                    className="w-full text-left p-4 rounded-lg border border-gold/20 hover:border-gold/40 transition-colors focus:outline-none focus:ring-2 focus:ring-gold/50"
-                  >
-                    <span className="text-gold font-serif">
-                      {match.firstName} {match.lastName}
-                    </span>
-                    <span className="block text-ivory/40 text-sm mt-1">
-                      {match.group}
-                    </span>
-                  </button>
-                ))}
-              </div>
-              <button
-                type="button"
-                onClick={() => setMatches([])}
-                className="btn-outline w-full py-2 text-sm"
-              >
-                Try Different Name
-              </button>
             </div>
           </div>
         )}
@@ -450,6 +414,24 @@ export default function RsvpClient({
                   Plus ones are by invite only. All those invited will be addressed by name on your invitation.
                 </p>
 
+                {attending && (
+                  <div>
+                    <label htmlFor="rsvp-dietary" className="block text-ivory/70 text-sm mb-2">
+                      Dietary Restrictions / Allergies
+                    </label>
+                    <textarea
+                      id="rsvp-dietary"
+                      value={dietaryNotes}
+                      onChange={(e) => setDietaryNotes(e.target.value)}
+                      className="input-celestial w-full h-20 resize-none"
+                      placeholder="Any allergies or dietary needs..."
+                    />
+                    <p className="text-ivory/40 text-xs italic mt-2">
+                      Dinner will be served buffet-style. Please let us know about any allergies or dietary restrictions.
+                    </p>
+                  </div>
+                )}
+
                 <div className="flex gap-3 pt-2">
                   <button
                     type="button"
@@ -469,7 +451,7 @@ export default function RsvpClient({
                       if (attending === false) {
                         setStep("confirm");
                       } else {
-                        setStep("meal");
+                        setStep("songs");
                       }
                     }}
                     className="btn-gold flex-1 py-3"
@@ -482,124 +464,7 @@ export default function RsvpClient({
           </div>
         )}
 
-        {/* Step 3: Meal Selection */}
-        {step === "meal" && guest && (
-          <div className="max-w-md mx-auto animate-fade-in-up">
-            <div className="card-celestial">
-              <h2 className="text-gold font-serif text-2xl text-center mb-6">
-                Meal Selection
-              </h2>
-              <div className="space-y-3 mb-4">
-                {mealOptions.map((meal) => (
-                  <button
-                    key={meal.id}
-                    type="button"
-                    onClick={() => setSelectedMeal(meal.id)}
-                    className={`w-full text-left p-4 rounded-lg border transition-colors focus:outline-none focus:ring-2 focus:ring-gold/50 ${
-                      selectedMeal === meal.id
-                        ? "bg-gold/20 border-gold"
-                        : "border-gold/20 hover:border-gold/40"
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="text-gold font-serif">{meal.name}</span>
-                      <div className="flex gap-1">
-                        {meal.isVegetarian && (
-                          <span className="text-xs bg-green-900/30 text-green-400 px-2 py-0.5 rounded">
-                            V
-                          </span>
-                        )}
-                        {meal.isVegan && (
-                          <span className="text-xs bg-green-900/30 text-green-400 px-2 py-0.5 rounded">
-                            VG
-                          </span>
-                        )}
-                        {meal.isGlutenFree && (
-                          <span className="text-xs bg-yellow-900/30 text-yellow-400 px-2 py-0.5 rounded">
-                            GF
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    {meal.description && (
-                      <p className="text-ivory/50 text-sm mt-1">
-                        {meal.description}
-                      </p>
-                    )}
-                  </button>
-                ))}
-              </div>
-
-              {guest.plusOneAllowed && (
-                <div className="mb-4">
-                  <h3 className="text-gold/80 font-serif text-sm mb-3">
-                    Plus One Meal ({plusOneName || "Guest"})
-                  </h3>
-                  <div className="space-y-2">
-                    {mealOptions.map((meal) => (
-                      <button
-                        key={`plusone-${meal.id}`}
-                        type="button"
-                        onClick={() => setSelectedPlusOneMeal(meal.id)}
-                        className={`w-full text-left p-3 rounded-lg border transition-colors focus:outline-none focus:ring-2 focus:ring-gold/50 ${
-                          selectedPlusOneMeal === meal.id
-                            ? "bg-gold/20 border-gold"
-                            : "border-gold/20 hover:border-gold/40"
-                        }`}
-                      >
-                        <div className="flex items-center justify-between">
-                          <span className="text-gold font-serif text-sm">{meal.name}</span>
-                          <div className="flex gap-1">
-                            {meal.isVegetarian && (
-                              <span className="text-xs bg-green-900/30 text-green-400 px-2 py-0.5 rounded">V</span>
-                            )}
-                            {meal.isVegan && (
-                              <span className="text-xs bg-green-900/30 text-green-400 px-2 py-0.5 rounded">VG</span>
-                            )}
-                            {meal.isGlutenFree && (
-                              <span className="text-xs bg-yellow-900/30 text-yellow-400 px-2 py-0.5 rounded">GF</span>
-                            )}
-                          </div>
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              <div className="mb-4">
-                <label className="block text-ivory/70 text-sm mb-2">
-                  Dietary Restrictions / Allergies
-                </label>
-                <textarea
-                  value={dietaryNotes}
-                  onChange={(e) => setDietaryNotes(e.target.value)}
-                  className="input-celestial w-full h-20 resize-none"
-                  placeholder="Any allergies or dietary needs..."
-                />
-              </div>
-
-              <div className="flex gap-3">
-                <button
-                  type="button"
-                  onClick={() => setStep("details")}
-                  className="btn-outline flex-1 py-3"
-                >
-                  Back
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setStep("songs")}
-                  className="btn-gold flex-1 py-3"
-                >
-                  Next
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Step 4: Song Requests */}
+        {/* Step 3: Song Requests */}
         {step === "songs" && (
           <div className="max-w-md mx-auto animate-fade-in-up">
             <div className="card-celestial">
@@ -669,7 +534,7 @@ export default function RsvpClient({
               <div className="flex gap-3">
                 <button
                   type="button"
-                  onClick={() => setStep("meal")}
+                  onClick={() => setStep("details")}
                   className="btn-outline flex-1 py-3"
                 >
                   Back
@@ -686,7 +551,7 @@ export default function RsvpClient({
           </div>
         )}
 
-        {/* Step 5: Confirm */}
+        {/* Step 4: Confirm */}
         {step === "confirm" && guest && (
           <div className="max-w-md mx-auto animate-fade-in-up">
             <div className="card-celestial">
@@ -707,22 +572,6 @@ export default function RsvpClient({
                     {attending ? "Yes" : "No"}
                   </span>
                 </div>
-                {attending && selectedMeal && (
-                  <div className="flex justify-between py-2 border-b border-gold/10">
-                    <span className="text-ivory/50">Meal</span>
-                    <span className="text-ivory">
-                      {mealOptions.find((m) => m.id === selectedMeal)?.name || "Selected"}
-                    </span>
-                  </div>
-                )}
-                {attending && guest.plusOneAllowed && selectedPlusOneMeal && (
-                  <div className="flex justify-between py-2 border-b border-gold/10">
-                    <span className="text-ivory/50">Plus-One Meal</span>
-                    <span className="text-ivory">
-                      {mealOptions.find((m) => m.id === selectedPlusOneMeal)?.name || "Selected"}
-                    </span>
-                  </div>
-                )}
                 {attending && dietaryNotes && (
                   <div className="flex justify-between py-2 border-b border-gold/10">
                     <span className="text-ivory/50">Dietary Notes</span>
@@ -779,6 +628,79 @@ export default function RsvpClient({
                   {loading ? "Submitting..." : "Submit RSVP"}
                 </button>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* Locked — RSVP edit window has closed */}
+        {step === "locked" && guest && (
+          <div className="max-w-md mx-auto animate-fade-in-up">
+            <div className="card-celestial">
+              <h2 className="text-gold font-serif text-2xl text-center mb-2">
+                Your RSVP
+              </h2>
+              <p className="text-center text-gold/60 text-sm mb-6">
+                {guest.firstName} {guest.lastName}
+              </p>
+
+              <div className="space-y-3 mb-6">
+                <div className="flex justify-between py-2 border-b border-gold/10">
+                  <span className="text-ivory/50">Status</span>
+                  <span className={guest.rsvpStatus === "attending" ? "text-green-400" : "text-red-400"}>
+                    {guest.rsvpStatus === "attending" ? "Joyfully Attending" : "Regretfully Declined"}
+                  </span>
+                </div>
+                {guest.rsvpStatus === "attending" && guest.dietaryNeeds && (
+                  <div className="flex justify-between py-2 border-b border-gold/10">
+                    <span className="text-ivory/50">Dietary Notes</span>
+                    <span className="text-ivory text-right max-w-[200px]">
+                      {guest.dietaryNeeds}
+                    </span>
+                  </div>
+                )}
+                {guest.rsvpStatus === "attending" && guest.plusOneAllowed && guest.plusOneName && (
+                  <div className="flex justify-between py-2 border-b border-gold/10">
+                    <span className="text-ivory/50">Plus One</span>
+                    <span className="text-ivory">{guest.plusOneName}</span>
+                  </div>
+                )}
+                {guest.rsvpStatus === "attending" && guest.songRequest && (
+                  <div className="flex justify-between py-2 border-b border-gold/10">
+                    <span className="text-ivory/50">Song</span>
+                    <span className="text-ivory text-right">{guest.songRequest}</span>
+                  </div>
+                )}
+                {guest.rsvpStatus === "attending" && guest.danceSong && (
+                  <div className="flex justify-between py-2 border-b border-gold/10">
+                    <span className="text-ivory/50">Dance Floor Song</span>
+                    <span className="text-ivory text-right">{guest.danceSong}</span>
+                  </div>
+                )}
+                {guest.rsvpStatus === "attending" && guest.firstDanceSong && (
+                  <div className="flex justify-between py-2 border-b border-gold/10">
+                    <span className="text-ivory/50">First Dance Song</span>
+                    <span className="text-ivory text-right">{guest.firstDanceSong}</span>
+                  </div>
+                )}
+              </div>
+
+              <div className="text-center mb-6">
+                <p className="text-ivory/60 text-sm">
+                  The RSVP edit window has closed. Please contact Jacob &amp; Ashley if you need to make changes.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setGuest(null);
+                  setStep("lookup");
+                  setError("");
+                }}
+                className="btn-outline w-full py-3"
+              >
+                Look Up a Different Name
+              </button>
             </div>
           </div>
         )}

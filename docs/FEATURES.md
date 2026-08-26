@@ -20,15 +20,14 @@ The hero tagline automatically swaps to `heroTaglinePostWedding` after the weddi
 Multi-step form controlled by the `rsvpEnabled` feature flag and an optional `rsvpDeadline` date.
 
 **Flow:**
-1. Guest enters first + last name → looked up in the Guests table by the `/api/v1/rsvp/lookup` endpoint
+1. Guest enters first + last name → looked up in the Guests table by the `/api/v1/rsvp/lookup` endpoint. Must be an exact full-name match (case-insensitive). Partial names, duplicates, or empty names are blocked.
 2. Guest confirms attendance (attending / declining)
-3. If attending: selects a meal option from the available `MealOption` records
-4. Guest can add dietary needs and optionally request a song
-5. If the guest has `plusOneAllowed = true`, they can add a plus-one name and meal choice
-6. On submit, the `Guest` record is updated: `rsvpStatus`, `mealPreference`, `dietaryNeeds`, `songRequest`, plus-one fields
+3. If attending: guest can add dietary needs (buffet service) and optionally request a song
+4. If the guest has `plusOneAllowed = true`, they can add a plus-one name
+5. On submit, the `Guest` record is updated: `rsvpStatus`, `dietaryNeeds`, `songRequest`, plus-one fields
 
 **Edge cases:**
-- Name not found → error message, guest told to contact the couple
+- Name not found, duplicate match, or empty name → error message directing guest to check spelling and contact the couple
 - RSVP deadline passed → form is replaced with a message
 - `rsvpEnabled` flag is off → `<PageDisabled />` shown instead of page
 - If the guest already responded → their existing answers are pre-filled
@@ -171,7 +170,7 @@ Summary cards:
 
 Full CRUD on the `Guest` table:
 - Add guests individually or import a list
-- Filter by RSVP status, group, or meal choice
+- Filter by RSVP status or dietary needs
 - Edit any field (name, email, plus-one allowed, table number, notes)
 - Delete guests
 - View dietary needs summary
@@ -221,12 +220,6 @@ Manage the entertainment lineup shown on the Entertainment page:
 - **DJ list:** Add songs to Must-Play or Do-Not-Play lists with optional play time slot
 - **Apple Music import:** Paste an Apple Music playlist URL to import all tracks
 - **Search:** Search iTunes to find and add songs directly
-
-### Meals (`/admin/meals`)
-
-Manage `MealOption` records presented to guests during RSVP:
-- Name, description, dietary flags (vegetarian, vegan, gluten-free)
-- Sort order and availability toggle
 
 ### Guest Book (`/admin/guest-book`)
 

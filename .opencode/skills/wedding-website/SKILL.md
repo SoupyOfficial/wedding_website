@@ -36,9 +36,9 @@ colors: {
 }
 ```
 
-## Database Models (26)
+## Database Models (25)
 **Core:** SiteSettings (singleton, ~49 fields), Guest, WeddingPartyMember, TimelineEvent
-**Content:** FAQ, Photo, PhotoTag, Entertainment, Hotel, MealOption
+**Content:** FAQ, Photo, PhotoTag, Entertainment, Hotel
 **Interactive:** GuestBookEntry, SongRequest, DJList, ContactMessage, RegistryItem, RegistryContribution
 **System:** FeatureFlag, EmailTemplate, EmailCampaign, EmailLog, WebhookLog, IntegrationConfig, AdminActivityLog
 **Planning:** BudgetItem, Vendor, SeatingTable
@@ -49,7 +49,7 @@ colors: {
 | `/` | Homepage with countdown, hero, starry sky |
 | `/our-story` | Couple's story timeline |
 | `/event-details` | Ceremony & reception details, calendar add |
-| `/rsvp` | Multi-step RSVP form with meal/song request |
+| `/rsvp` | Multi-step RSVP form, locked to guest-list name match, with song requests + dietary notes |
 | `/gallery` | Wedding photo gallery |
 | `/guest-book` | Digital guest messages |
 | `/wedding-party` | Bridal party members |
@@ -68,7 +68,6 @@ colors: {
 | `/admin/wedding-party` | Manage party members & photos |
 | `/admin/photos` | Upload/manage gallery photos |
 | `/admin/music` | Song requests, love/hate lists |
-| `/admin/meal-options` | Configure RSVP meal choices |
 | `/admin/guest-book` | Moderate guest book entries |
 | `/admin/communications` | Mass email campaigns |
 | `/admin/settings` | Site settings, feature flags, integrations |

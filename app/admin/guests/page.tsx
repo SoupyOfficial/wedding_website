@@ -15,7 +15,6 @@ interface Guest {
   plusOneAllowed: boolean;
   plusOneName: string | null;
   plusOneAttending: boolean;
-  mealPreference: string | null;
   dietaryNeeds: string | null;
   songRequest: string | null;
   danceSong: string | null;
@@ -23,7 +22,6 @@ interface Guest {
   childrenCount: number;
   childrenNames: string | null;
   tableNumber: number | null;
-  group: string | null;
   notes: string | null;
   inviteToken: string | null;
   createdAt: string;
@@ -39,7 +37,6 @@ const EMPTY_GUEST: Omit<Guest, "id" | "createdAt" | "rsvpRespondedAt"> = {
   plusOneAllowed: false,
   plusOneName: null,
   plusOneAttending: false,
-  mealPreference: null,
   dietaryNeeds: null,
   songRequest: null,
   danceSong: null,
@@ -47,9 +44,76 @@ const EMPTY_GUEST: Omit<Guest, "id" | "createdAt" | "rsvpRespondedAt"> = {
   childrenCount: 0,
   childrenNames: null,
   tableNumber: null,
-  group: null,
   notes: null,
 };
+
+/**
+ * Renders one guest exactly once. On desktop (lg+) it is a normal table
+ * row; on mobile the same row reflows into a celestial card via max-lg
+ * utilities, so the guest list is never duplicated in the DOM.
+ */
+function GuestRow({
+  guest,
+  copied,
+  onCopyInviteLink,
+  onEdit,
+  onDelete,
+}: {
+  guest: Guest;
+  copied: boolean;
+  onCopyInviteLink: (guest: Guest) => void;
+  onEdit: (guest: Guest) => void;
+  onDelete: (id: string) => void;
+}) {
+  return (
+    <tr className="hover:bg-royal/10 transition-colors max-lg:flex max-lg:flex-wrap max-lg:gap-x-4 max-lg:gap-y-1 max-lg:rounded-xl max-lg:border max-lg:border-gold/20 max-lg:bg-midnight-300/50 max-lg:p-6 max-lg:backdrop-blur-sm max-lg:transition-all max-lg:duration-300 max-lg:hover:border-gold/40 max-lg:hover:bg-transparent">
+      {/* Name — card header on mobile, first column on desktop */}
+      <td className="px-4 py-3 text-ivory max-lg:order-1 max-lg:flex-1 max-lg:px-0 max-lg:py-0 max-lg:font-medium">
+        {guest.firstName} {guest.lastName}
+      </td>
+      {/* Email — below the name on mobile (hidden when absent), own column on desktop */}
+      <td className={`px-4 py-3 text-ivory/60 max-lg:order-3 max-lg:basis-full max-lg:px-0 max-lg:py-0 max-lg:text-xs max-lg:text-ivory/50 ${guest.email ? "" : "max-lg:hidden"}`}>
+        {guest.email || "—"}
+      </td>
+      {/* RSVP status — top-right of the card on mobile, own column on desktop */}
+      <td className="px-4 py-3 max-lg:order-2 max-lg:self-start max-lg:px-0 max-lg:py-0">
+        <span className={`text-xs px-2 py-1 rounded flex-shrink-0 ${guest.rsvpStatus === "attending" ? "text-green-400 bg-green-900/30" : guest.rsvpStatus === "declined" ? "text-red-400 bg-red-900/30" : "text-yellow-400 bg-yellow-900/30"}`}>
+          {guest.rsvpStatus.charAt(0).toUpperCase() + guest.rsvpStatus.slice(1)}
+        </span>
+      </td>
+      {/* Plus one — labeled on mobile, plain column on desktop */}
+      <td className="px-4 py-3 text-ivory/50 max-lg:order-5 max-lg:mt-1 max-lg:px-0 max-lg:py-0 max-lg:text-xs">
+        <span className="lg:hidden">Plus One: </span>
+        {guest.plusOneAllowed ? guest.plusOneName || "Allowed" : "—"}
+      </td>
+      {/* Table number — labeled on mobile, plain column on desktop */}
+      <td className={`px-4 py-3 text-ivory/50 max-lg:order-6 max-lg:mt-1 max-lg:px-0 max-lg:py-0 max-lg:text-xs ${guest.tableNumber ? "" : "max-lg:hidden"}`}>
+        {guest.tableNumber ? (
+          <>
+            <span className="lg:hidden">Table: </span>
+            {guest.tableNumber}
+          </>
+        ) : (
+          "—"
+        )}
+      </td>
+      {/* Actions — card footer on mobile, right-aligned column on desktop */}
+      <td className="px-4 py-3 text-right space-x-2 max-lg:order-7 max-lg:mt-2 max-lg:basis-full max-lg:px-0 max-lg:py-0 max-lg:pt-2 max-lg:text-left max-lg:space-x-0 max-lg:flex max-lg:gap-3 max-lg:border-t max-lg:border-gold/10">
+        {guest.inviteToken && (
+          <button
+            onClick={() => onCopyInviteLink(guest)}
+            className="text-ivory/30 hover:text-gold text-xs transition-colors hidden lg:inline"
+            title="Copy invite link"
+          >
+            {copied ? "✓ Copied" : "🔗"}
+          </button>
+        )}
+        <button onClick={() => onEdit(guest)} className="text-gold/60 hover:text-gold text-xs transition-colors">Edit</button>
+        <ConfirmButton onConfirm={() => onDelete(guest.id)} message="Are you sure you want to remove this guest?" className="text-red-400/60 hover:text-red-400 text-xs transition-colors">Remove</ConfirmButton>
+      </td>
+    </tr>
+  );
+}
 
 export default function AdminGuestsPage() {
   const { data: guests, loading, refetch } = useAdminFetch<Guest>("/api/v1/admin/guests");
@@ -161,12 +225,10 @@ export default function AdminGuestsPage() {
           lastName: editing.lastName,
           email: editing.email || undefined,
           phone: editing.phone || undefined,
-          group: editing.group || undefined,
           rsvpStatus: editing.rsvpStatus,
           plusOneAllowed: editing.plusOneAllowed,
           plusOneName: editing.plusOneName || undefined,
           plusOneAttending: editing.plusOneAttending,
-          mealPreference: editing.mealPreference || undefined,
           dietaryNeeds: editing.dietaryNeeds || undefined,
           songRequest: editing.songRequest || undefined,
           danceSong: editing.danceSong || undefined,
@@ -280,85 +342,38 @@ export default function AdminGuestsPage() {
         />
       </div>
 
-      {/* Guest Table */}
+      {/* Guest list — each guest renders exactly once; the same row is a
+          card on mobile and a table row on desktop (no duplicated subtrees) */}
       {loading ? (
         <LoadingState message="Loading guests..." />
       ) : (
-        <>
-        {/* Mobile Card View */}
-        <div className="lg:hidden space-y-3">
-          {filteredGuests.map((guest) => (
-            <div key={guest.id} className="card-celestial">
-              <div className="flex items-start justify-between gap-3 mb-2">
-                <div>
-                  <p className="text-ivory font-medium">{guest.firstName} {guest.lastName}</p>
-                  {guest.email && <p className="text-ivory/50 text-xs">{guest.email}</p>}
-                </div>
-                <span className={`text-xs px-2 py-1 rounded flex-shrink-0 ${guest.rsvpStatus === "attending" ? "text-green-400 bg-green-900/30" : guest.rsvpStatus === "declined" ? "text-red-400 bg-red-900/30" : "text-yellow-400 bg-yellow-900/30"}`}>
-                  {guest.rsvpStatus.charAt(0).toUpperCase() + guest.rsvpStatus.slice(1)}
-                </span>
-              </div>
-              <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-ivory/50 mb-3">
-                {guest.group && <span>Group: {guest.group}</span>}
-                <span>Plus One: {guest.plusOneAllowed ? guest.plusOneName || "Allowed" : "—"}</span>
-                {guest.tableNumber && <span>Table: {guest.tableNumber}</span>}
-              </div>
-              <div className="flex gap-3 border-t border-gold/10 pt-2">
-                <button onClick={() => openEdit(guest)} className="text-gold/70 hover:text-gold text-xs transition-colors">Edit</button>
-                <ConfirmButton onConfirm={() => handleDelete(guest.id)} message="Are you sure you want to remove this guest?" className="text-red-400/60 hover:text-red-400 text-xs transition-colors">Remove</ConfirmButton>
-              </div>
-            </div>
-          ))}
-          {filteredGuests.length === 0 && <EmptyState title="No guests found." />}
-        </div>
-
-        {/* Desktop Table View */}
-        <div className="hidden lg:block overflow-x-auto rounded-lg border border-gold/10">
-          <table className="w-full text-sm">
-            <thead>
+        <div className="overflow-x-auto rounded-lg border border-gold/10 max-lg:overflow-visible max-lg:rounded-none max-lg:border-0">
+          <table className="w-full text-sm max-lg:block">
+            <thead className="max-lg:hidden">
               <tr className="bg-royal/30 text-gold/80 text-left text-xs uppercase tracking-wider">
                 <th className="px-4 py-3">Name</th>
                 <th className="px-4 py-3">Email</th>
                 <th className="px-4 py-3">RSVP</th>
-                <th className="px-4 py-3">Group</th>
                 <th className="px-4 py-3">Plus One</th>
                 <th className="px-4 py-3">Table</th>
                 <th className="px-4 py-3 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gold/5">
+            <tbody className="divide-y divide-gold/5 max-lg:block max-lg:divide-y-0 max-lg:space-y-3">
               {filteredGuests.map((guest) => (
-                <tr key={guest.id} className="hover:bg-royal/10 transition-colors">
-                  <td className="px-4 py-3 text-ivory">{guest.firstName} {guest.lastName}</td>
-                  <td className="px-4 py-3 text-ivory/60">{guest.email || "—"}</td>
-                  <td className="px-4 py-3">
-                    <span className={`text-xs px-2 py-1 rounded ${guest.rsvpStatus === "attending" ? "text-green-400 bg-green-900/30" : guest.rsvpStatus === "declined" ? "text-red-400 bg-red-900/30" : "text-yellow-400 bg-yellow-900/30"}`}>
-                      {guest.rsvpStatus.charAt(0).toUpperCase() + guest.rsvpStatus.slice(1)}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-ivory/50">{guest.group || "—"}</td>
-                  <td className="px-4 py-3 text-ivory/50">{guest.plusOneAllowed ? guest.plusOneName || "Allowed" : "—"}</td>
-                  <td className="px-4 py-3 text-ivory/50">{guest.tableNumber || "—"}</td>
-                  <td className="px-4 py-3 text-right space-x-2">
-                    {guest.inviteToken && (
-                      <button
-                        onClick={() => copyInviteLink(guest)}
-                        className="text-ivory/30 hover:text-gold text-xs transition-colors"
-                        title="Copy invite link"
-                      >
-                        {copiedId === guest.id ? "✓ Copied" : "🔗"}
-                      </button>
-                    )}
-                    <button onClick={() => openEdit(guest)} className="text-gold/60 hover:text-gold text-xs transition-colors">Edit</button>
-                    <ConfirmButton onConfirm={() => handleDelete(guest.id)} message="Are you sure you want to remove this guest?" className="text-red-400/60 hover:text-red-400 text-xs transition-colors">Remove</ConfirmButton>
-                  </td>
-                </tr>
+                <GuestRow
+                  key={guest.id}
+                  guest={guest}
+                  copied={copiedId === guest.id}
+                  onCopyInviteLink={copyInviteLink}
+                  onEdit={openEdit}
+                  onDelete={handleDelete}
+                />
               ))}
             </tbody>
           </table>
           {filteredGuests.length === 0 && <EmptyState title="No guests found." />}
         </div>
-        </>
       )}
 
       {editing && (
@@ -411,10 +426,6 @@ export default function AdminGuestsPage() {
                   <input type="text" value={editing.phone || ""} onChange={(e) => setField("phone", e.target.value || null)} className="input-celestial w-full" />
                 </div>
                 <div>
-                  <label className="block text-ivory/70 text-xs mb-1">Group</label>
-                  <input type="text" value={editing.group || ""} onChange={(e) => setField("group", e.target.value || null)} className="input-celestial w-full" placeholder="e.g., Family, College" />
-                </div>
-                <div>
                   <label className="block text-ivory/70 text-xs mb-1">RSVP Status</label>
                   <select value={editing.rsvpStatus} onChange={(e) => setField("rsvpStatus", e.target.value)} className="input-celestial w-full">
                     <option value="pending">Pending</option>
@@ -425,10 +436,6 @@ export default function AdminGuestsPage() {
                 <div>
                   <label className="block text-ivory/70 text-xs mb-1">Table Number</label>
                   <input type="number" value={editing.tableNumber ?? ""} onChange={(e) => setField("tableNumber", e.target.value ? parseInt(e.target.value) : null)} className="input-celestial w-full" />
-                </div>
-                <div>
-                  <label className="block text-ivory/70 text-xs mb-1">Meal Preference</label>
-                  <input type="text" value={editing.mealPreference || ""} onChange={(e) => setField("mealPreference", e.target.value || null)} className="input-celestial w-full" />
                 </div>
                 <div>
                   <label className="block text-ivory/70 text-xs mb-1">Dietary Needs</label>

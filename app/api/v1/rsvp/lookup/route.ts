@@ -14,20 +14,20 @@ export async function GET(req: NextRequest) {
   const enabled = await getFeatureFlag("rsvpEnabled");
   if (!enabled) return errorResponse("RSVP is currently closed.", 403);
 
-  const name = req.nextUrl.searchParams.get("name");
+  const firstName = req.nextUrl.searchParams.get("firstName");
+  const lastName = req.nextUrl.searchParams.get("lastName");
 
-  if (!name || name.trim().length < 2) {
-    return errorResponse("Please provide a valid name.", 400);
+  if (!firstName || !firstName.trim() || !lastName || !lastName.trim()) {
+    return errorResponse("Please provide both first and last name.", 400);
   }
 
   try {
-    const result = await lookupGuest(name);
+    const result = await lookupGuest(firstName.trim(), lastName.trim());
     if (!result) {
-      return errorResponse("Guest not found. Please check the name on your invitation.", 404);
-    }
-
-    if ("multiple" in result && result.multiple) {
-      return successResponse({ matches: result.matches, multiple: true });
+      return errorResponse(
+        "We couldn't find a guest with that name. Please check the spelling on your invitation, or contact Jacob & Ashley for help.",
+        404
+      );
     }
 
     return successResponse(result);

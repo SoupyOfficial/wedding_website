@@ -76,8 +76,6 @@ async function wipe() {
       dietaryNeeds = NULL,
       plusOneName = NULL,
       plusOneAttending = 0,
-      mealPreference = NULL,
-      plusOneMealPreference = NULL,
       danceSong = NULL,
       firstDanceSong = NULL,
       songRequest = NULL,

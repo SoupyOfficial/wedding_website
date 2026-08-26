@@ -83,14 +83,11 @@ One row per invited guest.
 | `lastName` | String | |
 | `email` | String? | |
 | `phone` | String? | |
-| `group` | String? | Group label (e.g. "Bride's Family") |
 | `rsvpStatus` | String | `pending` \| `attending` \| `declined` |
 | `rsvpRespondedAt` | DateTime? | When the RSVP was submitted |
 | `plusOneAllowed` | Boolean | Whether they can bring a plus-one |
 | `plusOneName` | String? | Plus-one's name (if attending) |
 | `plusOneAttending` | Boolean? | Whether plus-one is coming |
-| `plusOneMealPreference` | String? | Plus-one meal choice |
-| `mealPreference` | String? | Guest meal choice |
 | `dietaryNeeds` | String? | Free-text dietary restrictions |
 | `songRequest` | String? | Song title requested during RSVP |
 | `childrenCount` | Int | Number of children attending |
@@ -273,23 +270,6 @@ Unique constraint on `(name, type)`.
 | `message` | String | Message content |
 | `isVisible` | Boolean | Admin approval; `false` = pending |
 | `createdAt` | DateTime | |
-
----
-
-### MealOption
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `id` | String PK | cuid |
-| `name` | String | Meal name |
-| `description` | String? | Details |
-| `sortOrder` | Int | Display order |
-| `isAvailable` | Boolean | Whether offered to guests |
-| `isVegetarian` | Boolean | |
-| `isVegan` | Boolean | |
-| `isGlutenFree` | Boolean | |
-| `createdAt` | DateTime | |
-| `updatedAt` | DateTime | |
 
 ---
 

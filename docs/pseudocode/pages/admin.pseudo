@@ -20,7 +20,7 @@ SIDEBAR (15 nav items):
   Hotels          → /admin/hotels
   Entertainment   → /admin/entertainment   // labeled "Restaurants" in route
   Music & DJ      → /admin/music
-  Meals           → /admin/meals
+
   Guest Book      → /admin/guest-book
   Communications  → /admin/communications
   Features        → /admin/features
@@ -95,16 +95,15 @@ RENDER:
 FETCH: useAdminFetch("/api/v1/admin/guests")
 
 FEATURES:
-  Search/filter by name, email, RSVP status, group
-  Table columns: name, group, RSVP status, meal, email, phone
+  Search/filter by name, email, RSVP status
+  Table columns: name, RSVP status, email, phone
   Status badges: colored by attending/declined/pending
   Row actions: edit, delete
   
   Add/Edit Modal:
-    firstName, lastName, email, phone, group
+    firstName, lastName, email, phone
     rsvpStatus dropdown
     isPlusOneAllowed toggle, plusOneName
-    mealOptionId dropdown
     dietaryNeeds, songRequest, notes
     childrenCount, tableNumber
 
@@ -205,7 +204,6 @@ DISPLAY: List of all feature flags with toggle switches
 //               amenities, priceRange, distance, sortOrder
 // Entertainment: name, description, icon, sortOrder
 // Wedding Party: name, role, side, relation, bio, photoUrl, spouse, sortOrder
-// Meals:        name, description, isVegetarian/Vegan/GlutenFree, isAvailable, sortOrder
 // Registry:     name, url, iconUrl, itemType, price, quantity fields, goalAmount, status, sortOrder
 // Guest Book:   read-only list with approve/hide toggles + delete
 // Communications: email templates + campaigns (partially implemented)

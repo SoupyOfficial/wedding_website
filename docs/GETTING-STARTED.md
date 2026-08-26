@@ -86,7 +86,7 @@ The seed script (`prisma/seed.ts`) inserts a realistic dataset including:
 - Default `SiteSettings` (couple name, wedding date, venue)
 - Sample guests at various RSVP states
 - Wedding party members (bridesmaids and groomsmen)
-- FAQ entries, hotel recommendations, meal options
+- FAQ entries, hotel recommendations
 - Timeline events for "Our Story"
 - Feature flags set to their defaults
 

@@ -11,20 +11,20 @@ vi.mock("@/lib/db", () => ({
   toBoolAll: vi.fn((r: unknown[]) => r),
 }));
 
-import { query, execute } from "@/lib/db";
+import { query, queryOne, execute } from "@/lib/db";
 const mockQuery = vi.mocked(query);
+const mockQueryOne = vi.mocked(queryOne);
 const mockExecute = vi.mocked(execute);
 
 beforeEach(() => {
   vi.clearAllMocks();
   mockQuery.mockResolvedValue([]);
+  mockQueryOne.mockResolvedValue(null);
   mockExecute.mockResolvedValue({ rowsAffected: 1, lastInsertRowid: undefined });
 });
 
 // Admin guests
 import { GET as guestsGet, POST as guestsPost } from "@/app/api/v1/admin/guests/route";
-// Admin meals
-import { GET as mealsGet, POST as mealsPost } from "@/app/api/v1/admin/meals/route";
 // Admin messages
 import { GET as messagesGet } from "@/app/api/v1/admin/messages/route";
 
@@ -76,50 +76,68 @@ describe("Admin Guests POST", () => {
   });
 });
 
-describe("Admin Meals GET", () => {
-  it("returns all meal options", async () => {
-    mockQuery.mockResolvedValue([{ id: "1", name: "Chicken" }]);
-    const res = await mealsGet();
-    const body = await res.json();
-    expect(res.status).toBe(200);
-    expect(body.data).toHaveLength(1);
-  });
-
-  it("returns 500 on error", async () => {
-    mockQuery.mockRejectedValueOnce(new Error("db"));
-    const res = await mealsGet();
-    expect(res.status).toBe(500);
-  });
-});
-
-describe("Admin Meals POST", () => {
+describe("Admin Guests POST duplicate prevention", () => {
   function makeReq(body: unknown) {
-    return new NextRequest("http://localhost:3000/api/v1/admin/meals", {
+    return new NextRequest("http://localhost:3000/api/v1/admin/guests", {
       method: "POST",
       body: JSON.stringify(body),
       headers: { "Content-Type": "application/json" },
     });
   }
 
-  it("creates a meal option", async () => {
-    const res = await mealsPost(makeReq({ name: "Chicken", description: "Grilled" }));
+  it("returns 409 when a guest with the same first and last name exists", async () => {
+    mockQueryOne.mockResolvedValueOnce({ id: "existing-id" });
+    const res = await guestsPost(makeReq({ firstName: "John", lastName: "Doe" }));
+    expect(res.status).toBe(409);
+    const body = await res.json();
+    expect(body.success).toBe(false);
+    expect(body.error).toContain("already exists");
+    expect(mockExecute).not.toHaveBeenCalled();
+  });
+
+  it("returns 409 when name and email both match an existing guest", async () => {
+    mockQueryOne.mockResolvedValueOnce({ id: "existing-id" });
+    const res = await guestsPost(makeReq({ firstName: "John", lastName: "Doe", email: "john@example.com" }));
+    expect(res.status).toBe(409);
+    expect(mockExecute).not.toHaveBeenCalled();
+  });
+
+  it("checks only firstName and lastName when no email is provided", async () => {
+    mockQueryOne
+      .mockResolvedValueOnce(null) // duplicate check
+      .mockResolvedValueOnce({ id: "new-id" }); // fetch created row
+    await guestsPost(makeReq({ firstName: "John", lastName: "Doe" }));
+    const [sql, args] = mockQueryOne.mock.calls[0];
+    expect(sql).toBe("SELECT id FROM Guest WHERE firstName = ? AND lastName = ? LIMIT 1");
+    expect(args).toEqual(["John", "Doe"]);
+  });
+
+  it("includes email in the duplicate check when one is provided", async () => {
+    mockQueryOne
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce({ id: "new-id" });
+    await guestsPost(makeReq({ firstName: "John", lastName: "Doe", email: "john@example.com" }));
+    const [sql, args] = mockQueryOne.mock.calls[0];
+    expect(sql).toBe("SELECT id FROM Guest WHERE firstName = ? AND lastName = ? AND email = ? LIMIT 1");
+    expect(args).toEqual(["John", "Doe", "john@example.com"]);
+  });
+
+  it("still creates a guest when no duplicate exists", async () => {
+    mockQueryOne
+      .mockResolvedValueOnce(null) // duplicate check
+      .mockResolvedValueOnce({ id: "new-id", firstName: "Jane" }); // fetch created row
+    const res = await guestsPost(makeReq({ firstName: "Jane", lastName: "Doe" }));
     expect(res.status).toBe(201);
+    expect(mockExecute).toHaveBeenCalledTimes(1);
   });
 
-  it("creates a vegetarian meal with all boolean flags", async () => {
-    const res = await mealsPost(makeReq({ name: "Salad", description: "Fresh", isVegetarian: true, isVegan: true, isGlutenFree: true }));
+  it("still creates a guest with the same name but a different email", async () => {
+    mockQueryOne
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce({ id: "new-id" });
+    const res = await guestsPost(makeReq({ firstName: "John", lastName: "Doe", email: "different@example.com" }));
     expect(res.status).toBe(201);
-  });
-
-  it("returns 400 when name missing", async () => {
-    const res = await mealsPost(makeReq({ name: "" }));
-    expect(res.status).toBe(400);
-  });
-
-  it("returns 500 on error", async () => {
-    mockExecute.mockRejectedValueOnce(new Error("db"));
-    const res = await mealsPost(makeReq({ name: "Chicken" }));
-    expect(res.status).toBe(500);
+    expect(mockExecute).toHaveBeenCalledTimes(1);
   });
 });
 

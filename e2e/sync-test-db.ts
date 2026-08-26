@@ -30,7 +30,6 @@ const TABLES = [
   "PhotoTag",
   "_PhotoToPhotoTag",
   "Entertainment",
-  "MealOption",
   "SongRequest",
   "DJList",
   "FeatureFlag",

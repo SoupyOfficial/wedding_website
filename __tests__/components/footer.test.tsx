@@ -51,7 +51,7 @@ describe("Footer", () => {
     const jsx = await Footer();
     render(<>{jsx}</>);
     expect(screen.getByText("RSVP")).toBeInTheDocument();
-    expect(screen.getByText("Event Details")).toBeInTheDocument();
+    expect(screen.getByText("Schedule")).toBeInTheDocument();
     expect(screen.getByText("Registry")).toBeInTheDocument();
     expect(screen.getByText("Contact Us")).toBeInTheDocument();
   });

@@ -44,7 +44,7 @@ EXPORTS:
 
 INTERFACES:
   SiteSettings    // 49 fields — singleton config for entire site
-  Guest           // RSVP attendee with meal, dietary, plus-one, song request
+  Guest           // RSVP attendee with dietary, plus-one, song request
   WeddingPartyMember  // bridal party: name, role, side, bio, photo
   TimelineEvent   // wedding day schedule items
   Hotel           // accommodation options
@@ -54,7 +54,6 @@ INTERFACES:
   PhotoTag        // categorization tags (many-to-many with Photo)
   Entertainment   // event activities
   GuestBookEntry  // signed messages
-  MealOption      // meal choices with dietary flags
   SongRequest     // music requests with artwork
   DJList          // must-play / do-not-play tracks
   FeatureFlag     // runtime toggles
@@ -67,7 +66,6 @@ BOOLEAN FIELD CONSTANTS:
   SETTINGS_BOOLS  = [rsvpEnabled, sitePasswordEnabled, notifyOnRsvp, bannerActive, ...]
   GUEST_BOOLS     = [isPlusOneAllowed, hasPlusOne]
   FAQ_BOOLS       = [isVisible]
-  MEAL_BOOLS      = [isVegetarian, isVegan, isGlutenFree, isAvailable]
   SONG_BOOLS      = [approved, isVisible]
   GUESTBOOK_BOOLS = [isVisible]
   MESSAGE_BOOLS   = [isRead]

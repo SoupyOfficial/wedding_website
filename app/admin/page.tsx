@@ -21,7 +21,6 @@ export default async function AdminDashboard() {
     songRequestsR,
     contactMessagesR,
     unreadMessagesR,
-    mealBreakdown,
     rsvpTrend,
   ] = await Promise.all([
     queryOne<{ cnt: number }>("SELECT COUNT(*) as cnt FROM Guest"),
@@ -33,9 +32,6 @@ export default async function AdminDashboard() {
     queryOne<{ cnt: number }>("SELECT COUNT(*) as cnt FROM SongRequest"),
     queryOne<{ cnt: number }>("SELECT COUNT(*) as cnt FROM ContactMessage"),
     queryOne<{ cnt: number }>("SELECT COUNT(*) as cnt FROM ContactMessage WHERE isRead = 0"),
-    query<{ mealPreference: string | null; cnt: number }>(
-      "SELECT mealPreference, COUNT(*) as cnt FROM Guest WHERE rsvpStatus = 'attending' AND mealPreference IS NOT NULL GROUP BY mealPreference ORDER BY cnt DESC"
-    ),
     query<{ responded_date: string; cnt: number }>(
       "SELECT date(rsvpRespondedAt) as responded_date, COUNT(*) as cnt FROM Guest WHERE rsvpRespondedAt IS NOT NULL GROUP BY date(rsvpRespondedAt) ORDER BY responded_date ASC"
     ),
@@ -50,12 +46,6 @@ export default async function AdminDashboard() {
   const songRequests = cnt(songRequestsR);
   const contactMessages = cnt(contactMessagesR);
   const unreadMessages = cnt(unreadMessagesR);
-
-  // Build meal chart data
-  const mealData = mealBreakdown.map((r) => ({
-    name: r.mealPreference || "Unspecified",
-    count: r.cnt,
-  }));
 
   // Build cumulative RSVP trend
   let cumulative = 0;
@@ -172,7 +162,7 @@ export default async function AdminDashboard() {
       </div>
 
       {/* Charts */}
-      <DashboardCharts mealData={mealData} trendData={trendData} dietaryData={dietaryData} />
+      <DashboardCharts trendData={trendData} dietaryData={dietaryData} />
 
       {/* Quick Actions */}
       <h3 className="text-gold font-serif text-lg mb-4">Quick Actions</h3>

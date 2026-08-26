@@ -64,12 +64,12 @@ describe("useAdminMultiFetch", () => {
       });
 
     const { result } = renderHook(() =>
-      useAdminMultiFetch({ guests: "/api/v1/admin/guests", meals: "/api/v1/admin/meals" })
+      useAdminMultiFetch({ guests: "/api/v1/admin/guests", messages: "/api/v1/admin/messages" })
     );
 
     await waitFor(() => expect(result.current.loading).toBe(false));
     expect(result.current.data.guests).toHaveLength(1);
-    expect(result.current.data.meals).toHaveLength(1);
+    expect(result.current.data.messages).toHaveLength(1);
   });
 });
 

@@ -110,6 +110,11 @@ export default function TravelHotels({ venueHotels, otherHotels, nearbyHotels }:
           <p className="text-center text-ivory/40 text-xs mb-8 italic">
             Room block availability is limited. We recommend booking as soon as possible.
           </p>
+          <p className="text-center text-ivory/60 text-xs mb-8 italic">
+            ✨ Arriving a little early on the wedding day? The hotel attached to
+            the venue has a cozy bar tucked into the lobby — a lovely spot to
+            relax and soak in the anticipation before the ceremony.
+          </p>
         </>
       )}
 

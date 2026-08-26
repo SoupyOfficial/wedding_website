@@ -210,8 +210,8 @@ describe("Admin Guests [id]", () => {
   it("PUT updates all optional fields", async () => {
     const res = await guestPut(jsonReq("http://l/api", {
       firstName: "John", lastName: "Doe", email: "j@d.com", phone: "555",
-      group: "Family", rsvpStatus: "attending", plusOneAllowed: true,
-      plusOneName: "Jane", plusOneAttending: true, mealPreference: "chicken",
+      rsvpStatus: "attending", plusOneAllowed: true,
+      plusOneName: "Jane", plusOneAttending: true,
       dietaryNeeds: "none", songRequest: "Song", childrenCount: 2,
       childrenNames: "Kid1, Kid2", tableNumber: "5", notes: "VIP"
     }), params("1"));
@@ -239,48 +239,6 @@ describe("Admin Guests [id]", () => {
   it("DELETE returns 500 on error", async () => {
     mockExecute.mockRejectedValueOnce(new Error("db"));
     const res = await guestDel(new Request("http://l"), params("1"));
-    expect(res.status).toBe(500);
-  });
-});
-
-// ─── Meals [id] ────────────────────────────────────
-import { PUT as mealPut, DELETE as mealDel } from "@/app/api/v1/admin/meals/[id]/route";
-
-describe("Admin Meals [id]", () => {
-  it("PUT updates meal", async () => {
-    const res = await mealPut(jsonReq("http://l/api", { name: "Chicken", isVegetarian: false }), params("1"));
-    expect(res.status).toBe(200);
-  });
-  it("PUT updates all optional fields", async () => {
-    const res = await mealPut(jsonReq("http://l/api", { name: "Salad", description: "Green", isVegetarian: true, isVegan: true, isGlutenFree: true }), params("1"));
-    expect(res.status).toBe(200);
-  });
-  it("PUT returns 400 for empty body", async () => {
-    const res = await mealPut(jsonReq("http://l/api", {}), params("1"));
-    expect(res.status).toBe(400);
-  });
-  it("PUT returns 404", async () => {
-    mockExecute.mockResolvedValueOnce({ rowsAffected: 0, lastInsertRowid: undefined });
-    const res = await mealPut(jsonReq("http://l/api", { name: "X" }), params("1"));
-    expect(res.status).toBe(404);
-  });
-  it("DELETE removes meal", async () => {
-    const res = await mealDel(new Request("http://l"), params("1"));
-    expect(res.status).toBe(200);
-  });
-  it("DELETE returns 404", async () => {
-    mockExecute.mockResolvedValueOnce({ rowsAffected: 0, lastInsertRowid: undefined });
-    const res = await mealDel(new Request("http://l"), params("1"));
-    expect(res.status).toBe(404);
-  });
-  it("PUT returns 500 on error", async () => {
-    mockExecute.mockRejectedValueOnce(new Error("db"));
-    const res = await mealPut(jsonReq("http://l/api", { name: "X" }), params("1"));
-    expect(res.status).toBe(500);
-  });
-  it("DELETE returns 500 on error", async () => {
-    mockExecute.mockRejectedValueOnce(new Error("db"));
-    const res = await mealDel(new Request("http://l"), params("1"));
     expect(res.status).toBe(500);
   });
 });

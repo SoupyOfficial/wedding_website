@@ -49,6 +49,7 @@ export async function PUT(req: NextRequest) {
       ["weddingHashtag", body.weddingHashtag ?? ""],
       ["sitePasswordEnabled", body.sitePasswordEnabled ? 1 : 0],
       ["rsvpDeadline", body.rsvpDeadline ? new Date(body.rsvpDeadline).toISOString() : null],
+      ["rsvpEditDeadline", body.rsvpEditDeadline ? new Date(body.rsvpEditDeadline).toISOString() : null],
       ["rsvpEnabled", (body.rsvpEnabled ?? true) ? 1 : 0],
       ["heroTagline", body.heroTagline ?? ""],
       ["heroTaglinePostWedding", body.heroTaglinePostWedding ?? ""],

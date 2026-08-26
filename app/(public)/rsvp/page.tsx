@@ -24,11 +24,16 @@ export default async function RSVPPage({
       />
     );
 
-  const settings = await getSettings("rsvpDeadline", "rafflePrize");
+  const settings = await getSettings("rsvpDeadline", "rsvpEditDeadline", "rafflePrize");
 
   const rawDeadline = settings?.rsvpDeadline ? String(settings.rsvpDeadline) : null;
   const easternDeadline = rawDeadline
     ? toEasternISO(rawDeadline.slice(0, 10), rawDeadline.slice(11, 16) || "23:59")
+    : null;
+
+  const rawEditDeadline = settings?.rsvpEditDeadline ? String(settings.rsvpEditDeadline) : null;
+  const easternEditDeadline = rawEditDeadline
+    ? toEasternISO(rawEditDeadline.slice(0, 10), rawEditDeadline.slice(11, 16) || "23:59")
     : null;
 
   const params = await searchParams;
@@ -52,6 +57,7 @@ export default async function RSVPPage({
   return (
     <RsvpClient
       rsvpDeadline={easternDeadline}
+      rsvpEditDeadlineIso={easternEditDeadline}
       rafflePrize={settings?.rafflePrize || "-1"}
       prefillName={prefillName}
     />

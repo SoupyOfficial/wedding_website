@@ -57,6 +57,15 @@ export interface CrudConfig {
   postDefaults?: Record<string, SqlValue>;
   /** Required field validation for POST. */
   required?: { fields: string[]; message: string };
+  /**
+   * Opt-in duplicate prevention for POST: reject the create with a 409 when
+   * an existing row matches on every field in this list that is provided in
+   * the request body (fields that are absent, null, or "" are excluded from
+   * the check). Values are compared after the field's POST transform.
+   */
+  preventDuplicateFields?: string[];
+  /** Custom message for the 409 duplicate response. */
+  duplicateMessage?: string;
   /** Custom PUT body validation. Return error message string, or null if valid. */
   validatePut?: (body: Record<string, unknown>) => string | null;
   /** Auto-add createdAt/updatedAt timestamps (POST creates both, PUT updates updatedAt). */
@@ -106,6 +115,34 @@ export function createListHandlers(config: CrudConfig) {
           (f) => !body[f] || (typeof body[f] === "string" && !body[f].trim())
         );
         if (missing) return errorResponse(config.required.message, 400);
+      }
+
+      // Opt-in duplicate prevention: reject creates matching an existing
+      // row on every provided preventDuplicateFields entry.
+      if (config.preventDuplicateFields?.length) {
+        const dupeFields = config.preventDuplicateFields.filter(
+          (f) => body[f] !== undefined && body[f] !== null && body[f] !== ""
+        );
+        if (dupeFields.length > 0) {
+          const where = dupeFields
+            .map((f) => `${colName(f, config.fields[f] ?? {})} = ?`)
+            .join(" AND ");
+          const values = dupeFields.map((f) =>
+            postTransform(body[f], config.fields[f] ?? {})
+          );
+          const existing = await queryOne(
+            `SELECT id FROM ${config.table} WHERE ${where} LIMIT 1`,
+            values
+          );
+          if (existing) {
+            return errorResponse(
+              config.duplicateMessage ??
+                `A ${config.label.toLowerCase()} with these details already exists.`,
+              409,
+              "DUPLICATE"
+            );
+          }
+        }
       }
 
       const id = generateId();

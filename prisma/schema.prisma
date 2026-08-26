@@ -19,6 +19,7 @@ model SiteSettings {
   weddingDate            DateTime?
   weddingTime            String?
   rsvpDeadline           DateTime?
+  rsvpEditDeadline       DateTime?
   rsvpEnabled            Boolean   @default(true)
   venueName              String    @default("The Highland Manor")
   venueAddress           String    @default("Apopka, Florida")
@@ -93,13 +94,10 @@ model Guest {
   lastName        String
   email           String?
   phone           String?
-  group           String?
   rsvpStatus      String    @default("pending")
   plusOneAllowed   Boolean   @default(false)
   plusOneName      String?
   plusOneAttending Boolean   @default(false)
-  mealPreference        String?
-  plusOneMealPreference String?
   dietaryNeeds          String?
   songRequest     String?
   danceSong       String?
@@ -237,20 +235,6 @@ model Entertainment {
   icon        String?
   sortOrder   Int     @default(0)
   isVisible   Boolean @default(true)
-}
-
-// ─────────────────────────────────────────────
-// Meal Options
-// ─────────────────────────────────────────────
-model MealOption {
-  id           String  @id @default(cuid())
-  name         String
-  description  String  @default("")
-  isVegetarian Boolean @default(false)
-  isVegan      Boolean @default(false)
-  isGlutenFree Boolean @default(false)
-  isAvailable  Boolean @default(true)
-  sortOrder    Int     @default(0)
 }
 
 // ─────────────────────────────────────────────

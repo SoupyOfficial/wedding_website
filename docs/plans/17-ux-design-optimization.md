@@ -22,7 +22,7 @@ Based on comprehensive competitor research (20+ wedding websites across Aisle, T
 - Framer Motion animations, starfield canvas backdrop
 - Good dev practices: TypeScript strict, print stylesheet, reduced-motion support, skip-to-content
 - Feature-rich admin dashboard with 16+ management pages
-- Multi-step RSVP with meal selection and song requests
+- Multi-step RSVP with strict name-gate lookup and song requests (buffet style; dietary notes only)
 - Weather widget, Google Maps embed, Add-to-Calendar
 
 **Key UX Issues Found:**

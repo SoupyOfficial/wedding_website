@@ -65,22 +65,27 @@ page.tsx (Server):
   render <RsvpClient />
 
 RsvpClient.tsx (Client):
-  STEPS: lookup → review → submit → confirmation
+  STEPS: lookup → details → songs → confirm
 
-  Step 1 — LOOKUP:
-    Input: full name
+  Step 1 — LOOKUP (strict name gate):
+    Input: full first + last name
     Submit → GET /api/v1/rsvp/lookup?name={name}
-    Result: guest object + mealOptions[]
+    Validation: exact match required (case-insensitive)
+    IF no exact match OR duplicate OR empty:
+      Block with message: "Check spelling and contact the couple"
+    Result: guest object
 
-  Step 2 — REVIEW & FORM:
+  Step 2 — DETAILS:
     Display: guest name, current status
     Form: attending (yes/no), email, phone, dietary notes
     IF attending:
-      meal selection (from mealOptions)
       plus-one name (if isPlusOneAllowed)
+
+  Step 3 — SONGS:
+    IF attending:
       song request + artist (optional)
 
-  Step 3 — SUBMIT:
+  Step 4 — CONFIRM:
     POST /api/v1/rsvp/submit with form data
     Show confirmation: "Thank you for your RSVP"
     Display submitted details summary

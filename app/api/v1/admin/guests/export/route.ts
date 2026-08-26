@@ -8,13 +8,11 @@ interface GuestRow {
   lastName: string;
   email: string | null;
   phone: string | null;
-  group: string | null;
   rsvpStatus: string;
   rsvpRespondedAt: string | null;
   plusOneAllowed: number;
   plusOneName: string | null;
   plusOneAttending: number;
-  mealPreference: string | null;
   dietaryNeeds: string | null;
   childrenCount: number;
   childrenNames: string | null;
@@ -57,9 +55,9 @@ export async function GET(req: NextRequest) {
   const guests = await query<GuestRow>(sql, params);
 
   const headers = [
-    "First Name", "Last Name", "Email", "Phone", "Group",
+    "First Name", "Last Name", "Email", "Phone",
     "RSVP Status", "Responded At", "Plus One Allowed", "Plus One Name", "Plus One Attending",
-    "Meal Preference", "Dietary Needs", "Children Count", "Children Names",
+    "Dietary Needs", "Children Count", "Children Names",
     "Table Number", "Song Request", "Dance Floor Song", "First Dance Song", "Notes",
   ];
 
@@ -68,13 +66,11 @@ export async function GET(req: NextRequest) {
     escapeCSV(g.lastName),
     escapeCSV(g.email),
     escapeCSV(g.phone),
-    escapeCSV(g.group),
     escapeCSV(g.rsvpStatus),
     escapeCSV(g.rsvpRespondedAt ? new Date(g.rsvpRespondedAt).toLocaleDateString() : ""),
     escapeCSV(boolLabel(g.plusOneAllowed)),
     escapeCSV(g.plusOneName),
     escapeCSV(boolLabel(g.plusOneAttending)),
-    escapeCSV(g.mealPreference),
     escapeCSV(g.dietaryNeeds),
     escapeCSV(g.childrenCount || 0),
     escapeCSV(g.childrenNames),
