@@ -6,11 +6,39 @@ import { checkFeatureFlag } from "@/lib/feature-gate";
 import SectionDivider from "@/components/SectionDivider";
 import { PageHeader } from "@/components/ui";
 import OurStoryTimeline from "./OurStoryTimeline";
+import StoryChapters, { type StoryChapter } from "./StoryChapters";
 
 export const metadata = {
   title: "Our Story",
   description: "The story of how we found each other.",
 };
+
+function splitStoryChapters(html: string): {
+  intro: string;
+  chapters: StoryChapter[];
+} {
+  const chapterRegex = /<h2[^>]*>([\s\S]*?)<\/h2>/gi;
+  const matches = [...html.matchAll(chapterRegex)];
+
+  if (matches.length === 0) {
+    return { intro: "", chapters: [{ title: "", html }] };
+  }
+
+  const intro = html.slice(0, matches[0].index).trim();
+
+  const chapters = matches.map((match, index) => {
+    const title = match[1].replace(/<[^>]*>/g, "").trim();
+    const bodyStart = (match.index ?? 0) + match[0].length;
+    const bodyEnd =
+      index + 1 < matches.length
+        ? (matches[index + 1].index ?? html.length)
+        : html.length;
+    const body = html.slice(bodyStart, bodyEnd).trim();
+    return { title, html: body };
+  });
+
+  return { intro, chapters };
+}
 
 export default async function OurStoryPage() {
   const gate = await checkFeatureFlag("ourStoryPageEnabled");
@@ -22,6 +50,10 @@ export default async function OurStoryPage() {
     ["our-story"]
   );
 
+  const story = settings?.ourStoryContent
+    ? splitStoryChapters(sanitizeHtml(settings.ourStoryContent))
+    : null;
+
   return (
     <div className="pt-8 pb-16">
       <div className="section-padding">
@@ -32,15 +64,8 @@ export default async function OurStoryPage() {
         />
 
         {/* Story Content */}
-        {settings?.ourStoryContent ? (
-          <div className="max-w-3xl mx-auto prose prose-invert prose-gold">
-            <div
-              className="text-ivory/80 leading-relaxed space-y-6"
-              dangerouslySetInnerHTML={{
-                __html: sanitizeHtml(settings.ourStoryContent),
-              }}
-            />
-          </div>
+        {story ? (
+          <StoryChapters intro={story.intro} chapters={story.chapters} />
         ) : (
           <div className="text-center card-celestial max-w-2xl mx-auto">
             <p className="text-ivory/60 text-lg italic">

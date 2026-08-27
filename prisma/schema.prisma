@@ -99,6 +99,7 @@ model Guest {
   plusOneName      String?
   plusOneAttending Boolean   @default(false)
   dietaryNeeds          String?
+  isVegetarian          Boolean   @default(false)
   songRequest     String?
   danceSong       String?
   firstDanceSong  String?

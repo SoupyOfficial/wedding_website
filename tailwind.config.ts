@@ -53,6 +53,52 @@ const config: Config = {
         serif: ["Playfair Display", "Georgia", "serif"],
         sans: ["Inter", "system-ui", "sans-serif"],
       },
+      typography: {
+        gold: {
+          css: {
+            "--tw-prose-body": "rgba(250, 248, 240, 0.82)",
+            "--tw-prose-headings": "#D4A843",
+            "--tw-prose-lead": "#FAF8F0",
+            "--tw-prose-links": "#D4A843",
+            "--tw-prose-bold": "#FAF8F0",
+            "--tw-prose-counters": "#D4A843",
+            "--tw-prose-bullets": "rgba(212, 168, 67, 0.6)",
+            "--tw-prose-hr": "rgba(212, 168, 67, 0.25)",
+            "--tw-prose-quotes": "rgba(240, 237, 224, 0.95)",
+            "--tw-prose-quote-borders": "rgba(212, 168, 67, 0.5)",
+            "--tw-prose-captions": "rgba(250, 248, 240, 0.6)",
+            "--tw-prose-code": "#D4A843",
+            "--tw-prose-pre-code": "#FAF8F0",
+            "--tw-prose-pre-bg": "rgba(11, 29, 58, 0.8)",
+            "--tw-prose-th-borders": "rgba(212, 168, 67, 0.3)",
+            "--tw-prose-td-borders": "rgba(212, 168, 67, 0.2)",
+            "h1, h2, h3, h4": {
+              fontFamily: '"Playfair Display", Georgia, serif',
+              color: "#D4A843",
+              fontWeight: "600",
+            },
+            a: {
+              color: "#D4A843",
+              textDecoration: "none",
+              borderBottom: "1px solid rgba(212, 168, 67, 0.4)",
+              "&:hover": {
+                color: "#F0D68A",
+                borderBottomColor: "#F0D68A",
+              },
+            },
+            blockquote: {
+              fontStyle: "italic",
+              fontWeight: "500",
+              fontSize: "1.125rem",
+              color: "rgba(240, 237, 224, 0.95)",
+              borderLeftColor: "rgba(212, 168, 67, 0.5)",
+            },
+            strong: {
+              color: "#FAF8F0",
+            },
+          },
+        },
+      },
       animation: {
         twinkle: "twinkle 3s ease-in-out infinite",
         "twinkle-slow": "twinkle 5s ease-in-out infinite",

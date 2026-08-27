@@ -8,6 +8,7 @@ import { slugify } from "@/lib/slugify";
 
 interface HomeSectionsProps {
   isPostWedding: boolean;
+  dressCode?: string | null;
 }
 
 function formatDate(dateStr: string | null | undefined): string {
@@ -24,7 +25,7 @@ function formatTime(timeStr: string | null | undefined): string {
   return timeStr;
 }
 
-export default async function HomeSections({ isPostWedding }: HomeSectionsProps) {
+export default async function HomeSections({ isPostWedding, dressCode }: HomeSectionsProps) {
   const [settings, featureFlags, faqs] = await Promise.all([
     getSettings(
       "weddingDate", "weddingTime", "receptionTime",
@@ -213,6 +214,18 @@ export default async function HomeSections({ isPostWedding }: HomeSectionsProps)
                     View Full Schedule →
                   </Link>
                 </div>
+
+                {dressCode && (
+                  <div className="max-w-2xl mx-auto mt-8">
+                    <div className="card-celestial text-center hover:border-gold/40 transition-all duration-300">
+                      <div className="text-3xl mb-3">👗</div>
+                      <h3 className="heading-gold mb-2">Dress Code</h3>
+                      <p className="text-ivory/70 text-sm leading-relaxed">
+                        {dressCode}
+                      </p>
+                    </div>
+                  </div>
+                )}
               </section>
             </>
           )}

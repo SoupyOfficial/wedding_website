@@ -92,6 +92,7 @@ export interface Guest {
   plusOneName: string | null;
   plusOneAttending: boolean;
   dietaryNeeds: string | null;
+  isVegetarian: boolean;
   songRequest: string | null;
   danceSong: string | null;
   firstDanceSong: string | null;
@@ -109,6 +110,7 @@ export interface Guest {
 export const GUEST_BOOLS = [
   "plusOneAllowed",
   "plusOneAttending",
+  "isVegetarian",
 ] as const;
 
 export interface WeddingPartyMember {

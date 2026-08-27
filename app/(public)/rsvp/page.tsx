@@ -24,7 +24,9 @@ export default async function RSVPPage({
       />
     );
 
-  const settings = await getSettings("rsvpDeadline", "rsvpEditDeadline", "rafflePrize");
+  const settings = await getSettings(
+    "rsvpDeadline", "rsvpEditDeadline", "rafflePrize", "dressCode", "dressCodePinterestLink"
+  );
 
   const rawDeadline = settings?.rsvpDeadline ? String(settings.rsvpDeadline) : null;
   const easternDeadline = rawDeadline
@@ -59,6 +61,8 @@ export default async function RSVPPage({
       rsvpDeadline={easternDeadline}
       rsvpEditDeadlineIso={easternEditDeadline}
       rafflePrize={settings?.rafflePrize || "-1"}
+      dressCode={settings?.dressCode ? String(settings.dressCode) : null}
+      dressCodePinterestLink={settings?.dressCodePinterestLink ? String(settings.dressCodePinterestLink) : null}
       prefillName={prefillName}
     />
   );

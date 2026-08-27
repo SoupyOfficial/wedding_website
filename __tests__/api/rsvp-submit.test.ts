@@ -372,6 +372,33 @@ describe("POST /api/v1/rsvp/submit", () => {
     expect(res.status).toBe(200);
   });
 
+  it("stores isVegetarian as 1 in the DB when true", async () => {
+    mockQueryOne
+      .mockResolvedValueOnce(null)   // settings
+      .mockResolvedValueOnce(guest)  // existing guest
+      .mockResolvedValueOnce(guest); // guest after update
+    const res = await POST(makeReq({ guestId: "g1", attending: true, isVegetarian: true }));
+    expect(res.status).toBe(200);
+    const updateCall = mockExecute.mock.calls[0];
+    const sql = updateCall[0] as string;
+    const setList = sql.replace("UPDATE Guest SET ", "").split(" WHERE id = ?")[0].split(", ");
+    const argIdx = setList.indexOf("isVegetarian = ?");
+    expect(argIdx).toBeGreaterThanOrEqual(0);
+    const args = updateCall[1] as (string | number | null)[];
+    expect(args[argIdx]).toBe(1);
+  });
+
+  it("does not overwrite isVegetarian when not provided", async () => {
+    mockQueryOne
+      .mockResolvedValueOnce(null)   // settings
+      .mockResolvedValueOnce(guest)  // existing guest
+      .mockResolvedValueOnce(guest); // guest after update
+    const res = await POST(makeReq({ guestId: "g1", attending: true }));
+    expect(res.status).toBe(200);
+    const updateCall = mockExecute.mock.calls[0];
+    expect(updateCall[0]).not.toContain("isVegetarian");
+  });
+
   it("submits with only plusOneName", async () => {
     mockQueryOne
       .mockResolvedValueOnce(null)   // settings

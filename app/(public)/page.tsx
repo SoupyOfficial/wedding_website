@@ -18,7 +18,7 @@ export default async function HomePage() {
     "weddingDate", "weddingTime", "heroTagline", "heroTaglinePostWedding",
     "coupleName", "venueName", "venueAddress",
     "weddingHashtag", "postWeddingContent", "preWeddingContent",
-    "rsvpDeadline", "rafflePrize"
+    "rsvpDeadline", "rafflePrize", "dressCode"
   );
 
   const weddingDate = settings?.weddingDate;
@@ -229,7 +229,7 @@ export default async function HomePage() {
 
       {/* Below-fold content: schedule, quick links, story, FAQ */}
       <Suspense fallback={null}>
-        <HomeSections isPostWedding={isPostWedding} />
+        <HomeSections isPostWedding={isPostWedding} dressCode={settings?.dressCode ? String(settings.dressCode) : null} />
       </Suspense>
     </div>
   );

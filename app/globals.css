@@ -85,6 +85,27 @@
   .text-shadow-glow {
     text-shadow: 0 0 20px rgba(212, 168, 67, 0.3);
   }
+
+  .story-intro {
+    font-family: "Playfair Display", Georgia, serif;
+    font-size: 1.25rem;
+    line-height: 1.9;
+    color: rgba(250, 248, 240, 0.92);
+  }
+
+  .story-intro p {
+    margin-bottom: 1.5rem;
+  }
+
+  .story-intro p:first-of-type::first-letter {
+    float: left;
+    font-size: 3.5rem;
+    line-height: 1;
+    color: #d4a843;
+    font-family: "Playfair Display", Georgia, serif;
+    padding-right: 0.5rem;
+    padding-top: 0.25rem;
+  }
 }
 
 @layer utilities {

@@ -9,6 +9,7 @@ export interface RsvpSubmitInput {
   email?: string;
   phone?: string;
   dietaryNotes?: string;
+  isVegetarian?: boolean;
   plusOneName?: string;
   bringingPlusOne?: boolean | null;
   songRequest?: string;
@@ -40,7 +41,7 @@ export async function lookupGuest(firstName: string, lastName: string) {
   if (guests.length === 0 || guests.length > 1) return null;
 
   const guest = guests[0];
-  toBool(guest, "plusOneAllowed", "plusOneAttending");
+  toBool(guest, "plusOneAllowed", "plusOneAttending", "isVegetarian");
 
   return {
     guest: {
@@ -52,6 +53,7 @@ export async function lookupGuest(firstName: string, lastName: string) {
       plusOneAttending: guest.plusOneAttending,
       plusOneName: guest.plusOneName,
       dietaryNeeds: guest.dietaryNeeds,
+      isVegetarian: guest.isVegetarian,
       songRequest: guest.songRequest,
       danceSong: guest.danceSong,
       firstDanceSong: guest.firstDanceSong,
@@ -65,7 +67,7 @@ export async function lookupGuest(firstName: string, lastName: string) {
  * Returns an error message or the updated guest summary.
  */
 export async function submitRsvp(input: RsvpSubmitInput): Promise<{ error: string } | RsvpSubmitResult> {
-  const { guestId, attending, email, phone, dietaryNotes, plusOneName, bringingPlusOne, songRequest, songArtist, danceSong, firstDanceSong } = input;
+  const { guestId, attending, email, phone, dietaryNotes, isVegetarian, plusOneName, bringingPlusOne, songRequest, songArtist, danceSong, firstDanceSong } = input;
 
   const settings = await queryOne<{
     rsvpDeadline: string | null;
@@ -115,6 +117,7 @@ export async function submitRsvp(input: RsvpSubmitInput): Promise<{ error: strin
   if (email) { sets.push("email = ?"); args.push(String(email).trim().slice(0, 200)); }
   if (phone) { sets.push("phone = ?"); args.push(String(phone).trim().slice(0, 30)); }
   if (dietaryNotes) { sets.push("dietaryNeeds = ?"); args.push(String(dietaryNotes).trim().slice(0, 500)); }
+  if (isVegetarian !== undefined) { sets.push("isVegetarian = ?"); args.push(isVegetarian ? 1 : 0); }
   if (plusOneName) { sets.push("plusOneName = ?"); args.push(String(plusOneName).trim().slice(0, 100)); }
   if (bringingPlusOne !== undefined && bringingPlusOne !== null) { sets.push("plusOneAttending = ?"); args.push(bringingPlusOne ? 1 : 0); }
   if (danceSong !== undefined) { sets.push("danceSong = ?"); args.push(String(danceSong).trim().slice(0, 200)); }
@@ -125,7 +128,7 @@ export async function submitRsvp(input: RsvpSubmitInput): Promise<{ error: strin
 
   const guest = await queryOne<Guest>("SELECT * FROM Guest WHERE id = ?", [guestId]);
   if (!guest) return { error: "Guest not found." };
-  toBool(guest, "plusOneAllowed", "plusOneAttending");
+  toBool(guest, "plusOneAllowed", "plusOneAttending", "isVegetarian");
 
   if (songRequest && attending) {
     const existing = await queryOne<{ id: string }>(

@@ -1,0 +1,1269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Forever Campbells — Wedding Website Vision Walkthrough</title>
+<style>
+:root {
+  --midnight: #0B1D3A;
+  --midnight-light: #122B54;
+  --midnight-lighter: #1A3A6A;
+  --gold: #D4A843;
+  --gold-light: #E8C975;
+  --gold-dim: #8B6914;
+  --ivory: #FAF8F0;
+  --ivory-dim: #D4CFC2;
+  --card-bg: #0F2240;
+  --border-subtle: rgba(212, 168, 67, 0.2);
+  --text-muted: #A8B5C8;
+  --radius: 12px;
+  --radius-sm: 8px;
+  --radius-pill: 24px;
+  --font-heading: Georgia, 'Times New Roman', serif;
+  --font-body: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --transition: 0.2s ease;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--midnight);
+  color: var(--ivory);
+  font-family: var(--font-body);
+  line-height: 1.65;
+  min-height: 100vh;
+}
+
+/* ── Restore Banner ── */
+#restoreBanner {
+  display: none;
+  background: linear-gradient(135deg, var(--gold), var(--gold-light));
+  color: var(--midnight);
+  text-align: center;
+  padding: 10px 20px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  animation: slideDown 0.4s ease;
+  position: sticky;
+  top: 0;
+  z-index: 200;
+}
+#restoreBanner.visible { display: block; }
+@keyframes slideDown { from { transform: translateY(-100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+/* ── Toolbar ── */
+.toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--midnight);
+  border-bottom: 1px solid var(--border-subtle);
+  padding: 14px 24px;
+}
+.toolbar h1 {
+  font-family: var(--font-heading);
+  font-size: 1.5rem;
+  color: var(--gold);
+  margin-bottom: 4px;
+  font-weight: 400;
+}
+.toolbar p {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-bottom: 14px;
+}
+.toolbar-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+.progress {
+  font-family: var(--font-heading);
+  font-size: 0.95rem;
+  color: var(--gold-light);
+  white-space: nowrap;
+}
+.toolbar-controls input[type="text"],
+.toolbar-controls input[type="date"] {
+  background: var(--midnight-light);
+  border: 1px solid var(--border-subtle);
+  color: var(--ivory);
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  font-family: var(--font-body);
+}
+.toolbar-controls input[type="text"]::placeholder { color: var(--text-muted); }
+.toolbar-controls input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+}
+.toolbar-controls button {
+  background: var(--gold);
+  color: var(--midnight);
+  border: none;
+  padding: 8px 18px;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.85rem;
+  font-family: var(--font-body);
+  transition: background var(--transition), transform var(--transition);
+}
+.toolbar-controls button:hover { background: var(--gold-light); transform: translateY(-1px); }
+.toolbar-controls button.secondary {
+  background: transparent;
+  border: 1px solid var(--gold-dim);
+  color: var(--gold-dim);
+}
+.toolbar-controls button.secondary:hover { border-color: var(--gold); color: var(--gold); }
+
+/* ── Sections ── */
+main {
+  max-width: 780px;
+  margin: 0 auto;
+  padding: 32px 20px 80px;
+}
+
+.section-block {
+  margin-bottom: 28px;
+}
+
+.section-block details > summary {
+  list-style: none;
+  cursor: pointer;
+  font-family: var(--font-heading);
+  font-size: 1.15rem;
+  padding: 16px 20px;
+  background: var(--card-bg);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius);
+  color: var(--gold-light);
+  transition: background var(--transition), border-color var(--transition);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  user-select: none;
+}
+.section-block details > summary::-webkit-details-marker { display: none; }
+.section-block details > summary:hover {
+  background: var(--midnight-light);
+  border-color: var(--gold-dim);
+}
+.section-block details > summary::before {
+  content: "▸";
+  display: inline-block;
+  font-size: 0.8rem;
+  transition: transform 0.3s ease;
+}
+.section-block details[open] > summary::before { transform: rotate(90deg); }
+.section-block details[open] > summary {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  border-bottom-color: transparent;
+}
+.section-status {
+  margin-left: auto;
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  color: var(--gold);
+  opacity: 0;
+  transition: opacity var(--transition);
+}
+.section-status.has-answers { opacity: 1; }
+
+.section-content {
+  background: var(--card-bg);
+  border: 1px solid var(--border-subtle);
+  border-top: none;
+  border-radius: 0 0 var(--radius) var(--radius);
+  padding: 10px 20px 24px;
+}
+@keyframes fadeContents { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
+.section-block details[open] .section-content { animation: fadeContents 0.25s ease; }
+
+/* ── Divider ── */
+.section-divider {
+  text-align: center;
+  color: var(--gold-dim);
+  font-size: 0.75rem;
+  letter-spacing: 6px;
+  margin: 8px 0;
+  opacity: 0.5;
+}
+
+/* ── Questions ── */
+.question {
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 16px 18px;
+  margin-top: 14px;
+  background: var(--midnight);
+  transition: border-color var(--transition);
+}
+.question:focus-within { border-color: var(--gold-dim); }
+.question legend {
+  font-family: var(--font-heading);
+  font-size: 0.95rem;
+  color: var(--ivory);
+  margin-bottom: 10px;
+  line-height: 1.5;
+  display: block;
+  width: 100%;
+}
+
+/* ── Pill Group ── */
+.pill-group {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.pill-group label {
+  position: relative;
+  flex: 1;
+  min-width: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+.pill-group label input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+.pill-group label span {
+  display: inline-block;
+  padding: 6px 16px;
+  border: 1px solid var(--gold-dim);
+  border-radius: var(--radius-pill);
+  font-size: 0.82rem;
+  cursor: pointer;
+  color: var(--ivory-dim);
+  transition: all var(--transition);
+  user-select: none;
+  font-family: var(--font-body);
+}
+.pill-group label span:hover { border-color: var(--gold); color: var(--gold-light); }
+.pill-group label input:checked + span {
+  background: var(--gold);
+  color: var(--midnight);
+  border-color: var(--gold);
+  font-weight: 600;
+}
+
+/* ── Star Rating ── */
+.star-rating {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 10px;
+  flex-direction: row-reverse;
+  justify-content: flex-end;
+}
+.star-rating label { position: relative; cursor: pointer; }
+.star-rating label input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+.star-rating label span {
+  font-size: 1.5rem;
+  color: #3A4A5C;
+  transition: color var(--transition), transform var(--transition);
+  display: block;
+  user-select: none;
+}
+.star-rating label:hover span,
+.star-rating label:hover ~ label span { color: var(--gold-light); }
+.star-rating label input:checked + span { color: var(--gold); }
+.star-rating label input:checked + span,
+.star-rating label input:checked ~ label span { color: var(--gold); }
+.star-rating label:hover span { transform: scale(1.15); }
+
+/* ── Textareas ── */
+.item-notes {
+  width: 100%;
+  background: var(--midnight-lighter);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  color: var(--ivory);
+  padding: 10px 14px;
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  resize: vertical;
+  transition: border-color var(--transition);
+}
+.item-notes::placeholder { color: var(--text-muted); font-style: italic; }
+.item-notes:focus { border-color: var(--gold-dim); outline: none; }
+.item-notes.large { min-height: 80px; }
+
+/* ── Text-only question ── */
+.text-only legend {
+  font-size: 1rem;
+}
+
+/* ── Print ── */
+@media print {
+  body { background: #fff; color: #111; }
+  .toolbar, #restoreBanner { display: none !important; }
+  .section-block details { break-inside: avoid; }
+  .section-block details[open] { display: block; }
+  .section-divider { display: none; }
+  main { max-width: 100%; padding: 0; }
+  .section-block details > summary {
+    background: #f5f5f5;
+    border: 1px solid #999;
+    color: #222;
+    border-radius: 0;
+  }
+  .section-block details > summary::before { content: "▼"; }
+  .section-content { background: #fff; border-color: #999; }
+  .question { background: #fff; border-color: #ccc; }
+  .question legend { color: #111; }
+  .pill-group label input:checked + span {
+    background: #222;
+    color: #fff;
+    border-color: #222;
+  }
+  .pill-group label span { border-color: #999; color: #555; }
+  .star-rating label input:checked + span,
+  .star-rating label input:checked ~ label span { color: #B8860B; }
+  .star-rating label span { color: #ccc; }
+  .item-notes { background: #fff; border-color: #999; color: #111; }
+  .section-status { color: #555; }
+}
+
+/* ── Responsive ── */
+@media (max-width: 600px) {
+  .toolbar { padding: 12px 14px; }
+  .toolbar h1 { font-size: 1.2rem; }
+  .toolbar-controls { flex-direction: column; align-items: stretch; }
+  .toolbar-controls input { width: 100%; }
+  .toolbar-controls button { width: 100%; text-align: center; }
+  main { padding: 20px 10px 60px; }
+  .question { padding: 12px 14px; }
+  .pill-group label { min-width: 0; }
+  .section-content { padding: 8px 10px 16px; }
+}
+</style>
+</head>
+<body>
+
+<div id="restoreBanner">💾 Your previous progress has been restored!</div>
+
+<header class="toolbar">
+  <h1>🌸 Ashley & Jacob's Vision Walkthrough</h1>
+  <p>Reviewing our wedding website together, section by section. Your answers save automatically.</p>
+  <div class="toolbar-controls">
+    <span class="progress">🌸 <span id="sectionCount">0</span> of 16 sections reviewed</span>
+    <input type="text" id="reviewer1" placeholder="Your name" value="Ashley Campbell">
+    <input type="text" id="reviewer2" placeholder="Partner's name" value="Jacob Campbell">
+    <input type="date" id="reviewDate" value="2026-08-10">
+    <button onclick="exportJSON()">💾 Save & Export</button>
+    <button class="secondary" onclick="clearAll()">🧹 Start Fresh</button>
+  </div>
+</header>
+
+<main>
+
+<!-- ══ Section 0: ✨ When Guests First Arrive ══ -->
+<div class="section-block">
+  <details open>
+    <summary>✨ When Guests First Arrive <span class="section-status" id="status-s0"></span></summary>
+    <div class="section-content">
+
+      <fieldset class="question" data-key="global_firstImpression">
+        <legend>1. When you first land on the site — does it feel magical and romantic, like walking into our wedding?</legend>
+        <div class="pill-group">
+          <label><input type="radio" name="global_firstImpression" value="yes" onchange="autoSave()"><span>✨ Yes, it's perfect</span></label>
+          <label><input type="radio" name="global_firstImpression" value="no" onchange="autoSave()"><span>👎 Not quite</span></label>
+          <label><input type="radio" name="global_firstImpression" value="partial" onchange="autoSave()"><span>🤔 Almost there</span></label>
+        </div>
+        <textarea class="item-notes" data-key="global_firstImpression_notes" placeholder="What would make that first moment feel more magical?" rows="2" oninput="autoSave()"></textarea>
+      </fieldset>
+
+      <fieldset class="question" data-key="global_navigation">
+        <legend>2. Can you find everything easily? Does the menu feel like "us"?</legend>
+        <div class="pill-group">
+          <label><input type="radio" name="global_navigation" value="yes" onchange="autoSave()"><span>✨ Yes, it's perfect</span></label>
+          <label><input type="radio" name="global_navigation" value="no" onchange="autoSave()"><span>👎 Not quite</span></label>
+          <label><input type="radio" name="global_navigation" value="partial" onchange="autoSave()"><span>🤔 Almost there</span></label>
+        </div>
+        <textarea class="item-notes" data-key="global_navigation_notes" placeholder="Is anything hard to find? Does the wording feel right?" rows="2" oninput="autoSave()"></textarea>
+      </fieldset>
+
+      <fieldset class="question" data-key="global_mobile">
+        <legend>3. Open it on your phone — does it feel just as special as on desktop?</legend>
+        <div class="pill-group">
+          <label><input type="radio" name="global_mobile" value="yes" onchange="autoSave()"><span>✨ Yes, it's perfect</span></label>
+          <label><input type="radio" name="global_mobile" value="no" onchange="autoSave()"><span>👎 Not quite</span></label>
+          <label><input type="radio" name="global_mobile" value="partial" onchange="autoSave()"><span>🤔 Almost there</span></label>
+        </div>
+        <textarea class="item-notes" data-key="global_mobile_notes" placeholder="Anything feel cramped or hard to tap on your phone?" rows="2" oninput="autoSave()"></textarea>
+      </fieldset>
+
+      <fieldset class="question" data-key="global_footer">
+        <legend>4. The bottom of the page — does it have everything guests would look for?</legend>
+        <div class="pill-group">
+          <label><input type="radio" name="global_footer" value="yes" onchange="autoSave()"><span>✨ Yes, it's perfect</span></label>
+          <label><input type="radio" name="global_footer" value="no" onchange="autoSave()"><span>👎 Not quite</span></label>
+          <label><input type="radio" name="global_footer" value="partial" onchange="autoSave()"><span>🤔 Almost there</span></label>
+        </div>
+        <textarea class="item-notes" data-key="global_footer_notes" placeholder="Anything missing from the footer? Social links, contact, registry?" rows="2" oninput="autoSave()"></textarea>
+      </fieldset>
+
+    </div>
+  </details>
+</div>
+
+<div class="section-divider">· · · ✨ · · ·</div>
+
+<!-- ══ Section 1: 🏠 Our Homepage ══ -->
+<div class="section-block">
+  <details>
+    <summary>🏠 Our Homepage — The First Hello <span class="section-status" id="status-s1"></span></summary>
+    <div class="section-content">
+
+      <fieldset class="question" data-key="home_hero">
+        <legend>1. The big hero section at the top — read the tagline aloud. Does it sound like us? Does it give you butterflies?</legend>
+        <div class="pill-group">
+          <label><input type="radio" name="home_hero" value="yes" onchange="autoSave()"><span>✨ Yes, it's perfect</span></label>
+          <label><input type="radio" name="home_hero" value="no" onchange="autoSave()"><span>👎 Not quite</span></label>
+          <label><input type="radio" name="home_hero" value="partial" onchange="autoSave()"><span>🤔 Almost there</span></label>
+        </div>
+        <textarea class="item-notes" data-key="home_hero_notes" placeholder="What tagline would make your heart flutter?" rows="2" oninput="autoSave()"></textarea>
+      </fieldset>
+
+      <fieldset class="question" data-key="home_countdown">
+        <legend>2. The countdown timer — does it build excitement?</legend>
+        <div class="pill-group">
+          <label><input type="radio" name="home_countdown" value="yes" onchange="autoSave()"><span>✨ Yes, it's perfect</span></label>
+          <label><input type="radio" name="home_countdown" value="no" onchange="autoSave()"><span>👎 Not quite</span></label>
+          <label><input type="radio" name="home_countdown" value="partial" onchange="autoSave()"><span>🤔 Almost there</span></label>
+        </div>
+        <textarea class="item-notes" data-key="home_countdown_notes" placeholder="Does it feel celebratory? Should it show something different?" rows="2" oninput="autoSave()"></textarea>
+      </fieldset>
+
+      <fieldset class="question" data-key="home_personalGreeting">
+        <legend>3. When a guest clicks their invite link, does the "Welcome, [Name]!" greeting feel warm and personal?</legend>
+        <div class="pill-group">
+          <label><input type="radio" name="home_personalGreeting" value="yes" onchange="autoSave()"><span>✨ Yes, it's perfect</span></label>
+          <label><input type="radio" name="home_personalGreeting" value="no" onchange="autoSave()"><span>👎 Not quite</span></label>
+          <label><input type="radio" name="home_personalGreeting" value="partial" onchange="autoSave()"><span>🤔 Almost there</span></label>
+        </div>
+        <textarea class="item-notes" data-key="home_personalGreeting_notes" placeholder="Would you change the wording to make it feel more like us?" rows="2" oninput="autoSave()"></textarea>
+      </fieldset>
+
+      <fieldset class="question" data-key="home_belowFold">
+        <legend>4. Scroll down past the hero — do the preview sections (schedule, our story, FAQ) make you want to explore more?</legend>
+        <div class="pill-group">
+          <label><input type="radio" name="home_belowFold" value="yes" onchange="autoSave()"><span>✨ Yes, it's perfect</span></label>
+          <label><input type="radio" name="home_belowFold" value="no" onchange="autoSave()"><span>👎 Not quite</span></label>
+          <label><input type="radio" name="home_belowFold" value="partial" onchange="autoSave()"><span>🤔 Almost there</span></label>
+        </div>
+        <textarea class="item-notes" data-key="home_belowFold_notes" placeholder="What section would you add or move to make the flow better?" rows="2" oninput="autoSave()"></textarea>
+      </fieldset>
+
+      <fieldset class="question" data-key="home_overall">
+        <legend>5. Overall — does this page feel like the opening chapter of our wedding story?</legend>
+        <div class="pill-group">
+          <label><input type="radio" name="home_overall" value="yes" onchange="autoSave()"><span>✨ Yes, it's perfect</span></label>
+          <label><input type="radio" name="home_overall" value="no" onchange="autoSave()"><span>👎 Not quite</span></label>
+          <label><input type="radio" name="home_overall" value="partial" onchange="autoSave()"><span>🤔 Almost there</span></label>
+        </div>
+        <textarea class="item-notes" data-key="home_overall_notes" placeholder="What's the one thing that would make the homepage feel complete?" rows="2" oninput="autoSave()"></textarea>
+      </fieldset>
+
+    </div>
+  </details>
+</div>
+
+<div class="section-divider">· · · 💕 · · ·</div>
+
+<!-- ══ Section 2: 💕 Our Love Story ══ -->
+<div class="section-block">
+  <details>
+    <summary>💕 Our Love Story <span class="section-status" id="status-s2"></span></summary>
+    <div class="section-content">
+
+      <fieldset class="question" data-key="story_content">
+        <legend>1. Our story — read through it. Does it feel authentic? Would a guest who doesn't know us well feel connected to our journey?</legend>
+        <div class="pill-group">
+          <label><input type="radio" name="story_content" value="yes" onchange="autoSave()"><span>✨ Yes, it's perfect</span></label>
+          <label><input type="radio" name="story_content" value="no" onchange="autoSave()"><span>👎 Not quite</span></label>
+          <label><input type="radio" name="story_content" value="partial" onchange="autoSave()"><span>🤔 Almost there</span></label>
+        </div>
+        <textarea class="item-notes" data-key="story_content_notes" placeholder="Any moments you want to add, rephrase, or make more personal?" rows="2" oninput="autoSave()"></textarea>
+      </fieldset>
+
+      <fieldset class="question" data-key="story_photos">
+        <legend>2. The photo timeline — do the photos capture the right moments? Are there any missing?</legend>
+        <div class="pill-group">
+          <label><input type="radio" name="story_photos" value="yes" onchange="autoSave()"><span>✨ Yes, it's perfect</span></label>
+          <label><input type="radio" name="story_photos" value="no" onchange="autoSave()"><span>👎 Not quite</span></label>
+          <label><input type="radio" name="story_photos" value="partial" onchange="autoSave()"><span>🤔 Almost there</span></label>
+        </div>
+        <textarea class="item-notes" data-key="story_photos_notes" placeholder="Which photo would you swap? Any special moment we should add a photo for?" rows="2" oninput="autoSave()"></textarea>
+      </fieldset>
+
+      <fieldset class="question" data-key="story_overall">
+        <legend>3. Does this page make you smile and feel proud of our story?</legend>
+        <div class="pill-group">
+          <label><input type="radio" name="story_overall" value="yes" onchange="autoSave()"><span>✨ Yes, it's perfect</span></label>
+          <label><input type="radio" name="story_overall" value="no" onchange="autoSave()"><span>👎 Not quite</span></label>
+          <label><input type="radio" name="story_overall" value="partial" onchange="autoSave()"><span>🤔 Almost there</span></label>
+        </div>
+        <textarea class="item-notes" data-key="story_overall_notes" placeholder="What would make this page feel even more like our journey?" rows="2" oninput="autoSave()"></textarea>
+      </fieldset>
+
+    </div>
+  </details>
+</div>
+
+<div class="section-divider">· · · 📅 · · ·</div>
+
+<!-- ══ Section 3: 📅 The Big Day ══ -->
+<div class="section-block">
+  <details>
+    <summary>📅 The Big Day — Schedule &amp; Details <span class="section-status" id="status-s3"></span></summary>
+    <div class="section-content">
+
+      <fieldset class="question" data-key="schedule_clarity">
+        <legend>1. Is the weekend timeline clear? Can guests easily see what's happening and when?</legend>
+        <div class="pill-group">
+          <label><input type="radio" name="schedule_clarity" value="yes" onchange="autoSave()"><span>✨ Yes, it's perfect</span></label>
+          <label><input type="radio" name="schedule_clarity" value="no" onchange="autoSave()"><span>👎 Not quite</span></label>
+          <label><input type="radio" name="schedule_clarity" value="partial" onchange="autoSave()"><span>🤔 Almost there</span></label>
+        </div>
+        <textarea class="item-notes" data-key="schedule_clarity_notes" placeholder="Any event times or details that need tweaking?" rows="2" oninput="autoSave()"></textarea>
+      </fieldset>
+
+      <fieldset class="question" data-key="schedule_venue">
+        <legend>2. The venue details — do they paint a picture of where we're getting married?</legend>
+        <div class="pill-group">
+          <label><input type="radio" name="schedule_venue" value="yes" onchange="autoSave()"><span>✨ Yes, it's perfect</span></label>
+          <label><input type="radio" name="schedule_venue" value="no" onchange="autoSave()"><span>👎 Not quite</span></label>
+          <label><input type="radio" name="schedule_venue" value="partial" onchange="autoSave()"><span>🤔 Almost there</span></label>
+        </div>
+        <textarea class="item-notes" data-key="schedule_venue_notes" placeholder="Does the venue description capture the atmosphere we want?" rows="2" oninput="autoSave()"></textarea>
+      </fieldset>
+
+      <fieldset class="question" data-key="schedule_details">
+        <legend>3. Dress code, parking, accessibility, children policy, weather info — is everything covered that guests need to know?</legend>
+        <div class="pill-group">
+          <label><input type="radio" name="schedule_details" value="yes" onchange="autoSave()"><span>✨ Yes, it's perfect</span></label>
+          <label><input type="radio" name="schedule_details" value="no" onchange="autoSave()"><span>👎 Not quite</span></label>
+          <label><input type="radio" name="schedule_details" value="partial" onchange="autoSave()"><span>🤔 Almost there</span></label>
+        </div>
+        <textarea class="item-notes" data-key="schedule_details_notes" placeholder="What practical info would you add or adjust?" rows="2" oninput="autoSave()"></textarea>
+      </fieldset>
+
+      <fieldset class="question" data-key="schedule_calendar">
+        <legend>4. The "Add to Calendar" buttons — helpful touch or unnecessary?</legend>
+        <div class="pill-group">
+          <label><input type="radio" name="schedule_calendar" value="yes" onchange="autoSave()"><span>✨ Love it</span></label>
+          <label><input type="radio" name="schedule_calendar" value="no" onchange="autoSave()"><span>👎 Not needed</span></label>
+          <label><input type="radio" name="schedule_calendar" value="partial" onchange="autoSave()"><span>🤔 Unsure</span></label>
+        </div>
+        <textarea class="item-notes" data-key="schedule_calendar_notes" placeholder="Any thoughts on how to make it more useful?" rows="2" oninput="autoSave()"></textarea>
+      </fieldset>
+
+    </div>
+  </details>
+</div>
+
+<div class="section-divider">· · · 💌 · · ·</div>
+
+<!-- ══ Section 4: 💌 Guest RSVP Journey ══ -->
+<div class="section-block">
+  <details>
+    <summary>💌 Guest RSVP Journey <span class="section-status" id="status-s4"></span></summary>
+    <div class="section-content">
+
+      <fieldset class="question" data-key="rsvp_lookup">
+        <legend>1. Finding your invitation by name — does it feel easy and stress-free?</legend>
+        <div class="pill-group">
+          <label><input type="radio" name="rsvp_lookup" value="yes" onchange="autoSave()"><span>✨ Yes, it's perfect</span></label>
+          <label><input type="radio" name="rsvp_lookup" value="no" onchange="autoSave()"><span>👎 Not quite</span></label>
+          <label><input type="radio" name="rsvp_lookup" value="partial" onchange="autoSave()"><span>🤔 Almost there</span></label>
+        </div>
+        <textarea class="item-notes" data-key="rsvp_lookup_notes" placeholder="Would Grandma Jean figure it out? Any friction points?" rows="2" oninput="autoSave()"></textarea>
+      </fieldset>
+
+      <fieldset class="question" data-key="rsvp_attending">
+        <legend>2. The "Joyfully Accept" / "Regretfully Decline" buttons — do they feel warm and human?</legend>
+        <div class="pill-group">
+          <label><input type="radio" name="rsvp_attending" value="yes" onchange="autoSave()"><span>✨ Yes, it's perfect</span></label>
+          <label><input type="radio" name="rsvp_attending" value="no" onchange="autoSave()"><span>👎 Not quite</span></label>
+          <label><input type="radio" name="rsvp_attending" value="partial" onchange="autoSave()"><span>🤔 Almost there</span></label>
+        </div>
+        <textarea class="item-notes" data-key="rsvp_attending_notes" placeholder="Do these words capture the tone we want? Too casual or too formal?" rows="2" oninput="autoSave()"></textarea>
+      </fieldset>
+
+      <fieldset class="question" data-key="rsvp_meal">
+        <legend>3. Meal selection — are the options clear? Do the dietary badges (V/VG/GF) make sense?</legend>
+        <div class="pill-group">
+          <label><input type="radio" name="rsvp_meal" value="yes" onchange="autoSave()"><span>✨ Yes, it's perfect</span></label>
+          <label><input type="radio" name="rsvp_meal" value="no" onchange="autoSave()"><span>👎 Not quite</span></label>
+          <label><input type="radio" name="rsvp_meal" value="partial" onchange="autoSave()"><span>🤔 Almost there</span></label>
+        </div>
+        <textarea class="item-notes" data-key="rsvp_meal_notes" placeholder="Are the meal descriptions appetizing? Allergies handled well?" rows="2" oninput="autoSave()"></textarea>
+      </fieldset>
+
+      <fieldset class="question" data-key="rsvp_songs">
+        <legend>4. The song request section — fun and inviting, or feels like a chore?</legend>
+        <div class="pill-group">
+          <label><input type="radio" name="rsvp_songs" value="yes" onchange="autoSave()"><span>✨ So fun!</span></label>
+          <label><input type="radio" name="rsvp_songs" value="no" onchange="autoSave()"><span>👎 Feels like a chore</span></label>
+          <label><input type="radio" name="rsvp_songs" value="partial" onchange="autoSave()"><span>🤔 Could be better</span></label>
+        </div>
+        <textarea class="item-notes" data-key="rsvp_songs_notes" placeholder="What would make song requests feel like a fun moment, not a form field?" rows="2" oninput="autoSave()"></textarea>
+      </fieldset>
+
+      <fieldset class="question" data-key="rsvp_done">
+        <legend>5. After submitting — does the confirmation screen leave you feeling excited and appreciated?</legend>
+        <div class="pill-group">
+          <label><input type="radio" name="rsvp_done" value="yes" onchange="autoSave()"><span>✨ Yes, it's perfect</span></label>
+          <label><input type="radio" name="rsvp_done" value="no" onchange="autoSave()"><span>👎 Not quite</span></label>
+          <label><input type="radio" name="rsvp_done" value="partial" onchange="autoSave()"><span>🤔 Almost there</span></label>
+        </div>
+        <textarea class="item-notes" data-key="rsvp_done_notes" placeholder="What message would you want a guest to see right after they RSVP?" rows="2" oninput="autoSave()"></textarea>
+      </fieldset>
+
+    </div>
+  </details>
+</div>
+
+<div class="section-divider">· · · 📸 · · ·</div>
+
+<!-- ══ Section 5: 📸 Our Photo Gallery ══ -->
+<div class="section-block">
+  <details>
+    <summary>📸 Our Photo Gallery <span class="section-status" id="status-s5"></span></summary>
+    <div class="section-content">
+
+      <fieldset class="question" data-key="gallery_browse">
+        <legend>1. Browsing the photos — does it feel festive and joyful? Easy to scroll through?</legend>
+        <div class="pill-group">
+          <label><input type="radio" name="gallery_browse" value="yes" onchange="autoSave()"><span>✨ Yes, it's perfect</span></label>
+          <label><input type="radio" name="gallery_browse" value="no" onchange="autoSave()"><span>👎 Not quite</span></label>
+          <label><input type="radio" name="gallery_browse" value="partial" onchange="autoSave()"><span>🤔 Almost there</span></label>
+        </div>
+        <textarea class="item-notes" data-key="gallery_browse_notes" placeholder="Do the photos flow nicely? Any that feel out of place?" rows="2" oninput="autoSave()"></textarea>
+      </fieldset>
+
+      <fieldset class="question" data-key="gallery_filter">
+        <legend>2. The tag filters — useful for finding specific moments, or unnecessary?</legend>
+        <div class="pill-group">
+          <label><input type="radio" name="gallery_filter" value="yes" onchange="autoSave()"><span>✨ Super useful</span></label>
+          <label><input type="radio" name="gallery_filter" value="no" onchange="autoSave()"><span>👎 Not needed</span></label>
+          <label><input type="radio" name="gallery_filter" value="partial" onchange="autoSave()"><span>🤔 Could be simpler</span></label>
+        </div>
+        <textarea class="item-notes" data-key="gallery_filter_notes" placeholder="What filter categories would make the most sense?" rows="2" oninput="autoSave()"></textarea>
+      </fieldset>
+
+    </div>
+  </details>
+</div>
+
+<div class="section-divider">· · · 👰 · · ·</div>
+
+<!-- ══ Section 6: 👰🤵 Our Wedding Party ══ -->
+<div class="section-block">
+  <details>
+    <summary>👰🤵 Our Wedding Party <span class="section-status" id="status-s6"></span></summary>
+    <div class="section-content">
+
+      <fieldset class="question" data-key="wp_representation">
+        <legend>1. Do the bridesmaids and groomsmen feel honored and well-represented?</legend>
+        <div class="pill-group">
+          <label><input type="radio" name="wp_representation" value="yes" onchange="autoSave()"><span>✨ Yes, it's perfect</span></label>
+          <label><input type="radio" name="wp_representation" value="no" onchange="autoSave()"><span>👎 Not quite</span></label>
+          <label><input type="radio" name="wp_representation" value="partial" onchange="autoSave()"><span>🤔 Almost there</span></label>
+        </div>
+        <textarea class="item-notes" data-key="wp_representation_notes" placeholder="Anyone you want to add a special note for? Photo updates needed?" rows="2" oninput="autoSave()"></textarea>
+      </fieldset>
+
+      <fieldset class="question" data-key="wp_flowers">
+        <legend>2. The flower girls and ring bearers section — does it feel adorable and special, as it should?</legend>
+        <div class="pill-group">
+          <label><input type="radio" name="wp_flowers" value="yes" onchange="autoSave()"><span>✨ Absolutely precious</span></label>
+          <label><input type="radio" name="wp_flowers" value="no" onchange="autoSave()"><span>👎 Needs work</span></label>
+          <label><input type="radio" name="wp_flowers" value="partial" onchange="autoSave()"><span>🤔 Almost there</span></label>
+        </div>
+        <textarea class="item-notes" data-key="wp_flowers_notes" placeholder="What would make this section cuter or more special?" rows="2" oninput="autoSave()"></textarea>
+      </fieldset>
+
+      <fieldset class="question" data-key="wp_overall">
+        <legend>3. Would you be proud to show this page to your wedding party?</legend>
+        <div class="pill-group">
+          <label><input type="radio" name="wp_overall" value="yes" onchange="autoSave()"><span>✨ Absolutely!</span></label>
+          <label><input type="radio" name="wp_overall" value="no" onchange="autoSave()"><span>👎 Not yet</span></label>
+          <label><input type="radio" name="wp_overall" value="partial" onchange="autoSave()"><span>🤔 Getting there</span></label>
+        </div>
+        <textarea class="item-notes" data-key="wp_overall_notes" placeholder="What would you want to tweak before sharing it with the wedding party?" rows="2" oninput="autoSave()"></textarea>
+      </fieldset>
+
+    </div>
+  </details>
+</div>
+
+<div class="section-divider">· · · 🎉 · · ·</div>
+
+<!-- ══ Section 7: 🎉 The Party — Entertainment ══ -->
+<div class="section-block">
+  <details>
+    <summary>🎉 The Party — Entertainment <span class="section-status" id="status-s7"></span></summary>
+    <div class="section-content">
+
+      <fieldset class="question" data-key="ent_excitement">
+        <legend>1. Does this page build anticipation for the reception?</legend>
+        <div class="pill-group">
+          <label><input type="radio" name="ent_excitement" value="yes" onchange="autoSave()"><span>✨ I'm excited!</span></label>
+          <label><input type="radio" name="ent_excitement" value="no" onchange="autoSave()"><span>👎 Not really</span></label>
+          <label><input type="radio" name="ent_excitement" value="partial" onchange="autoSave()"><span>🤔 Could be better</span></label>
+        </div>
+        <textarea class="item-notes" data-key="ent_excitement_notes" placeholder="What would get you and guests more excited about the party?" rows="2" oninput="autoSave()"></textarea>
+      </fieldset>
+
+      <fieldset class="question" data-key="ent_activities">
+        <legend>2. Are all the activities and special moments we've planned represented here?</legend>
+        <div class="pill-group">
+          <label><input type="radio" name="ent_activities" value="yes" onchange="autoSave()"><span>✨ Everything's here</span></label>
+          <label><input type="radio" name="ent_activities" value="no" onchange="autoSave()"><span>👎 Things missing</span></label>
+          <label><input type="radio" name="ent_activities" value="partial" onchange="autoSave()"><span>🤔 A few missing</span></label>
+        </div>
+        <textarea class="item-notes" data-key="ent_activities_notes" placeholder="What special moments or activities should we add or highlight more?" rows="2" oninput="autoSave()"></textarea>
+      </fieldset>
+
+    </div>
+  </details>
+</div>
+
+<div class="section-divider">· · · 🎁 · · ·</div>
+
+<!-- ══ Section 8: 🎁 Gift Registry ══ -->
+<div class="section-block">
+  <details>
+    <summary>🎁 Gift Registry <span class="section-status" id="status-s8"></span></summary>
+    <div class="section-content">
+
+      <fieldset class="question" data-key="reg_gracious">
+        <legend>1. Does the registry feel gracious and pressure-free? "Your presence is the gift" tone?</legend>
+        <div class="pill-group">
+          <label><input type="radio" name="reg_gracious" value="yes" onchange="autoSave()"><span>✨ Perfect tone</span></label>
+          <label><input type="radio" name="reg_gracious" value="no" onchange="autoSave()"><span>👎 Feels grabby</span></label>
+          <label><input type="radio" name="reg_gracious" value="partial" onchange="autoSave()"><span>🤔 Could soften it</span></label>
+        </div>
+        <textarea class="item-notes" data-key="reg_gracious_notes" placeholder="How do you want guests to feel when they see our registry page?" rows="2" oninput="autoSave()"></textarea>
+      </fieldset>
+
+      <fieldset class="question" data-key="reg_clarity">
+        <legend>2. Is it clear how guests can contribute, whether it's a fund, store registry, or specific item?</legend>
+        <div class="pill-group">
+          <label><input type="radio" name="reg_clarity" value="yes" onchange="autoSave()"><span>✨ Crystal clear</span></label>
+          <label><input type="radio" name="reg_clarity" value="no" onchange="autoSave()"><span>👎 Confusing</span></label>
+          <label><input type="radio" name="reg_clarity" value="partial" onchange="autoSave()"><span>🤔 A bit unclear</span></label>
+        </div>
+        <textarea class="item-notes" data-key="reg_clarity_notes" placeholder="Would grandma understand how to give a gift on this page?" rows="2" oninput="autoSave()"></textarea>
+      </fieldset>
+
+    </div>
+  </details>
+</div>
+
+<div class="section-divider">· · · ✈️ · · ·</div>
+
+<!-- ══ Section 9: ✈️ Travel & Stay ══ -->
+<div class="section-block">
+  <details>
+    <summary>✈️ Travel &amp; Stay <span class="section-status" id="status-s9"></span></summary>
+    <div class="section-content">
+
+      <fieldset class="question" data-key="travel_hotels">
+        <legend>1. Hotel information — easy to find? Does the room block info feel clear?</legend>
+        <div class="pill-group">
+          <label><input type="radio" name="travel_hotels" value="yes" onchange="autoSave()"><span>✨ Yes, it's perfect</span></label>
+          <label><input type="radio" name="travel_hotels" value="no" onchange="autoSave()"><span>👎 Not quite</span></label>
+          <label><input type="radio" name="travel_hotels" value="partial" onchange="autoSave()"><span>🤔 Almost there</span></label>
+        </div>
+        <textarea class="item-notes" data-key="travel_hotels_notes" placeholder="Any hotel details or room block info you'd adjust?" rows="2" oninput="autoSave()"></textarea>
+      </fieldset>
+
+      <fieldset class="question" data-key="travel_transport">
+        <legend>2. Airports, driving directions, transportation — do out-of-town guests have what they need?</legend>
+        <div class="pill-group">
+          <label><input type="radio" name="travel_transport" value="yes" onchange="autoSave()"><span>✨ Yes, it's perfect</span></label>
+          <label><input type="radio" name="travel_transport" value="no" onchange="autoSave()"><span>👎 Not quite</span></label>
+          <label><input type="radio" name="travel_transport" value="partial" onchange="autoSave()"><span>🤔 Almost there</span></label>
+        </div>
+        <textarea class="item-notes" data-key="travel_transport_notes" placeholder="What would make travel easier for your out-of-town family?" rows="2" oninput="autoSave()"></textarea>
+      </fieldset>
+
+      <fieldset class="question" data-key="travel_activities">
+        <legend>3. The "Things to Do" section — does it make guests excited to explore the area?</legend>
+        <div class="pill-group">
+          <label><input type="radio" name="travel_activities" value="yes" onchange="autoSave()"><span>✨ Yes, it's perfect</span></label>
+          <label><input type="radio" name="travel_activities" value="no" onchange="autoSave()"><span>👎 Not quite</span></label>
+          <label><input type="radio" name="travel_activities" value="partial" onchange="autoSave()"><span>🤔 Almost there</span></label>
+        </div>
+        <textarea class="item-notes" data-key="travel_activities_notes" placeholder="What local gems, restaurants, or activities would you recommend?" rows="2" oninput="autoSave()"></textarea>
+      </fieldset>
+
+      <fieldset class="question" data-key="travel_overall">
+        <legend>4. Does this page make guests feel taken care of and welcomed?</legend>
+        <div class="pill-group">
+          <label><input type="radio" name="travel_overall" value="yes" onchange="autoSave()"><span>✨ Yes, it's perfect</span></label>
+          <label><input type="radio" name="travel_overall" value="no" onchange="autoSave()"><span>👎 Not quite</span></label>
+          <label><input type="radio" name="travel_overall" value="partial" onchange="autoSave()"><span>🤔 Almost there</span></label>
+        </div>
+        <textarea class="item-notes" data-key="travel_overall_notes" placeholder="What would make guests feel more welcomed and prepared?" rows="2" oninput="autoSave()"></textarea>
+      </fieldset>
+
+    </div>
+  </details>
+</div>
+
+<div class="section-divider">· · · ❓ · · ·</div>
+
+<!-- ══ Section 10: ❓ Questions Guests Might Have ══ -->
+<div class="section-block">
+  <details>
+    <summary>❓ Questions Guests Might Have <span class="section-status" id="status-s10"></span></summary>
+    <div class="section-content">
+
+      <fieldset class="question" data-key="faq_coverage">
+        <legend>1. Are the most common questions answered? What's missing?</legend>
+        <div class="pill-group">
+          <label><input type="radio" name="faq_coverage" value="yes" onchange="autoSave()"><span>✨ Covers everything</span></label>
+          <label><input type="radio" name="faq_coverage" value="no" onchange="autoSave()"><span>👎 Missing a lot</span></label>
+          <label><input type="radio" name="faq_coverage" value="partial" onchange="autoSave()"><span>🤔 A few gaps</span></label>
+        </div>
+        <textarea class="item-notes" data-key="faq_coverage_notes" placeholder="What question would your mom ask that we haven't answered yet?" rows="2" oninput="autoSave()"></textarea>
+      </fieldset>
+
+      <fieldset class="question" data-key="faq_tone">
+        <legend>2. Does the tone feel helpful and warm, like we're talking directly to our guests?</legend>
+        <div class="pill-group">
+          <label><input type="radio" name="faq_tone" value="yes" onchange="autoSave()"><span>✨ Warm and lovely</span></label>
+          <label><input type="radio" name="faq_tone" value="no" onchange="autoSave()"><span>👎 Too cold</span></label>
+          <label><input type="radio" name="faq_tone" value="partial" onchange="autoSave()"><span>🤔 Could be warmer</span></label>
+        </div>
+        <textarea class="item-notes" data-key="faq_tone_notes" placeholder="How would you want the FAQ to sound? More playful? More reassuring?" rows="2" oninput="autoSave()"></textarea>
+      </fieldset>
+
+    </div>
+  </details>
+</div>
+
+<div class="section-divider">· · · 🎵 · · ·</div>
+
+<!-- ══ Section 11: 🎵 Our Playlist ══ -->
+<div class="section-block">
+  <details>
+    <summary>🎵 Our Playlist — Song Requests <span class="section-status" id="status-s11"></span></summary>
+    <div class="section-content">
+
+      <fieldset class="question" data-key="music_request">
+        <legend>1. Is asking for a song fun and easy? The search feature — does it work smoothly?</legend>
+        <div class="pill-group">
+          <label><input type="radio" name="music_request" value="yes" onchange="autoSave()"><span>✨ So fun!</span></label>
+          <label><input type="radio" name="music_request" value="no" onchange="autoSave()"><span>👎 Frustrating</span></label>
+          <label><input type="radio" name="music_request" value="partial" onchange="autoSave()"><span>🤔 A bit clunky</span></label>
+        </div>
+        <textarea class="item-notes" data-key="music_request_notes" placeholder="What would make the song request experience feel delightful?" rows="2" oninput="autoSave()"></textarea>
+      </fieldset>
+
+      <fieldset class="question" data-key="music_playlist">
+        <legend>2. Seeing other guests' song requests and our curated playlist — does it feel personal and exciting?</legend>
+        <div class="pill-group">
+          <label><input type="radio" name="music_playlist" value="yes" onchange="autoSave()"><span>✨ Love it!</span></label>
+          <label><input type="radio" name="music_playlist" value="no" onchange="autoSave()"><span>👎 Not feeling it</span></label>
+          <label><input type="radio" name="music_playlist" value="partial" onchange="autoSave()"><span>🤔 Could be better</span></label>
+        </div>
+        <textarea class="item-notes" data-key="music_playlist_notes" placeholder="Does it feel like a peek into what the dance floor will feel like?" rows="2" oninput="autoSave()"></textarea>
+      </fieldset>
+
+    </div>
+  </details>
+</div>
+
+<div class="section-divider">· · · 📷 · · ·</div>
+
+<!-- ══ Section 12: 📷 Guest Photo Sharing ══ -->
+<div class="section-block">
+  <details>
+    <summary>📷 Guest Photo Sharing <span class="section-status" id="status-s12"></span></summary>
+    <div class="section-content">
+
+      <fieldset class="question" data-key="photos_upload">
+        <legend>1. Is it clear how guests share their photos? Does it feel simple?</legend>
+        <div class="pill-group">
+          <label><input type="radio" name="photos_upload" value="yes" onchange="autoSave()"><span>✨ Super simple</span></label>
+          <label><input type="radio" name="photos_upload" value="no" onchange="autoSave()"><span>👎 Confusing</span></label>
+          <label><input type="radio" name="photos_upload" value="partial" onchange="autoSave()"><span>🤔 A bit confusing</span></label>
+        </div>
+        <textarea class="item-notes" data-key="photos_upload_notes" placeholder="Would your friends know exactly what to do to share their photos?" rows="2" oninput="autoSave()"></textarea>
+      </fieldset>
+
+      <fieldset class="question" data-key="photos_prompt">
+        <legend>2. The call-to-action — does it encourage guests to share their moments with us?</legend>
+        <div class="pill-group">
+          <label><input type="radio" name="photos_prompt" value="yes" onchange="autoSave()"><span>✨ Very inviting</span></label>
+          <label><input type="radio" name="photos_prompt" value="no" onchange="autoSave()"><span>👎 Doesn't grab me</span></label>
+          <label><input type="radio" name="photos_prompt" value="partial" onchange="autoSave()"><span>🤔 Could be more inviting</span></label>
+        </div>
+        <textarea class="item-notes" data-key="photos_prompt_notes" placeholder="What message would make you excited to share your photos?" rows="2" oninput="autoSave()"></textarea>
+      </fieldset>
+
+    </div>
+  </details>
+</div>
+
+<div class="section-divider">· · · 📬 · · ·</div>
+
+<!-- ══ Section 13: 📬 Getting in Touch ══ -->
+<div class="section-block">
+  <details>
+    <summary>📬 Getting in Touch <span class="section-status" id="status-s13"></span></summary>
+    <div class="section-content">
+
+      <fieldset class="question" data-key="contact_form">
+        <legend>1. Sending us a message — does the form feel welcoming?</legend>
+        <div class="pill-group">
+          <label><input type="radio" name="contact_form" value="yes" onchange="autoSave()"><span>✨ Very welcoming</span></label>
+          <label><input type="radio" name="contact_form" value="no" onchange="autoSave()"><span>👎 Feels generic</span></label>
+          <label><input type="radio" name="contact_form" value="partial" onchange="autoSave()"><span>🤔 Almost there</span></label>
+        </div>
+        <textarea class="item-notes" data-key="contact_form_notes" placeholder="Does it feel like a conversation starter or a corporate contact form?" rows="2" oninput="autoSave()"></textarea>
+      </fieldset>
+
+      <fieldset class="question" data-key="contact_details">
+        <legend>2. Our contact info, phone numbers, social links — do they feel personal and accessible?</legend>
+        <div class="pill-group">
+          <label><input type="radio" name="contact_details" value="yes" onchange="autoSave()"><span>✨ Perfect</span></label>
+          <label><input type="radio" name="contact_details" value="no" onchange="autoSave()"><span>👎 Missing things</span></label>
+          <label><input type="radio" name="contact_details" value="partial" onchange="autoSave()"><span>🤔 A bit sparse</span></label>
+        </div>
+        <textarea class="item-notes" data-key="contact_details_notes" placeholder="What contact method would you want guests to have — phone, email, WhatsApp?" rows="2" oninput="autoSave()"></textarea>
+      </fieldset>
+
+    </div>
+  </details>
+</div>
+
+<div class="section-divider">· · · 🔍 · · ·</div>
+
+<!-- ══ Section 14: 🔍 The Full Picture ══ -->
+<div class="section-block">
+  <details>
+    <summary>🔍 The Full Picture — Consistency &amp; Polish <span class="section-status" id="status-s14"></span></summary>
+    <div class="section-content">
+
+      <fieldset class="question" data-key="xcut_mobileAll">
+        <legend>1. Go through every page on your phone — does anything break, overlap, or feel cramped?</legend>
+        <div class="pill-group">
+          <label><input type="radio" name="xcut_mobileAll" value="yes" onchange="autoSave()"><span>✨ All good</span></label>
+          <label><input type="radio" name="xcut_mobileAll" value="no" onchange="autoSave()"><span>👎 Found issues</span></label>
+          <label><input type="radio" name="xcut_mobileAll" value="partial" onchange="autoSave()"><span>🤔 Minor issues</span></label>
+        </div>
+        <textarea class="item-notes" data-key="xcut_mobileAll_notes" placeholder="Which pages or elements felt off on your phone? Be specific." rows="2" oninput="autoSave()"></textarea>
+      </fieldset>
+
+      <fieldset class="question" data-key="xcut_grandmaTest">
+        <legend>2. The Grandma Jean Test — could our least tech-savvy guest navigate this site and find what they need?</legend>
+        <div class="pill-group">
+          <label><input type="radio" name="xcut_grandmaTest" value="yes" onchange="autoSave()"><span>✨ Even Grandma could!</span></label>
+          <label><input type="radio" name="xcut_grandmaTest" value="no" onchange="autoSave()"><span>👎 She'd be lost</span></label>
+          <label><input type="radio" name="xcut_grandmaTest" value="partial" onchange="autoSave()"><span>🤔 She'd struggle a bit</span></label>
+        </div>
+        <textarea class="item-notes" data-key="xcut_grandmaTest_notes" placeholder="What would confuse someone who isn't tech-savvy?" rows="2" oninput="autoSave()"></textarea>
+      </fieldset>
+
+      <fieldset class="question" data-key="xcut_consistency">
+        <legend>3. Does every page feel like it belongs to the same wedding? Colors, fonts, spacing — consistent throughout?</legend>
+        <div class="pill-group">
+          <label><input type="radio" name="xcut_consistency" value="yes" onchange="autoSave()"><span>✨ Seamless</span></label>
+          <label><input type="radio" name="xcut_consistency" value="no" onchange="autoSave()"><span>👎 Inconsistent</span></label>
+          <label><input type="radio" name="xcut_consistency" value="partial" onchange="autoSave()"><span>🤔 A few hiccups</span></label>
+        </div>
+        <textarea class="item-notes" data-key="xcut_consistency_notes" placeholder="Where did you notice the style or tone shift unexpectedly?" rows="2" oninput="autoSave()"></textarea>
+      </fieldset>
+
+      <fieldset class="question" data-key="xcut_specialMoments">
+        <legend>4. Are there any special details or surprises we planned that are missing from the site?</legend>
+        <div class="pill-group">
+          <label><input type="radio" name="xcut_specialMoments" value="yes" onchange="autoSave()"><span>✨ Nothing missing</span></label>
+          <label><input type="radio" name="xcut_specialMoments" value="no" onchange="autoSave()"><span>👎 Things missing</span></label>
+          <label><input type="radio" name="xcut_specialMoments" value="partial" onchange="autoSave()"><span>🤔 A few things</span></label>
+        </div>
+        <textarea class="item-notes" data-key="xcut_specialMoments_notes" placeholder="What surprise, tradition, or detail should we make sure is on the site?" rows="2" oninput="autoSave()"></textarea>
+      </fieldset>
+
+    </div>
+  </details>
+</div>
+
+<div class="section-divider">· · · 💫 · · ·</div>
+
+<!-- ══ Section 15: 💫 Final Thoughts ══ -->
+<div class="section-block">
+  <details>
+    <summary>💫 Final Thoughts <span class="section-status" id="status-s15"></span></summary>
+    <div class="section-content">
+
+      <fieldset class="question text-only" data-key="summary_change">
+        <legend>1. If you could change ONE thing about the website, what would it be?</legend>
+        <textarea class="item-notes large" data-key="summary_change_notes" placeholder="Dream big — nothing is off the table..." rows="4" oninput="autoSave()"></textarea>
+      </fieldset>
+
+      <fieldset class="question text-only" data-key="summary_love">
+        <legend>2. What part makes you smile the most?</legend>
+        <textarea class="item-notes large" data-key="summary_love_notes" placeholder="What detail, moment, or page feels most perfectly us?" rows="4" oninput="autoSave()"></textarea>
+      </fieldset>
+
+      <fieldset class="question" data-key="summary_rating">
+        <legend>3. On a scale of 1-5, how close is this website to your vision for our wedding?</legend>
+        <div class="star-rating">
+          <label><input type="radio" name="summary_rating" value="5" onchange="autoSave()"><span>⭐⭐⭐⭐⭐</span></label>
+          <label><input type="radio" name="summary_rating" value="4" onchange="autoSave()"><span>⭐⭐⭐⭐</span></label>
+          <label><input type="radio" name="summary_rating" value="3" onchange="autoSave()"><span>⭐⭐⭐</span></label>
+          <label><input type="radio" name="summary_rating" value="2" onchange="autoSave()"><span>⭐⭐</span></label>
+          <label><input type="radio" name="summary_rating" value="1" onchange="autoSave()"><span>⭐</span></label>
+        </div>
+        <textarea class="item-notes" data-key="summary_rating_notes" placeholder="What would get us to a 5? Be honest — we want it perfect." rows="2" oninput="autoSave()"></textarea>
+      </fieldset>
+
+    </div>
+  </details>
+</div>
+
+</main>
+
+<script>
+const STORAGE_KEY = 'weddingReviewState';
+const SECTION_COUNT = 16;
+
+const sectionKeys = {
+  s0: ['global_firstImpression', 'global_navigation', 'global_mobile', 'global_footer'],
+  s1: ['home_hero', 'home_countdown', 'home_personalGreeting', 'home_belowFold', 'home_overall'],
+  s2: ['story_content', 'story_photos', 'story_overall'],
+  s3: ['schedule_clarity', 'schedule_venue', 'schedule_details', 'schedule_calendar'],
+  s4: ['rsvp_lookup', 'rsvp_attending', 'rsvp_meal', 'rsvp_songs', 'rsvp_done'],
+  s5: ['gallery_browse', 'gallery_filter'],
+  s6: ['wp_representation', 'wp_flowers', 'wp_overall'],
+  s7: ['ent_excitement', 'ent_activities'],
+  s8: ['reg_gracious', 'reg_clarity'],
+  s9: ['travel_hotels', 'travel_transport', 'travel_activities', 'travel_overall'],
+  s10: ['faq_coverage', 'faq_tone'],
+  s11: ['music_request', 'music_playlist'],
+  s12: ['photos_upload', 'photos_prompt'],
+  s13: ['contact_form', 'contact_details'],
+  s14: ['xcut_mobileAll', 'xcut_grandmaTest', 'xcut_consistency', 'xcut_specialMoments'],
+  s15: ['summary_change', 'summary_love', 'summary_rating']
+};
+
+const sectionTitles = {
+  s0: '✨ When Guests First Arrive',
+  s1: '🏠 Our Homepage — The First Hello',
+  s2: '💕 Our Love Story',
+  s3: '📅 The Big Day — Schedule & Details',
+  s4: '💌 Guest RSVP Journey',
+  s5: '📸 Our Photo Gallery',
+  s6: '👰🤵 Our Wedding Party',
+  s7: '🎉 The Party — Entertainment',
+  s8: '🎁 Gift Registry',
+  s9: '✈️ Travel & Stay',
+  s10: '❓ Questions Guests Might Have',
+  s11: '🎵 Our Playlist — Song Requests',
+  s12: '📷 Guest Photo Sharing',
+  s13: '📬 Getting in Touch',
+  s14: '🔍 The Full Picture — Consistency & Polish',
+  s15: '💫 Final Thoughts'
+};
+
+let saveTimer = null;
+
+function autoSave() {
+  if (saveTimer) clearTimeout(saveTimer);
+  saveTimer = setTimeout(persistState, 500);
+}
+
+function buildState() {
+  var state = {};
+  // Collect all radio values
+  document.querySelectorAll('.question').forEach(function(q) {
+    var key = q.getAttribute('data-key');
+    if (!key) return;
+    // Radio
+    var radio = q.querySelector('input[type="radio"]:checked');
+    if (radio) state[key] = radio.value;
+    // Textarea notes
+    var textarea = q.querySelector('textarea');
+    if (textarea) state[key + '_notes'] = textarea.value;
+  });
+  // Toolbar fields
+  state._reviewer1 = document.getElementById('reviewer1').value;
+  state._reviewer2 = document.getElementById('reviewer2').value;
+  state._reviewDate = document.getElementById('reviewDate').value;
+  return state;
+}
+
+function persistState() {
+  var state = buildState();
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  } catch (e) {
+    // localStorage full or unavailable — silently ignore
+  }
+  updateProgress();
+}
+
+function restoreState() {
+  var raw;
+  try { raw = localStorage.getItem(STORAGE_KEY); } catch (e) { return; }
+  if (!raw) return;
+  var state;
+  try { state = JSON.parse(raw); } catch (e) { return; }
+  if (!state) return;
+
+  for (var key in state) {
+    if (!state.hasOwnProperty(key)) continue;
+    if (key.startsWith('_')) {
+      // Toolbar fields
+      if (key === '_reviewer1') document.getElementById('reviewer1').value = state[key];
+      if (key === '_reviewer2') document.getElementById('reviewer2').value = state[key];
+      if (key === '_reviewDate') document.getElementById('reviewDate').value = state[key];
+      continue;
+    }
+    if (key.endsWith('_notes')) {
+      var textarea = document.querySelector('textarea[data-key="' + key + '"]');
+      if (textarea) textarea.value = state[key];
+    } else {
+      var radio = document.querySelector('input[name="' + key + '"][value="' + state[key] + '"]');
+      if (radio) radio.checked = true;
+    }
+  }
+
+  var banner = document.getElementById('restoreBanner');
+  if (banner) {
+    banner.classList.add('visible');
+    setTimeout(function() { banner.classList.remove('visible'); }, 3000);
+  }
+  updateProgress();
+}
+
+function sectionCompleteCount() {
+  var complete = 0;
+  for (var sk in sectionKeys) {
+    if (!sectionKeys.hasOwnProperty(sk)) continue;
+    var allAnswered = sectionKeys[sk].some(function(key) {
+      var radio = document.querySelector('input[name="' + key + '"]:checked');
+      return !!radio;
+    });
+    var statusEl = document.getElementById('status-' + sk);
+    if (statusEl) {
+      if (allAnswered) {
+        statusEl.textContent = '✓ completed';
+        statusEl.classList.add('has-answers');
+      } else {
+        statusEl.textContent = '';
+        statusEl.classList.remove('has-answers');
+      }
+    }
+    if (allAnswered) complete++;
+  }
+  return complete;
+}
+
+function updateProgress() {
+  var count = sectionCompleteCount();
+  document.getElementById('sectionCount').textContent = count;
+}
+
+function exportJSON() {
+  persistState();
+  var state = buildState();
+
+  var meta = {
+    formTitle: 'Forever Campbells — Wedding Website Vision Walkthrough',
+    generatedAt: new Date().toISOString(),
+    reviewers: [state._reviewer1 || 'Ashley', state._reviewer2 || 'Jacob'],
+    dateReviewed: state._reviewDate || ''
+  };
+
+  var sections = {};
+  for (var sk in sectionKeys) {
+    if (!sectionKeys.hasOwnProperty(sk)) continue;
+    var answers = {};
+    var keys = sectionKeys[sk];
+    keys.forEach(function(key) {
+      answers[key] = {
+        value: state[key] || '',
+        notes: state[key + '_notes'] || ''
+      };
+    });
+    sections[sk] = {
+      title: sectionTitles[sk] || '',
+      answers: answers
+    };
+  }
+
+  var output = { meta: meta, sections: sections };
+  var blob = new Blob([JSON.stringify(output, null, 2)], { type: 'application/json' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = 'wedding-vision-review-' + new Date().toISOString().slice(0, 10) + '.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function clearAll() {
+  if (!confirm('Start fresh? This will clear all your answers and notes. Your exported JSON will be unaffected.')) return;
+
+  document.querySelectorAll('input[type="radio"]').forEach(function(r) { r.checked = false; });
+  document.querySelectorAll('textarea').forEach(function(t) { t.value = ''; });
+  document.getElementById('reviewer1').value = 'Ashley Campbell';
+  document.getElementById('reviewer2').value = 'Jacob Campbell';
+  document.getElementById('reviewDate').value = '2026-08-10';
+
+  try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
+
+  // Reset section statuses
+  for (var sk in sectionKeys) {
+    if (!sectionKeys.hasOwnProperty(sk)) continue;
+    var el = document.getElementById('status-' + sk);
+    if (el) { el.textContent = ''; el.classList.remove('has-answers'); }
+  }
+  updateProgress();
+
+  var banner = document.getElementById('restoreBanner');
+  if (banner) banner.classList.remove('visible');
+}
+
+// Init
+document.addEventListener('DOMContentLoaded', function() {
+  restoreState();
+  updateProgress();
+
+  // Also save toolbar field changes
+  document.getElementById('reviewer1').addEventListener('input', autoSave);
+  document.getElementById('reviewer2').addEventListener('input', autoSave);
+  document.getElementById('reviewDate').addEventListener('change', autoSave);
+});
+
+// Count total questions on load
+document.addEventListener('DOMContentLoaded', function() {
+  var total = document.querySelectorAll('.question').length;
+  console.log('Total questions: ' + total);
+});
+</script>
+
+</body>
+</html>

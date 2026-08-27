@@ -14,6 +14,7 @@ interface GuestData {
   phone: string | null;
   rsvpStatus: string;
   dietaryNeeds: string | null;
+  isVegetarian: boolean;
   plusOneName: string | null;
   plusOneAllowed: boolean;
   plusOneAttending: boolean | null;
@@ -27,11 +28,15 @@ export default function RsvpClient({
   rsvpDeadline,
   rsvpEditDeadlineIso,
   rafflePrize,
+  dressCode,
+  dressCodePinterestLink,
   prefillName,
 }: {
   rsvpDeadline: string | null;
   rsvpEditDeadlineIso: string | null;
   rafflePrize: string;
+  dressCode: string | null;
+  dressCodePinterestLink: string | null;
   prefillName?: string;
 }) {
   const [step, setStep] = useState<Step>("lookup");
@@ -46,6 +51,7 @@ export default function RsvpClient({
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [dietaryNotes, setDietaryNotes] = useState("");
+  const [isVegetarian, setIsVegetarian] = useState(false);
   const [plusOneName, setPlusOneName] = useState("");
   const [bringingPlusOne, setBringingPlusOne] = useState<boolean | null>(null);
   const [songRequest, setSongRequest] = useState("");
@@ -86,6 +92,7 @@ export default function RsvpClient({
       setEmail(data.data.guest.email || "");
       setPhone(data.data.guest.phone || "");
       setDietaryNotes(data.data.guest.dietaryNeeds || "");
+      setIsVegetarian(!!data.data.guest.isVegetarian);
       setPlusOneName(data.data.guest.plusOneName || "");
       setBringingPlusOne(data.data.guest.plusOneAttending ?? null);
       setSongRequest(data.data.guest.songRequest || "");
@@ -144,6 +151,7 @@ export default function RsvpClient({
           email,
           phone,
           dietaryNotes,
+          isVegetarian: attending ? isVegetarian : undefined,
           plusOneName: guest.plusOneAllowed && bringingPlusOne ? plusOneName : undefined,
           bringingPlusOne: guest.plusOneAllowed ? bringingPlusOne : undefined,
           songRequest: songRequest || undefined,
@@ -225,6 +233,32 @@ export default function RsvpClient({
         {error && (
           <div className="max-w-md mx-auto mb-6">
             <Alert type="error" message={error} className="text-center" />
+          </div>
+        )}
+
+        {/* Dress Code */}
+        {dressCode && (
+          <div className="max-w-md mx-auto mb-6">
+            <div className="card-celestial animate-fade-in-up">
+              <h2 className="heading-gold text-center mb-2">
+                👗 Dress Code
+              </h2>
+              <p className="text-ivory/70 text-sm text-center leading-relaxed">
+                {dressCode}
+              </p>
+              {dressCodePinterestLink && (
+                <p className="text-center mt-3">
+                  <a
+                    href={dressCodePinterestLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-gold/70 hover:text-gold underline underline-offset-2 text-sm transition-colors"
+                  >
+                    View inspiration on Pinterest →
+                  </a>
+                </p>
+              )}
+            </div>
           </div>
         )}
 
@@ -429,6 +463,17 @@ export default function RsvpClient({
                     <p className="text-ivory/40 text-xs italic mt-2">
                       Dinner will be served buffet-style. Please let us know about any allergies or dietary restrictions.
                     </p>
+                    <label className="flex items-start gap-3 mt-4 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={isVegetarian}
+                        onChange={(e) => setIsVegetarian(e.target.checked)}
+                        className="mt-0.5 h-4 w-4 accent-gold"
+                      />
+                      <span className="text-ivory/70 text-sm">
+                        🌱 Vegetarian meal (optional)
+                      </span>
+                    </label>
                   </div>
                 )}
 
@@ -476,6 +521,12 @@ export default function RsvpClient({
               </p>
 
               <div className="space-y-4 mb-6">
+                <h3 className="text-gold font-serif text-lg text-center">
+                  Request a Song
+                </h3>
+                <p className="text-ivory/50 text-sm text-center -mt-2 mb-4">
+                  Any song you&apos;d love to hear — we&apos;ll do our best to play it!
+                </p>
                 <div>
                   <label className="block text-ivory/70 text-sm mb-2">
                     Song Title
@@ -485,7 +536,7 @@ export default function RsvpClient({
                     value={songRequest}
                     onChange={(e) => setSongRequest(e.target.value)}
                     className="input-celestial w-full"
-                    placeholder="What song will get you on the dance floor?"
+                    placeholder="e.g. September"
                   />
                 </div>
                 <div>
@@ -497,12 +548,15 @@ export default function RsvpClient({
                     value={songArtist}
                     onChange={(e) => setSongArtist(e.target.value)}
                     className="input-celestial w-full"
-                    placeholder="Artist name"
+                    placeholder="e.g. Earth, Wind & Fire"
                   />
                 </div>
               </div>
 
               <div className="border-t border-gold/10 pt-4 mb-6">
+                <h3 className="text-gold font-serif text-lg text-center mb-4">
+                  Dance Floor Favorites
+                </h3>
                 <div className="space-y-4">
                   <div>
                     <label className="block text-ivory/70 text-sm mb-2">
@@ -577,6 +631,14 @@ export default function RsvpClient({
                     <span className="text-ivory/50">Dietary Notes</span>
                     <span className="text-ivory text-right max-w-[200px]">
                       {dietaryNotes}
+                    </span>
+                  </div>
+                )}
+                {attending && (
+                  <div className="flex justify-between py-2 border-b border-gold/10">
+                    <span className="text-ivory/50">Meal Preference</span>
+                    <span className="text-ivory">
+                      {isVegetarian ? "Vegetarian" : "No preference"}
                     </span>
                   </div>
                 )}
@@ -658,6 +720,14 @@ export default function RsvpClient({
                     </span>
                   </div>
                 )}
+                {guest.rsvpStatus === "attending" && (
+                  <div className="flex justify-between py-2 border-b border-gold/10">
+                    <span className="text-ivory/50">Meal Preference</span>
+                    <span className="text-ivory">
+                      {guest.isVegetarian ? "Vegetarian" : "No preference"}
+                    </span>
+                  </div>
+                )}
                 {guest.rsvpStatus === "attending" && guest.plusOneAllowed && guest.plusOneName && (
                   <div className="flex justify-between py-2 border-b border-gold/10">
                     <span className="text-ivory/50">Plus One</span>
@@ -723,6 +793,11 @@ export default function RsvpClient({
               {attending && isFirstRsvp && (
                 <p className="text-gold/80 text-sm mb-6 italic">
                   You&apos;re in the raffle! 🎉 Your RSVP earned you one entry. Winners will be announced at the reception!
+                </p>
+              )}
+              {attending && (
+                <p className="text-ivory/50 text-sm mb-6">
+                  Don&apos;t forget — Creative Cocktail meets Celestial Formal. No cream or ivory!
                 </p>
               )}
               <a href="/" className="btn-outline inline-block px-6 py-2">

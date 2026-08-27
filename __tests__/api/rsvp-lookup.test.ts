@@ -4,7 +4,13 @@ import { NextRequest } from "next/server";
 vi.mock("@/lib/db", () => ({
   query: vi.fn(),
   queryOne: vi.fn(),
-  toBool: vi.fn((r: unknown) => r),
+  toBool: vi.fn((r: unknown, ...fields: string[]) => {
+    const row = r as Record<string, unknown>;
+    for (const f of fields) {
+      if (f in row) row[f] = row[f] === 1 || row[f] === true;
+    }
+    return row;
+  }),
   toBoolAll: vi.fn((r: unknown[]) => r),
 }));
 
@@ -48,6 +54,7 @@ describe("GET /api/v1/rsvp/lookup", () => {
     plusOneAttending: 0,
     plusOneName: null,
     dietaryNeeds: null,
+    isVegetarian: 0,
     songRequest: null,
     danceSong: null,
     firstDanceSong: null,
@@ -74,6 +81,20 @@ describe("GET /api/v1/rsvp/lookup", () => {
     const body = await res.json();
     expect(body.data.guest.dietaryNeeds).toBe("Gluten-free");
     expect(body.data.guest.songRequest).toBe("Dancing Queen");
+  });
+
+  it("round-trips isVegetarian (false and true) in guest result", async () => {
+    mockQuery.mockResolvedValueOnce([{ ...fullGuest, isVegetarian: 0 }]);
+    const res = await GET(makeReq("John", "Doe"));
+    const body = await res.json();
+    expect(res.status).toBe(200);
+    expect(body.data.guest.isVegetarian).toBe(false);
+
+    mockQuery.mockResolvedValueOnce([{ ...fullGuest, isVegetarian: 1 }]);
+    const res2 = await GET(makeReq("John", "Doe"));
+    const body2 = await res2.json();
+    expect(res2.status).toBe(200);
+    expect(body2.data.guest.isVegetarian).toBe(true);
   });
 
   it("returns 404 when guest not found", async () => {
