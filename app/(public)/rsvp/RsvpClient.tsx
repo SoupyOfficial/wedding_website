@@ -19,7 +19,6 @@ interface GuestData {
   plusOneAllowed: boolean;
   plusOneAttending: boolean | null;
   rsvpRespondedAt: string | null;
-  songRequest: string | null;
   danceSong: string | null;
   firstDanceSong: string | null;
 }
@@ -54,8 +53,6 @@ export default function RsvpClient({
   const [isVegetarian, setIsVegetarian] = useState(false);
   const [plusOneName, setPlusOneName] = useState("");
   const [bringingPlusOne, setBringingPlusOne] = useState<boolean | null>(null);
-  const [songRequest, setSongRequest] = useState("");
-  const [songArtist, setSongArtist] = useState("");
   const [danceSong, setDanceSong] = useState("");
   const [firstDanceSong, setFirstDanceSong] = useState("");
   const [isFirstRsvp, setIsFirstRsvp] = useState(false);
@@ -95,7 +92,6 @@ export default function RsvpClient({
       setIsVegetarian(!!data.data.guest.isVegetarian);
       setPlusOneName(data.data.guest.plusOneName || "");
       setBringingPlusOne(data.data.guest.plusOneAttending ?? null);
-      setSongRequest(data.data.guest.songRequest || "");
       setDanceSong(data.data.guest.danceSong || "");
       setFirstDanceSong(data.data.guest.firstDanceSong || "");
 
@@ -154,8 +150,6 @@ export default function RsvpClient({
           isVegetarian: attending ? isVegetarian : undefined,
           plusOneName: guest.plusOneAllowed && bringingPlusOne ? plusOneName : undefined,
           bringingPlusOne: guest.plusOneAllowed ? bringingPlusOne : undefined,
-          songRequest: songRequest || undefined,
-          songArtist: songArtist || undefined,
           danceSong: danceSong || undefined,
           firstDanceSong: firstDanceSong || undefined,
         }),
@@ -520,39 +514,6 @@ export default function RsvpClient({
                 Help us build the perfect playlist!
               </p>
 
-              <div className="space-y-4 mb-6">
-                <h3 className="text-gold font-serif text-lg text-center">
-                  Request a Song
-                </h3>
-                <p className="text-ivory/50 text-sm text-center -mt-2 mb-4">
-                  Any song you&apos;d love to hear — we&apos;ll do our best to play it!
-                </p>
-                <div>
-                  <label className="block text-ivory/70 text-sm mb-2">
-                    Song Title
-                  </label>
-                  <input
-                    type="text"
-                    value={songRequest}
-                    onChange={(e) => setSongRequest(e.target.value)}
-                    className="input-celestial w-full"
-                    placeholder="e.g. September"
-                  />
-                </div>
-                <div>
-                  <label className="block text-ivory/70 text-sm mb-2">
-                    Artist
-                  </label>
-                  <input
-                    type="text"
-                    value={songArtist}
-                    onChange={(e) => setSongArtist(e.target.value)}
-                    className="input-celestial w-full"
-                    placeholder="e.g. Earth, Wind & Fire"
-                  />
-                </div>
-              </div>
-
               <div className="border-t border-gold/10 pt-4 mb-6">
                 <h3 className="text-gold font-serif text-lg text-center mb-4">
                   Dance Floor Favorites
@@ -648,15 +609,6 @@ export default function RsvpClient({
                     <span className="text-ivory">{plusOneName}</span>
                   </div>
                 )}
-                {attending && songRequest && (
-                  <div className="flex justify-between py-2 border-b border-gold/10">
-                    <span className="text-ivory/50">Song</span>
-                    <span className="text-ivory text-right">
-                      {songRequest}
-                      {songArtist && ` – ${songArtist}`}
-                    </span>
-                  </div>
-                )}
                 {attending && danceSong && (
                   <div className="flex justify-between py-2 border-b border-gold/10">
                     <span className="text-ivory/50">Dance Floor Song</span>
@@ -732,12 +684,6 @@ export default function RsvpClient({
                   <div className="flex justify-between py-2 border-b border-gold/10">
                     <span className="text-ivory/50">Plus One</span>
                     <span className="text-ivory">{guest.plusOneName}</span>
-                  </div>
-                )}
-                {guest.rsvpStatus === "attending" && guest.songRequest && (
-                  <div className="flex justify-between py-2 border-b border-gold/10">
-                    <span className="text-ivory/50">Song</span>
-                    <span className="text-ivory text-right">{guest.songRequest}</span>
                   </div>
                 )}
                 {guest.rsvpStatus === "attending" && guest.danceSong && (
