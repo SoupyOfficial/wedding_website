@@ -63,7 +63,7 @@ model SiteSettings {
   socialTikTok           String    @default("")
   registryNote           String    @default("Gifts are appreciated, but our main goal is starting our life together in a new home — so cash contributions are preferred. Most of all, we're just grateful to celebrate with you!")
   entertainmentNote      String    @default("Our reception will be a celebration filled with music, dancing, games, and memories! We want everyone to have an incredible time.")
-  raffleTicketCount      Int       @default(2)
+  raffleTicketCount      Int       @default(4)
   rafflePrize            String    @default("-1")
   hideUnconfirmedWeddingParty Boolean @default(false)
   // Budget

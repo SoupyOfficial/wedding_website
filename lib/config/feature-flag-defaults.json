@@ -12,6 +12,7 @@
   "travelPageEnabled": true,
   "weddingPartyPageEnabled": true,
   "galleryPageEnabled": true,
+  "rafflePageEnabled": true,
   "registryPageEnabled": true,
   "faqPageEnabled": true,
   "contactPageEnabled": true,

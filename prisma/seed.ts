@@ -43,11 +43,11 @@ async function main() {
       id, coupleName, weddingDate, venueName, venueAddress, ceremonyType,
       weddingTime, receptionTime, dressCode, heroTagline, heroTaglinePostWedding, childrenPolicy,
       parkingInfo, weatherInfo, ogDescription, weddingHashtag, bannerColor,
-      unpluggedCeremonyNotice, rafflePrize,
+      unpluggedCeremonyNotice, rafflePrize, raffleTicketCount,
       contactPhoneAshley, contactPhoneJacob, contactPhoneMaryLorraine, contactPhoneMollie,
       dressCodePinterestLink, dressCodeImages, ourStoryContent,
       updatedAt
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     args: [
       "singleton",
       "Jacob & Ashley",
@@ -68,6 +68,7 @@ async function main() {
       "gold",
       "We kindly ask for an unplugged ceremony — please silence phones and put cameras away so we can all be present in the moment. Our professional photographer will capture every moment!",
       "Theme Park Tickets",
+      4,
       "954-299-0036",
       "321-698-1359",
       "931-303-7990",
@@ -555,6 +556,11 @@ async function main() {
       key: "registryPageEnabled",
       enabled: 1,
       description: "Show the Registry page with gift registry links",
+    },
+    {
+      key: "rafflePageEnabled",
+      enabled: 1,
+      description: "Show the Raffle page on the public site",
     },
   ];
 

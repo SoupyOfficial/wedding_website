@@ -185,11 +185,11 @@ export default function RsvpClient({
             </p>
             {rafflePrize && rafflePrize !== "-1" ? (
               <p className="text-gold/70 text-sm mt-1 italic">
-                The first RSVPs will be entered to win: {rafflePrize}
+                Every RSVP earns one raffle entry — you could win: {rafflePrize}
               </p>
             ) : (
               <p className="text-gold/70 text-sm mt-1 italic">
-                The first RSVPs will be entered into a special raffle — details coming soon!
+                Every RSVP earns one raffle entry — details coming soon!
               </p>
             )}
           </div>
@@ -722,7 +722,7 @@ export default function RsvpClient({
               </p>
               {attending && isFirstRsvp && (
                 <p className="text-gold/80 text-sm mb-6 italic">
-                  You&apos;re one of the first to RSVP — you&apos;ve been entered into our special raffle!
+                  You&apos;re in the raffle! 🎉 Your RSVP earned you one entry. Winners will be announced at the reception!
                 </p>
               )}
               <a href="/" className="btn-outline inline-block px-6 py-2">

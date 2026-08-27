@@ -33,6 +33,7 @@ export const publicNavLinks: PublicNavLink[] = [
   { href: "/gallery", label: "Gallery", featureFlag: "galleryPageEnabled" },
   { href: "/photos-of-us", label: "Our Photos", featureFlag: "photosOfUsPageEnabled" },
   { href: "/contact", label: "Contact", featureFlag: "contactPageEnabled" },
+  { href: "/raffle", label: "Raffle", featureFlag: "rafflePageEnabled" },
 ];
 
 export const adminNavItems: AdminNavItem[] = [
@@ -51,6 +52,7 @@ export const adminNavItems: AdminNavItem[] = [
   { href: "/admin/budget", label: "Budget", icon: "💰" },
   { href: "/admin/vendors", label: "Vendors", icon: "🤝" },
   { href: "/admin/seating", label: "Seating Chart", icon: "🪑" },
+  { href: "/admin/raffle", label: "Raffle", icon: "🎟️" },
   { href: "/admin/activity", label: "Activity Log", icon: "📋" },
   { href: "/admin/features", label: "Features", icon: "🔧" },
   { href: "/admin/settings", label: "Settings", icon: "⚙️" },

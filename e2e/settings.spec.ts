@@ -127,9 +127,9 @@ test.describe("Admin Settings", () => {
       originalValues[field.label] = await readField(page, field.label);
     }
     // Also snapshot the raffle dropdown
-    originalValues["Universal Ticket Raffle Count"] = await readField(
+    originalValues["Universal Ticket Raffle"] = await readField(
       page,
-      "Universal Ticket Raffle Count"
+      "Universal Ticket Raffle"
     );
   });
 
@@ -204,8 +204,8 @@ test.describe("Admin Settings", () => {
     const coupleNameField = await fieldByLabel(page, "Couple Name");
     await expect(coupleNameField).not.toHaveValue("");
 
-    const raffleSelect = await fieldByLabel(page, "Universal Ticket Raffle Count");
-    await raffleSelect.selectOption("3");
+    const raffleSelect = await fieldByLabel(page, "Universal Ticket Raffle");
+    await raffleSelect.selectOption("4");
 
     await page.click('button[type="submit"]');
     await expect(page.locator("text=Settings saved successfully")).toBeVisible({
@@ -218,8 +218,8 @@ test.describe("Admin Settings", () => {
     const coupleNameField = await fieldByLabel(page, "Couple Name");
     await expect(coupleNameField).not.toHaveValue("");
 
-    const raffleValue = await readField(page, "Universal Ticket Raffle Count");
-    expect(raffleValue).toBe("3");
+    const raffleValue = await readField(page, "Universal Ticket Raffle");
+    expect(raffleValue).toBe("4");
   });
 
   test("should restore all original values", async ({ page }) => {
@@ -234,9 +234,9 @@ test.describe("Admin Settings", () => {
     }
 
     // Restore raffle
-    const raffleOriginal = originalValues["Universal Ticket Raffle Count"];
+    const raffleOriginal = originalValues["Universal Ticket Raffle"];
     if (raffleOriginal !== undefined) {
-      const raffleSelect = await fieldByLabel(page, "Universal Ticket Raffle Count");
+      const raffleSelect = await fieldByLabel(page, "Universal Ticket Raffle");
       await raffleSelect.selectOption(String(raffleOriginal));
     }
 
@@ -261,9 +261,9 @@ test.describe("Admin Settings", () => {
       expect(current, `${field.label} should be restored`).toBe(originalValues[field.label]);
     }
 
-    const raffleValue = await readField(page, "Universal Ticket Raffle Count");
+    const raffleValue = await readField(page, "Universal Ticket Raffle");
     expect(raffleValue, "Raffle should be restored").toBe(
-      originalValues["Universal Ticket Raffle Count"]
+      originalValues["Universal Ticket Raffle"]
     );
   });
 });

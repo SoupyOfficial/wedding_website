@@ -35,21 +35,18 @@ export default function SettingsSEOSection({ settings, onChange }: Props) {
         <div className="grid md:grid-cols-2 gap-4">
           <div>
             <label className="block text-ivory/70 text-sm mb-1">
-              Universal Ticket Raffle Count
+              Universal Ticket Raffle
             </label>
             <select
-              value={settings.raffleTicketCount}
+              value={settings.raffleTicketCount > 0 ? 4 : 0}
               onChange={(e) => onChange("raffleTicketCount", parseInt(e.target.value, 10))}
               className="input-celestial w-full"
             >
               <option value={0}>Disabled (no raffle)</option>
-              <option value={1}>1 ticket</option>
-              <option value={2}>2 tickets</option>
-              <option value={3}>3 tickets</option>
-              <option value={4}>4 tickets</option>
+              <option value={4}>Enabled — 2 winners × 1 pair each</option>
             </select>
             <p className="text-ivory/40 text-xs mt-1">
-              Number of Universal theme park tickets to raffle at the reception. Set to 0 to hide the raffle callout.
+              Two winners will each receive a pair of one-day Universal tickets (4 total). Set to Disabled to hide all raffle callouts.
             </p>
           </div>
           <div>
@@ -61,7 +58,7 @@ export default function SettingsSEOSection({ settings, onChange }: Props) {
               value={settings.rafflePrize}
               onChange={(e) => onChange("rafflePrize", e.target.value)}
               className="input-celestial w-full"
-              placeholder="e.g. 2 Universal Orlando tickets"
+              placeholder="e.g. 2 pairs of Universal Orlando tickets"
             />
             <p className="text-ivory/40 text-xs mt-1">
               Set to -1 to show a non-descript message. Otherwise, the text entered here will be displayed as the prize.
