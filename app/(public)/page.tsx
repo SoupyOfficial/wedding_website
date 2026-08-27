@@ -174,8 +174,8 @@ export default async function HomePage() {
           {!isPostWedding && settings?.rafflePrize && (
             <p className="text-gold/70 text-sm italic">
               {settings.rafflePrize !== "-1"
-                ? `Every RSVP earns one raffle entry — you could win: ${settings.rafflePrize}`
-                : "Every RSVP earns one raffle entry — details coming soon!"}
+                ? `You could win: ${settings.rafflePrize}`
+                : "Raffle details coming soon!"}
             </p>
           )}
           {!isPostWedding && settings?.rafflePrize && settings.rafflePrize !== "-1" && (
@@ -184,8 +184,8 @@ export default async function HomePage() {
                 How does the raffle work? ▾
               </summary>
               <div className="mt-3 text-left space-y-2 bg-midnight-light/50 rounded-lg p-4 border border-gold/10">
-                <p>Every RSVP submission automatically earns one entry. Winners will be announced during the reception — you must be present to win!</p>
-                <p>Want extra chances? Additional raffle tickets will be available for purchase at the reception — all proceeds go toward our newlywed fund.</p>
+                <p>Purchase raffle tickets at the reception — each ticket is one entry. Winners will be announced during the reception — you must be present to win!</p>
+                <p>All proceeds go toward our newlywed fund — the more tickets you buy, the better your chances!</p>
                 <p>Two lucky winners will each win a pair of tickets! See the <Link href="/raffle" className="text-gold underline underline-offset-2 hover:text-gold-light">Raffle page</Link> for full details.</p>
               </div>
             </details>

@@ -68,7 +68,7 @@ export default function TravelThingsToDo({
             <div className="bg-gold/10 border border-gold/30 rounded-lg p-4 text-center mt-2">
               <p className="text-gold font-serif text-lg mb-1">🎟️ Universal Ticket Raffle!</p>
               <p className="text-ivory/70 text-sm">
-                Two lucky winners will each win a pair of one-day Universal Studios &amp; Islands of Adventure tickets — drawn live at the reception! Every RSVP is automatically entered, and additional raffle tickets will be available for purchase at the reception.
+                Two lucky winners will each win a pair of one-day Universal Studios &amp; Islands of Adventure tickets — drawn live at the reception! Purchase raffle tickets at the reception for your chance to win.
               </p>
               <p className="text-ivory/40 text-xs mt-2 italic">
                 Full details on the Raffle page. Winners must be present to win.
@@ -170,7 +170,7 @@ export default function TravelThingsToDo({
         <div className="text-center bg-royal/20 border border-gold/20 rounded-lg p-6 max-w-2xl mx-auto">
           <p className="text-gold font-serif text-xl mb-2">🎉 Don&apos;t Forget!</p>
           <p className="text-ivory/70 text-sm">
-            We&apos;re giving away 2 pairs of Universal theme park tickets at the reception — one pair each to two lucky winners! Every RSVP is automatically entered, and extra raffle tickets will be available for purchase at the reception.
+            We&apos;re giving away 2 pairs of Universal theme park tickets at the reception — one pair each to two lucky winners! Purchase raffle tickets at the reception for your chance to win.
           </p>
           <p className="text-ivory/40 text-xs mt-2 italic">
             Full details on the Raffle page. Winners must be present to win.

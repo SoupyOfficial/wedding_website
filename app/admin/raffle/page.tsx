@@ -79,19 +79,19 @@ export default function AdminRafflePage() {
       />
 
       <p className="text-ivory/40 text-xs italic mb-4">
-        Entries are ordered by RSVP submission time. Extra tickets purchased at the reception are tracked on paper.
+        Eligible guests listed in RSVP order. Raffle tickets are purchased at the reception and tracked on paper.
       </p>
 
       {error && <Alert type="error" message={error} className="mb-4" />}
 
       {entries.length === 0 ? (
         <EmptyState
-          title="No eligible entries yet. Guests are entered automatically when they RSVP."
+          title="No eligible guests yet. Guests become eligible when they RSVP."
         />
       ) : (
         <div className="bg-royal/20 border border-gold/10 rounded-lg p-6">
           <p className="text-gold font-serif text-lg mb-3">
-            {entries.length} eligible {entries.length !== 1 ? "entries" : "entry"}
+            {entries.length} eligible {entries.length !== 1 ? "guests" : "guest"}
           </p>
           <div className="divide-y divide-gold/10">
             {entries.map((entry, i) => (

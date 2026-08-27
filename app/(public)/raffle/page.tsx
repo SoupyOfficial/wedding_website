@@ -40,12 +40,12 @@ export default async function RafflePage() {
           <section className="card-celestial bg-royal/20 border border-gold/10 rounded-lg p-6">
             <h2 className="text-gold font-serif text-2xl mb-4">🎉 How to Enter</h2>
             <p className="text-ivory/70 leading-relaxed">
-              Every RSVP submission automatically earns one entry — no purchase
-              necessary.
+              Raffle tickets can be purchased at the reception — each ticket you
+              buy is one entry.
             </p>
             <p className="text-ivory/70 leading-relaxed mt-3">
-              Want extra chances? Additional raffle tickets will be available for
-              purchase at the reception.
+              The raffle is open to guests who have RSVP&apos;d. The more tickets
+              you buy, the better your chances!
             </p>
           </section>
 

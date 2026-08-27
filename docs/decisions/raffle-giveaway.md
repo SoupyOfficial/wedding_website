@@ -2,9 +2,11 @@
 
 ## Status: Accepted — 2026-08-26
 
+> **Revised 2026-08-27:** entry mechanic corrected — raffle tickets are purchased at the reception; RSVP does not auto-enter guests. (Couple clarification.)
+
 ### Summary
 
-Formalizes the wedding raffle: 2 winners, one pair of one-day Universal Studios & Islands of Adventure tickets each (4 tickets total), auto-entry on RSVP ordered by submission time, a live drawing at the reception, and offline winner fulfillment.
+Formalizes the wedding raffle: 2 winners, one pair of one-day Universal Studios & Islands of Adventure tickets each (4 tickets total), purchase-based entry (raffle tickets bought at the reception) with RSVP-only eligibility ordered by submission time, a live drawing at the reception, and offline winner fulfillment.
 
 ### Background
 
@@ -20,10 +22,9 @@ Formalizes the wedding raffle: 2 winners, one pair of one-day Universal Studios 
   - NOT valid at Epic Universe.
   - Subject to blackout dates.
 - **Entry**:
-  - Every RSVP submission automatically earns one entry — no purchase necessary.
-  - Entries are ordered by RSVP submission timestamp.
-  - Pool = guests who have RSVP'd.
-  - Additional raffle tickets purchasable at the reception.
+  - Raffle tickets are purchased at the reception — each ticket purchased is one entry. Entry is NOT automatic on RSVP; RSVP does not grant an entry.
+  - Eligibility: the raffle is open to guests who have RSVP'd (attending); declined/non-RSVP guests are not eligible.
+  - The admin page lists eligible guests ordered by RSVP submission timestamp (`rsvpSubmittedAt`) — used to verify eligibility and prepare the ticket table at the event. (This ordering still requires the migration + backfill noted in "Data Model & Ordering".)
 - **Drawing**: LIVE at the reception; must be present to win.
 - **Fulfillment**: offline — winners give Ashley their full legal name(s) + preferred visit date. The name on the ticket must match a valid photo ID at the gate.
 - **Publication**: rules published on the public `/raffle` page.
@@ -50,7 +51,7 @@ ORDER BY rsvpSubmittedAt ASC
 - Public `/raffle` rules page gated by new `rafflePageEnabled` flag (default `true`).
 - Public nav link (non-primary) + admin nav link.
 - Admin `/admin/raffle` — read-only entries list (count + copy-to-clipboard) via `GET /api/v1/admin/raffle/entries`.
-- Copy updated on: homepage, RSVP header + success screen, travel callouts.
+- Copy updated on: homepage, RSVP header + success screen, travel callouts — public copy states raffle tickets are purchased at the reception (and the admin page lists eligible guests, not entries).
 - Admin settings "Reception Raffle" select now: `0` = Disabled / `4` = "Enabled — 2 winners × 1 pair each", with value mapping `settings.raffleTicketCount > 0 ? 4 : 0`.
 - `raffleTicketCount` default changed 2 → 4.
 - Test coverage: `__tests__/api/admin-raffle-entries.test.ts` added; `e2e/settings.spec.ts` updated.
@@ -67,10 +68,10 @@ After the live drawing:
 
 ✅ Confirmed by the couple (2026-08-27): items (a), (b), (c), (d), (e) below.
 
-- **(a)** Entry pool = attending RSVPs only; declined RSVPs are not entered. — confirmed
+- **(a)** Eligible pool = attending RSVPs only; declined RSVPs cannot enter. — confirmed
 - **(b)** "Only people who have already RSVP'd" is interpreted as RSVP'd guests (not all site visitors). The final pool snapshot is taken from the admin page. — confirmed
 - **(c)** Plus-ones do not get separate entries (no separate guest row). — confirmed
-- **(d)** Extra-ticket proceeds go to the newlywed fund (carried over from existing copy). — confirmed
+- **(d)** Raffle ticket proceeds go to the newlywed fund (carried over from existing copy). — confirmed
 - **(e)** Blackout dates not yet specified — communicated at fulfillment. — confirmed
 - **(f)** Production must run `npm run db:deploy` to apply the migration before using the admin raffle page. (being applied as part of this implementation)
 - **(g)** Legacy `raffleTicketCount` values (e.g. `2`) display as enabled via the `> 0 ? 4 : 0` mapping until saved.
@@ -78,6 +79,5 @@ After the live drawing:
 ### Open Questions for the Couple
 
 - Exact blackout dates.
-- Whether declined RSVPs should also be entered.
 - Confirm extra-ticket proceeds go to the newlywed fund.
 - How winners will be contacted if not present when drawn.
