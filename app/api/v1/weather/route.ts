@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { getSettings } from "@/lib/services/settings.service";
 import { rateLimit } from "@/lib/api/middleware";
 import { successResponse, errorResponse } from "@/lib/api";
+import { daysUntilEasternDate } from "@/lib/timezone";
 
 export const dynamic = "force-dynamic";
 
@@ -108,11 +109,8 @@ export async function GET(req: NextRequest) {
     }
 
     const weddingDate = new Date(settings.weddingDate);
-    const today = new Date();
-    const daysUntil = Math.ceil(
-      (weddingDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
-    );
     const dateStr = weddingDate.toISOString().split("T")[0];
+    const daysUntil = daysUntilEasternDate(dateStr);
 
     // Cache header — refresh every 30 min for forecast, less for historical
     const cacheSeconds = daysUntil <= 16 ? 1800 : 86400;
@@ -182,24 +180,23 @@ async function fetchForecast(
   const data = await res.json();
 
   const hourly: HourlyForecast[] = data.hourly.time.map(
-    (time: string, i: number) => ({
-      time,
-      hour: new Date(time).toLocaleTimeString("en-US", {
-        hour: "numeric",
-        hour12: true,
-        timeZone: "America/New_York",
-      }),
-      temperature: Math.round(data.hourly.temperature_2m[i]),
-      feelsLike: Math.round(data.hourly.apparent_temperature[i]),
-      humidity: data.hourly.relative_humidity_2m[i],
-      precipitationProbability: data.hourly.precipitation_probability[i],
-      precipitation: data.hourly.precipitation[i],
-      weatherCode: data.hourly.weather_code[i],
-      windSpeed: Math.round(data.hourly.wind_speed_10m[i]),
-      windGusts: Math.round(data.hourly.wind_gusts_10m[i]),
-      cloudCover: data.hourly.cloud_cover[i],
-      uvIndex: data.hourly.uv_index[i],
-    })
+    (time: string, i: number) => {
+      const h = Number(time.split("T")[1].split(":")[0]);
+      return {
+        time,
+        hour: `${h === 0 ? 12 : h > 12 ? h - 12 : h} ${h >= 12 ? "PM" : "AM"}`,
+        temperature: Math.round(data.hourly.temperature_2m[i]),
+        feelsLike: Math.round(data.hourly.apparent_temperature[i]),
+        humidity: data.hourly.relative_humidity_2m[i],
+        precipitationProbability: data.hourly.precipitation_probability[i],
+        precipitation: data.hourly.precipitation[i],
+        weatherCode: data.hourly.weather_code[i],
+        windSpeed: Math.round(data.hourly.wind_speed_10m[i]),
+        windGusts: Math.round(data.hourly.wind_gusts_10m[i]),
+        cloudCover: data.hourly.cloud_cover[i],
+        uvIndex: data.hourly.uv_index[i],
+      };
+    }
   );
 
   return {
@@ -318,11 +315,7 @@ async function fetchHistoricalAverages(
 
     return {
       time: hourTime,
-      hour: new Date(`${dateStr}T${String(h).padStart(2, "0")}:00:00`).toLocaleTimeString("en-US", {
-        hour: "numeric",
-        hour12: true,
-        timeZone: "America/New_York",
-      }),
+      hour: `${h === 0 ? 12 : h > 12 ? h - 12 : h} ${h >= 12 ? "PM" : "AM"}`,
       temperature: Math.round(avg(temps)),
       feelsLike: Math.round(avg(feels)),
       humidity: Math.round(avg(humid)),

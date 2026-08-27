@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { formatEasternDate, daysUntilEasternDate } from "@/lib/timezone";
 
 // ─── Types ───────────────────────────────────────────────
 
@@ -168,10 +169,7 @@ export default function WeatherForecast({
   if (!weddingDate) return null;
 
   // Calculate days until wedding
-  const daysUntil = Math.ceil(
-    (new Date(weddingDate).getTime() - new Date().getTime()) /
-      (1000 * 60 * 60 * 24)
-  );
+  const daysUntil = daysUntilEasternDate(weddingDate);
 
   if (loading) {
     return (
@@ -249,12 +247,7 @@ export default function WeatherForecast({
         🌤️ Wedding Day Weather
       </h2>
       <p className="text-ivory/50 text-center text-sm mb-2">
-        {weather.venueName} · {new Date(weather.weddingDate + "T12:00:00").toLocaleDateString("en-US", {
-          weekday: "long",
-          month: "long",
-          day: "numeric",
-          year: "numeric",
-        })}
+        {weather.venueName} · {formatEasternDate(weather.weddingDate, { weekday: "long" }) ?? weather.weddingDate}
       </p>
 
       {/* Source badge */}
@@ -665,16 +658,13 @@ function PrepTip({
 
 function formatTimeStr(timeStr: string): string {
   try {
-    // Could be ISO or just "HH:MM"
-    if (timeStr.includes("T")) {
-      return new Date(timeStr).toLocaleTimeString("en-US", {
-        hour: "numeric",
-        minute: "2-digit",
-        timeZone: "America/New_York",
-      });
-    }
-    // Parse "06:30" → "6:30 AM"
-    const [h, m] = timeStr.split(":").map(Number);
+    // Open-Meteo returns timezone-naive local-ET strings; slice "HH:MM" rather
+    // than round-tripping through new Date() (which shifts by 4–5h as UTC).
+    const hhmm = timeStr.includes("T")
+      ? timeStr.split("T")[1].slice(0, 5)
+      : timeStr;
+
+    const [h, m] = hhmm.split(":").map(Number);
     const period = h >= 12 ? "PM" : "AM";
     const h12 = h === 0 ? 12 : h > 12 ? h - 12 : h;
     return `${h12}:${String(m).padStart(2, "0")} ${period}`;

@@ -76,6 +76,61 @@ describe("Weather API", () => {
     expect(data.data.hourly).toHaveLength(1);
   });
 
+  it("derives ET hour labels directly from naive Open-Meteo timestamps", async () => {
+    const future = new Date();
+    future.setDate(future.getDate() + 5);
+    mockQueryOne.mockResolvedValue({
+      id: "singleton",
+      weddingDate: future.toISOString(),
+      venueName: "The Manor",
+    });
+
+    // Open-Meteo returns timezone-naive local-ET strings (no Z/offset)
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: () =>
+        Promise.resolve({
+          hourly: {
+            time: [
+              "2026-11-13T16:00",
+              "2026-11-13T00:00",
+              "2026-11-13T12:00",
+            ],
+            temperature_2m: [85, 70, 80],
+            apparent_temperature: [90, 74, 84],
+            relative_humidity_2m: [60, 65, 62],
+            precipitation_probability: [30, 10, 20],
+            precipitation: [0, 0, 0],
+            weather_code: [2, 1, 2],
+            wind_speed_10m: [10, 8, 9],
+            wind_gusts_10m: [15, 12, 14],
+            cloud_cover: [40, 20, 30],
+            uv_index: [8, 0, 6],
+          },
+          daily: {
+            temperature_2m_max: [90],
+            temperature_2m_min: [75],
+            precipitation_probability_max: [30],
+            sunrise: ["2026-11-13T06:34"],
+            sunset: ["2026-11-13T17:05"],
+            uv_index_max: [10],
+            weather_code: [2],
+          },
+        }),
+    });
+
+    const req = new NextRequest("http://l/api/v1/weather");
+    const res = await GET(req);
+    const data = await res.json();
+    expect(res.status).toBe(200);
+    expect(data.data.source).toBe("forecast");
+    expect(data.data.hourly.map((h: { hour: string }) => h.hour)).toEqual([
+      "4 PM",
+      "12 AM",
+      "12 PM",
+    ]);
+  });
+
   it("returns historical data for far-future date", async () => {
     const future = new Date();
     future.setFullYear(future.getFullYear() + 1);

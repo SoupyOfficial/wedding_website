@@ -329,6 +329,36 @@ describe("WeatherForecast", () => {
     });
   });
 
+  it("formats ISO-shaped sunrise/sunset without timezone shift", async () => {
+    const data = makeWeatherData();
+    (data.data.daily as Record<string, unknown>).sunrise = "2026-11-13T06:34";
+    (data.data.daily as Record<string, unknown>).sunset = "2026-11-13T17:05";
+    mockFetch.mockResolvedValueOnce({
+      json: () => Promise.resolve(data),
+    });
+    render(
+      <WeatherForecast weddingDate="2025-10-04" timelineEvents={[]} />
+    );
+    await waitFor(() => {
+      expect(screen.getByText("6:34 AM")).toBeInTheDocument();
+      expect(screen.getByText("5:05 PM")).toBeInTheDocument();
+    });
+  });
+
+  it("selecting a 4:30 PM event shows its hour label as 4 PM", async () => {
+    mockFetch.mockResolvedValueOnce({
+      json: () => Promise.resolve(makeWeatherData()),
+    });
+    render(
+      <WeatherForecast weddingDate="2025-10-04" timelineEvents={timelineEvents} />
+    );
+    await waitFor(() => screen.getByText("Ceremony"));
+    fireEvent.click(screen.getByText("Ceremony"));
+    await waitFor(() => {
+      expect(screen.getByText("4 PM — Details")).toBeInTheDocument();
+    });
+  });
+
   it("retries on error via retry button", async () => {
     mockFetch
       .mockRejectedValueOnce(new Error("fail"))

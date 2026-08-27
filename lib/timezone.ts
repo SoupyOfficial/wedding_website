@@ -134,3 +134,54 @@ export function formatEasternDate(
     return null;
   }
 }
+
+/**
+ * Whole Eastern calendar days from the Eastern date of `now` to the Eastern
+ * date of `dateStr` (target − today; negative when the target is in the past).
+ *
+ * Unlike a naive `(target − now) / 86400000`, this compares Eastern midnights,
+ * so it does not drift by a day near UTC/DST midnight boundaries. Each date's
+ * midnight is built with its own DST offset (via `toEasternISO`), and the
+ * difference is rounded to absorb the 23-hour/25-hour days that bracket a DST
+ * transition.
+ *
+ * @param dateStr  ISO date part: "YYYY-MM-DD"
+ * @param now      reference instant (defaults to the current time)
+ * @returns        whole Eastern days until `dateStr` (0 for invalid/empty input)
+ *
+ * @example
+ *   daysUntilEasternDate("2026-11-13", new Date("2026-11-12T23:00:00-05:00"))  // 1
+ */
+export function daysUntilEasternDate(
+  dateStr: string,
+  now: Date = new Date()
+): number {
+  const clean = dateStr?.slice(0, 10) ?? "";
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(clean)) return 0;
+
+  const targetMidnight = new Date(toEasternISO(clean)).getTime();
+
+  const parts = easternDateParts(now);
+  const todayStr = `${parts.y}-${String(parts.m).padStart(2, "0")}-${String(
+    parts.d
+  ).padStart(2, "0")}`;
+  const nowMidnight = new Date(toEasternISO(todayStr)).getTime();
+
+  return Math.round((targetMidnight - nowMidnight) / 86_400_000);
+}
+
+/**
+ * Split an instant into its Eastern calendar date (year/month/day), so the
+ * matching Eastern midnight can be built without guessing the offset up front.
+ */
+function easternDateParts(date: Date): { y: number; m: number; d: number } {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/New_York",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(date);
+  const value = (type: string) =>
+    Number(parts.find((p) => p.type === type)?.value ?? 0);
+  return { y: value("year"), m: value("month"), d: value("day") };
+}
