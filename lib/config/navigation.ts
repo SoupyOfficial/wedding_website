@@ -33,6 +33,7 @@ export const publicNavLinks: PublicNavLink[] = [
   { href: "/gallery", label: "Gallery", featureFlag: "galleryPageEnabled" },
   { href: "/photos-of-us", label: "Our Photos", featureFlag: "photosOfUsPageEnabled" },
   { href: "/contact", label: "Contact", featureFlag: "contactPageEnabled" },
+  { href: "/dress-code", label: "Dress Code", featureFlag: "dressCodePageEnabled" },
   { href: "/raffle", label: "Raffle", featureFlag: "rafflePageEnabled" },
 ];
 

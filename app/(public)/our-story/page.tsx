@@ -7,6 +7,8 @@ import SectionDivider from "@/components/SectionDivider";
 import { PageHeader } from "@/components/ui";
 import OurStoryTimeline from "./OurStoryTimeline";
 import StoryChapters, { type StoryChapter } from "./StoryChapters";
+import StorySlideshow from "./StorySlideshow";
+import { storySlideshowImages } from "./story-slideshow.data";
 
 export const metadata = {
   title: "Our Story",
@@ -60,8 +62,12 @@ export default async function OurStoryPage() {
         <PageHeader
           title="Our Story"
           subtitle="How we found each other under the stars"
-          className="mb-16"
+          className="mb-10"
         />
+
+        <div className="max-w-4xl mx-auto mb-16">
+          <StorySlideshow slides={storySlideshowImages} />
+        </div>
 
         {/* Story Content */}
         {story ? (

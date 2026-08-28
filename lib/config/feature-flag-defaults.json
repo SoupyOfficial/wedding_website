@@ -15,6 +15,7 @@
   "rafflePageEnabled": true,
   "registryPageEnabled": true,
   "faqPageEnabled": true,
+  "dressCodePageEnabled": true,
   "contactPageEnabled": true,
   "musicPageEnabled": true,
   "photosOfUsPageEnabled": true,

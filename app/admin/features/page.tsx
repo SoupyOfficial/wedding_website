@@ -29,6 +29,7 @@ const FLAG_GROUPS: { title: string; items: FlagConfig[] }[] = [
       { key: "registryPageEnabled", label: "Registry", description: "Show the Registry page with gift registry links" },
       { key: "faqPageEnabled", label: "FAQ", description: "Show the FAQ page with common questions" },
       { key: "contactPageEnabled", label: "Contact", description: "Show the Contact page for guest inquiries" },
+      { key: "dressCodePageEnabled", label: "Dress Code", description: "Show the dedicated Dress Code page" },
       { key: "rafflePageEnabled", label: "Raffle", description: "Show the Raffle page with prize details and rules" },
     ],
   },
