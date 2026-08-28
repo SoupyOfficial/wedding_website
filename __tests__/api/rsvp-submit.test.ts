@@ -237,6 +237,80 @@ describe("POST /api/v1/rsvp/submit", () => {
     expect(songExec[0]).toContain("INSERT INTO SongRequest");
   });
 
+  // ── Dance song answers → SongRequest with requester + question ──
+
+  it("stores danceSong as a SongRequest with question and requester", async () => {
+    mockQueryOne
+      .mockResolvedValueOnce(null)   // settings
+      .mockResolvedValueOnce(guest)  // existing guest (edit)
+      .mockResolvedValueOnce(guest)  // guest after update
+      .mockResolvedValueOnce(null);  // danceSong lookup: not found → INSERT
+    await POST(makeReq({ guestId: "g1", attending: true, danceSong: "Uptown Funk" }));
+    const insertCall = mockExecute.mock.calls.find((c) => (c[0] as string).includes("INSERT INTO SongRequest"));
+    expect(insertCall).toBeDefined();
+    const sql = insertCall![0] as string;
+    expect(sql).toContain("question");
+    expect(sql).toContain("guestId");
+    const args = insertCall![1] as (string | number | null)[];
+    expect(args[1]).toBe("John Doe");                                                       // guestName
+    expect(args[2]).toBe("g1");                                                            // guestId
+    expect(args[3]).toBe("Uptown Funk");                                                   // songTitle
+    expect(args[4]).toBe("What song will get you on the dance floor?");                    // question
+  });
+
+  it("stores firstDanceSong as a SongRequest with its question", async () => {
+    mockQueryOne
+      .mockResolvedValueOnce(null)   // settings
+      .mockResolvedValueOnce(guest)  // existing guest (edit)
+      .mockResolvedValueOnce(guest)  // guest after update
+      .mockResolvedValueOnce(null);  // firstDanceSong lookup: not found → INSERT
+    await POST(makeReq({ guestId: "g1", attending: true, firstDanceSong: "At Last" }));
+    const insertCall = mockExecute.mock.calls.find((c) => (c[0] as string).includes("INSERT INTO SongRequest"));
+    expect(insertCall).toBeDefined();
+    const args = insertCall![1] as (string | number | null)[];
+    expect(args[1]).toBe("John Doe");
+    expect(args[2]).toBe("g1");
+    expect(args[3]).toBe("At Last");
+    expect(args[4]).toBe("What was your first dance song?");
+  });
+
+  it("stores both dance songs as two SongRequest rows", async () => {
+    mockQueryOne
+      .mockResolvedValueOnce(null)   // settings
+      .mockResolvedValueOnce(guest)  // existing guest (edit)
+      .mockResolvedValueOnce(guest)  // guest after update
+      .mockResolvedValueOnce(null)   // danceSong lookup: not found
+      .mockResolvedValueOnce(null);  // firstDanceSong lookup: not found
+    await POST(makeReq({ guestId: "g1", attending: true, danceSong: "Uptown Funk", firstDanceSong: "At Last" }));
+    const inserts = mockExecute.mock.calls.filter((c) => (c[0] as string).includes("INSERT INTO SongRequest"));
+    expect(inserts.length).toBe(2);
+  });
+
+  it("updates an existing dance song request and inserts the first-dance row", async () => {
+    mockQueryOne
+      .mockResolvedValueOnce(null)                       // settings
+      .mockResolvedValueOnce(guest)                      // existing guest (edit)
+      .mockResolvedValueOnce(guest)                      // guest after update
+      .mockResolvedValueOnce({ id: "dance-existing" })   // danceSong lookup: found → UPDATE
+      .mockResolvedValueOnce(null);                      // firstDanceSong lookup: not found → INSERT
+    await POST(makeReq({ guestId: "g1", attending: true, danceSong: "New Dance", firstDanceSong: "At Last" }));
+    const updateCall = mockExecute.mock.calls.find((c) => (c[0] as string).includes("UPDATE SongRequest"));
+    expect(updateCall).toBeDefined();
+    const insertCall = mockExecute.mock.calls.find((c) => (c[0] as string).includes("INSERT INTO SongRequest"));
+    expect(insertCall).toBeDefined();
+  });
+
+  it("does not store dance songs when declining", async () => {
+    mockQueryOne
+      .mockResolvedValueOnce(null)                                      // settings
+      .mockResolvedValueOnce({ ...guest, rsvpStatus: "declined" })      // existing guest (edit)
+      .mockResolvedValueOnce({ ...guest, rsvpStatus: "declined" });     // guest after update
+    await POST(makeReq({ guestId: "g1", attending: false, danceSong: "Upturn Funk" }));
+    expect(mockExecute).toHaveBeenCalledTimes(1);
+    const inserts = mockExecute.mock.calls.filter((c) => (c[0] as string).includes("INSERT INTO SongRequest"));
+    expect(inserts.length).toBe(0);
+  });
+
   // ── Email notifications ──
 
   it("sends admin and guest notification emails when enabled", async () => {

@@ -223,6 +223,8 @@ export interface Entertainment {
 export interface SongRequest {
   id: string;
   guestName: string;
+  guestId: string | null;
+  question: string;
   songTitle: string;
   artist: string;
   artworkUrl: string | null;

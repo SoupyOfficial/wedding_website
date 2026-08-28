@@ -279,6 +279,8 @@ Unique constraint on `(name, type)`.
 |-------|------|-------------|
 | `id` | String PK | cuid |
 | `guestName` | String | Guest who submitted |
+| `guestId` | String? | Link to the `Guest` row; set for RSVP submissions, null for public music-page requests |
+| `question` | String | The RSVP question this song answers (e.g. "What song will get you on the dance floor?"); empty for public music-page requests |
 | `songTitle` | String | Song name |
 | `artist` | String? | Artist name |
 | `artworkUrl` | String? | Album art URL |

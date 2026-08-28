@@ -244,6 +244,8 @@ model Entertainment {
 model SongRequest {
   id         String   @id @default(cuid())
   guestName  String
+  guestId    String?
+  question   String   @default("")
   songTitle  String
   artist     String   @default("")
   artworkUrl String?

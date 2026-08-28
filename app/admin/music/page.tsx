@@ -6,6 +6,7 @@ import { PLAY_TIME_OPTIONS, DJ_LIST_TYPES } from "@/lib/constants";
 
 type SongRequest = {
   id: string;
+  guestId: string | null;
   guestName: string;
   songTitle: string;
   artist: string;
@@ -13,6 +14,7 @@ type SongRequest = {
   approved: boolean;
   isVisible: boolean;
   createdAt: string;
+  question: string;
 };
 
 type DJListItem = {
@@ -400,6 +402,7 @@ export default function AdminMusicPage() {
                   <tr className="bg-royal/30 text-gold/80 text-left text-xs uppercase tracking-wider">
                     <th className="px-4 py-3">Song</th>
                     <th className="px-4 py-3">Artist</th>
+                    <th className="px-4 py-3">Question</th>
                     <th className="px-4 py-3">Requested By</th>
                     <th className="px-4 py-3">Status</th>
                     <th className="px-4 py-3">Visible</th>
@@ -420,6 +423,7 @@ export default function AdminMusicPage() {
                         </div>
                       </td>
                       <td className="px-4 py-3 text-ivory/70">{r.artist || "—"}</td>
+                      <td className="px-4 py-3 text-ivory/70 max-w-[220px] truncate" title={r.question}>{r.question || "—"}</td>
                       <td className="px-4 py-3 text-ivory/70">{r.guestName}</td>
                       <td className="px-4 py-3">
                         <span
@@ -491,7 +495,7 @@ export default function AdminMusicPage() {
                   <div className="flex-1 min-w-0">
                     <div className="text-ivory font-medium truncate">{r.songTitle}</div>
                     <div className="text-ivory/50 text-sm truncate">
-                      {r.artist || "Unknown Artist"} · Requested by {r.guestName}
+                      {r.artist || "Unknown Artist"} · Requested by {r.guestName}{r.question ? ` · ${r.question}` : ""}
                     </div>
                   </div>
                   <button

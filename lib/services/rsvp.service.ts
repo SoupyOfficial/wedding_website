@@ -137,14 +137,38 @@ export async function submitRsvp(input: RsvpSubmitInput): Promise<{ error: strin
     );
     if (existing) {
       await execute(
-        "UPDATE SongRequest SET songTitle = ?, artist = ? WHERE id = ?",
-        [songRequest.trim().slice(0, 200), (songArtist || "").trim().slice(0, 150), existing.id]
+        "UPDATE SongRequest SET songTitle = ?, artist = ?, guestId = ? WHERE id = ?",
+        [songRequest.trim().slice(0, 200), (songArtist || "").trim().slice(0, 150), guestId, existing.id]
       );
     } else {
       await execute(
-        "INSERT INTO SongRequest (id, songTitle, artist, guestName, approved, isVisible, createdAt) VALUES (?, ?, ?, ?, 0, 0, ?)",
-        [generateId(), songRequest.trim().slice(0, 200), (songArtist || "").trim().slice(0, 150), `${guest.firstName} ${guest.lastName}`, now()]
+        "INSERT INTO SongRequest (id, guestName, guestId, songTitle, artist, approved, isVisible, createdAt) VALUES (?, ?, ?, ?, ?, 0, 0, ?)",
+        [generateId(), `${guest.firstName} ${guest.lastName}`, guestId, songRequest.trim().slice(0, 200), (songArtist || "").trim().slice(0, 150), now()]
       );
+    }
+  }
+
+  if (attending) {
+    const fullName = `${guest.firstName} ${guest.lastName}`;
+    const songAnswers: { value?: string; question: string }[] = [
+      { value: danceSong, question: "What song will get you on the dance floor?" },
+      { value: firstDanceSong, question: "What was your first dance song?" },
+    ];
+    for (const { value, question } of songAnswers) {
+      if (!value || !value.trim()) continue;
+      const title = value.trim().slice(0, 200);
+      const existing = await queryOne<{ id: string }>(
+        "SELECT id FROM SongRequest WHERE guestName = ? AND question = ? LIMIT 1",
+        [fullName, question]
+      );
+      if (existing) {
+        await execute("UPDATE SongRequest SET songTitle = ?, guestId = ? WHERE id = ?", [title, guestId, existing.id]);
+      } else {
+        await execute(
+          "INSERT INTO SongRequest (id, guestName, guestId, songTitle, artist, question, approved, isVisible, createdAt) VALUES (?, ?, ?, ?, '', ?, 0, 0, ?)",
+          [generateId(), fullName, guestId, title, question, now()]
+        );
+      }
     }
   }
 
