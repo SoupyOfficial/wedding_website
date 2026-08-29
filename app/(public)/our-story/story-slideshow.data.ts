@@ -1,4 +1,4 @@
-// PLACEHOLDER IMAGES — replace src values with real photo paths when provided.
+// Real wedding photos — order matches slide-01..18 in public/images/story-slideshow/. Add caption text per slide if desired.
 
 export interface StorySlide {
   src: string;
@@ -7,29 +7,22 @@ export interface StorySlide {
 }
 
 export const storySlideshowImages: StorySlide[] = [
-  {
-    src: "https://picsum.photos/seed/forever-campbells-01/1600/900",
-    alt: "Jacob and Ashley where it all began",
-    caption: "Where it all began",
-  },
-  {
-    src: "https://picsum.photos/seed/forever-campbells-02/1600/900",
-    alt: "A quiet evening under the stars",
-    caption: "Under the stars",
-  },
-  {
-    src: "https://picsum.photos/seed/forever-campbells-03/1600/900",
-    alt: "Adventures shared together",
-    caption: "Adventures together",
-  },
-  {
-    src: "https://picsum.photos/seed/forever-campbells-04/1600/900",
-    alt: "The moment we said yes",
-    caption: "The proposal",
-  },
-  {
-    src: "https://picsum.photos/seed/forever-campbells-05/1600/900",
-    alt: "Counting down to forever",
-    caption: "Forever begins soon",
-  },
+  { src: "/images/story-slideshow/slide-01.jpg", alt: "Our story photo 1", caption: "" },
+  { src: "/images/story-slideshow/slide-02.jpg", alt: "Our story photo 2", caption: "" },
+  { src: "/images/story-slideshow/slide-03.jpg", alt: "Our story photo 3", caption: "" },
+  { src: "/images/story-slideshow/slide-04.jpg", alt: "Our story photo 4", caption: "" },
+  { src: "/images/story-slideshow/slide-05.jpg", alt: "Our story photo 5", caption: "" },
+  { src: "/images/story-slideshow/slide-06.jpg", alt: "Our story photo 6", caption: "" },
+  { src: "/images/story-slideshow/slide-07.jpg", alt: "Our story photo 7", caption: "" },
+  { src: "/images/story-slideshow/slide-08.jpg", alt: "Our story photo 8", caption: "" },
+  { src: "/images/story-slideshow/slide-09.jpg", alt: "Our story photo 9", caption: "" },
+  { src: "/images/story-slideshow/slide-10.jpg", alt: "Our story photo 10", caption: "" },
+  { src: "/images/story-slideshow/slide-11.jpg", alt: "Our story photo 11", caption: "" },
+  { src: "/images/story-slideshow/slide-12.jpg", alt: "Our story photo 12", caption: "" },
+  { src: "/images/story-slideshow/slide-13.jpg", alt: "Our story photo 13", caption: "" },
+  { src: "/images/story-slideshow/slide-14.jpg", alt: "Our story photo 14", caption: "" },
+  { src: "/images/story-slideshow/slide-15.jpg", alt: "Our story photo 15", caption: "" },
+  { src: "/images/story-slideshow/slide-16.jpg", alt: "Our story photo 16", caption: "" },
+  { src: "/images/story-slideshow/slide-17.jpg", alt: "Our story photo 17", caption: "" },
+  { src: "/images/story-slideshow/slide-18.jpg", alt: "Our story photo 18", caption: "" },
 ];

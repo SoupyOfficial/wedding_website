@@ -2,7 +2,18 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, fireEvent, act } from "@testing-library/react";
 
 import StorySlideshow from "@/app/(public)/our-story/StorySlideshow";
-import { storySlideshowImages } from "@/app/(public)/our-story/story-slideshow.data";
+import {
+  storySlideshowImages,
+  type StorySlide,
+} from "@/app/(public)/our-story/story-slideshow.data";
+
+const slides: StorySlide[] = [
+  { src: "/slide-1.jpg", alt: "Slide one", caption: "Where it all began" },
+  { src: "/slide-2.jpg", alt: "Slide two", caption: "Under the stars" },
+  { src: "/slide-3.jpg", alt: "Slide three", caption: "Adventures together" },
+  { src: "/slide-4.jpg", alt: "Slide four", caption: "The proposal" },
+  { src: "/slide-5.jpg", alt: "Slide five", caption: "Forever begins soon" },
+];
 
 class MockIntersectionObserver {
   observe = vi.fn();
@@ -35,7 +46,7 @@ afterEach(() => {
 
 describe("StorySlideshow", () => {
   it("renders the first slide initially", () => {
-    render(<StorySlideshow slides={storySlideshowImages} />);
+    render(<StorySlideshow slides={slides} />);
 
     expect(screen.getByText("Where it all began")).toBeInTheDocument();
     expect(screen.getByLabelText("Go to photo 1")).toHaveAttribute(
@@ -48,7 +59,7 @@ describe("StorySlideshow", () => {
   });
 
   it("advances on next and wraps from first to last on previous", () => {
-    render(<StorySlideshow slides={storySlideshowImages} />);
+    render(<StorySlideshow slides={slides} />);
 
     fireEvent.click(screen.getByLabelText("Next photo"));
     expect(screen.getByLabelText("Go to photo 2")).toHaveAttribute(
@@ -72,7 +83,7 @@ describe("StorySlideshow", () => {
   });
 
   it("jumps to a slide when its dot is clicked", () => {
-    render(<StorySlideshow slides={storySlideshowImages} />);
+    render(<StorySlideshow slides={slides} />);
 
     fireEvent.click(screen.getByLabelText("Go to photo 3"));
     expect(screen.getByLabelText("Go to photo 3")).toHaveAttribute(
@@ -84,7 +95,7 @@ describe("StorySlideshow", () => {
 
   it("auto-advances to the next slide after the interval", () => {
     vi.useFakeTimers();
-    render(<StorySlideshow slides={storySlideshowImages} />);
+    render(<StorySlideshow slides={slides} />);
 
     expect(screen.getByLabelText("Go to photo 1")).toHaveAttribute(
       "aria-current",
@@ -99,5 +110,15 @@ describe("StorySlideshow", () => {
       "aria-current",
       "true"
     );
+  });
+});
+
+describe("storySlideshowImages", () => {
+  it("has 18 slides with empty captions and ordered src paths", () => {
+    expect(storySlideshowImages).toHaveLength(18);
+    storySlideshowImages.forEach((slide, i) => {
+      expect(slide.src).toBe(`/images/story-slideshow/slide-${String(i + 1).padStart(2, "0")}.jpg`);
+      expect(slide.caption).toBe("");
+    });
   });
 });

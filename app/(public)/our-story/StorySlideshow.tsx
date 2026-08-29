@@ -114,11 +114,13 @@ export default function StorySlideshow({ slides }: StorySlideshowProps) {
         </button>
 
         {/* Caption overlay */}
-        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-midnight/80 via-midnight/30 to-transparent px-6 pt-16 pb-5">
-          <p className="font-serif italic text-ivory/80 text-sm">
-            {activeSlide.caption}
-          </p>
-        </div>
+        {activeSlide.caption && (
+          <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-midnight/80 via-midnight/30 to-transparent px-6 pt-16 pb-5">
+            <p className="font-serif italic text-ivory/80 text-sm">
+              {activeSlide.caption}
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Dots */}
