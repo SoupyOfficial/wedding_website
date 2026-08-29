@@ -8,7 +8,7 @@ import {
 } from "@/app/(public)/our-story/story-slideshow.data";
 
 const slides: StorySlide[] = [
-  { src: "/slide-1.jpg", alt: "Slide one", caption: "Where it all began" },
+  { src: "/slide-1.jpg", alt: "Slide one", caption: "Where it all began", position: "50% 40%" },
   { src: "/slide-2.jpg", alt: "Slide two", caption: "Under the stars" },
   { src: "/slide-3.jpg", alt: "Slide three", caption: "Adventures together" },
   { src: "/slide-4.jpg", alt: "Slide four", caption: "The proposal" },
@@ -56,6 +56,13 @@ describe("StorySlideshow", () => {
     expect(screen.getByLabelText("Go to photo 2")).not.toHaveAttribute(
       "aria-current"
     );
+  });
+
+  it("applies the active slide's object-position to the image", () => {
+    const { container } = render(<StorySlideshow slides={slides} />);
+
+    const img = container.querySelector("img");
+    expect(img).toHaveStyle({ objectPosition: "50% 40%" });
   });
 
   it("advances on next and wraps from first to last on previous", () => {
@@ -114,11 +121,12 @@ describe("StorySlideshow", () => {
 });
 
 describe("storySlideshowImages", () => {
-  it("has 18 slides with empty captions and ordered src paths", () => {
+  it("has 18 slides with empty captions, ordered src paths, and focal positions", () => {
     expect(storySlideshowImages).toHaveLength(18);
     storySlideshowImages.forEach((slide, i) => {
       expect(slide.src).toBe(`/images/story-slideshow/slide-${String(i + 1).padStart(2, "0")}.jpg`);
       expect(slide.caption).toBe("");
+      expect(slide.position).toBeDefined();
     });
   });
 });
