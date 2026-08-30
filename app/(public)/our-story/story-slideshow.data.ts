@@ -16,7 +16,7 @@ export const storySlideshowImages: StorySlide[] = [
   { src: "/images/story-slideshow/slide-05.jpg", alt: "Our story photo 05", caption: "", position: "50% 35%" },
   { src: "/images/story-slideshow/slide-06.jpg", alt: "Our story photo 06", caption: "", position: "50% 50%" },
   { src: "/images/story-slideshow/slide-07.jpg", alt: "Our story photo 07", caption: "", position: "50% 30%" },
-  { src: "/images/story-slideshow/slide-08.jpg", alt: "Our story photo 08", caption: "", position: "50% 45%" },
+  { src: "/images/story-slideshow/slide-08.jpg", alt: "Our story photo 08", caption: "", position: "50% 55%" },
   { src: "/images/story-slideshow/slide-09.jpg", alt: "Our story photo 09", caption: "", position: "50% 50%" },
   { src: "/images/story-slideshow/slide-10.jpg", alt: "Our story photo 10", caption: "", position: "50% 50%" },
   { src: "/images/story-slideshow/slide-11.jpg", alt: "Our story photo 11", caption: "", position: "50% 35%" },
