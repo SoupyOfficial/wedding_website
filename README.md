@@ -84,8 +84,8 @@ Guests can upload photos to `/photos-of-us`:
 
 - **Multiple at once** — tap/select or drag-and-drop many files in a single batch
 - **Mobile-friendly** — works from the browser camera roll (incl. iPhone HEIC)
-- **Automatic compression** — images are resized client-side, then optimized
-  server-side via Cloudinary before delivery
+- **Automatic compression** — images are resized client-side (and HEIC is
+  converted to JPEG in the browser), then stored in Vercel Blob
 - **Approval workflow** — uploads land as *pending* in `/admin/photos`; only
   approved photos appear in the public `/gallery`
 

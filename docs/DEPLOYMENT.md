@@ -50,11 +50,11 @@ npx tsx prisma/seed.ts
 
 You can also set up the initial data manually via the admin panel after the site is live.
 
-### 4. Cloudinary setup
+### 4. Vercel Blob setup (photo storage)
 
-1. Create a free Cloudinary account at cloudinary.com
-2. From the Cloudinary dashboard note: Cloud Name, API Key, API Secret
-3. Add these as Vercel environment variables (see section below)
+1. In Vercel → your project → **Storage** → **Create Database** → choose **Blob**
+2. Copy the generated `BLOB_READ_WRITE_TOKEN` (under the Blob store's "Settings")
+3. Add it as a Vercel environment variable (see section below) — guest photos are stored publicly and served via direct URLs
 
 ### 5. Vercel project setup
 
@@ -120,23 +120,16 @@ Set all of these in Vercel → Project Settings → Environment Variables.
 | `NEXTAUTH_URL` | `https://forevercampbells.com` |
 | `ADMIN_EMAIL` | Admin login email |
 | `ADMIN_PASSWORD` | bcrypt-hashed admin password (see below) |
-| `STORAGE_PROVIDER` | `cloudinary` |
-| `CLOUDINARY_CLOUD_NAME` | Your Cloudinary cloud name |
-| `CLOUDINARY_API_KEY` | Cloudinary API key |
-| `CLOUDINARY_API_SECRET` | Cloudinary API secret |
+| `BLOB_READ_WRITE_TOKEN` | Vercel Blob read/write token (photo storage) |
 
 **Optional:**
 
 | Variable | Description |
 |----------|-------------|
 | `DATABASE_URL` | Leave unset in production; Turso URL takes precedence |
+| `STORAGE_PROVIDER` | `vercel-blob` — auto-selected when `BLOB_READ_WRITE_TOKEN` is present |
 | `EMAIL_PROVIDER` | `resend` (when email is implemented) |
 | `RESEND_API_KEY` | Resend API key |
-| `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` | Google Maps API key for travel page |
-| `NEXT_PUBLIC_VENUE_ADDRESS` | Venue address string for Maps embed |
-| `APPLE_MUSIC_TEAM_ID` | Apple Developer Team ID |
-| `APPLE_MUSIC_KEY_ID` | Apple Music API key ID |
-| `APPLE_MUSIC_PRIVATE_KEY` | Apple Music private key content |
 
 ---
 

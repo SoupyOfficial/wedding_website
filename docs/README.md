@@ -21,7 +21,7 @@ A full-stack wedding website built with Next.js 14. Couples manage their wedding
 - **Database:** SQLite (local) / Turso libSQL (production)
 - **Auth:** NextAuth v5 — single admin credential
 - **Hosting:** Vercel (auto-deploys on `master` push)
-- **Photo storage:** Cloudinary
+- **Photo storage:** Vercel Blob
 - **Testing:** Vitest + Playwright
 
 ## Useful commands

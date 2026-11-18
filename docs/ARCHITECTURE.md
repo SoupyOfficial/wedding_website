@@ -88,7 +88,7 @@ Browser → middleware.ts
 ## Complexity Hotspots
 
 1. **SiteSettings** — 49-field singleton, 30+ fields in PUT handler
-2. **Photo upload pipeline** — client compression (canvas + HEIC passthrough) → multi-file API → storage provider (Cloudinary) → approval workflow
+2. **Photo upload pipeline** — client compression (canvas + HEIC→JPEG conversion) → chunked multi-file API → storage provider (Vercel Blob) → approval workflow
 
 ## Resolved Simplifications
 

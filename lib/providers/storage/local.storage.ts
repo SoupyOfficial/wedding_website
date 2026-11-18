@@ -23,7 +23,7 @@ export class LocalStorageProvider implements IStorageProvider {
       this.writable = false;
       console.warn(
         "[Storage] Local filesystem is read-only. File uploads will fail. " +
-        "Set STORAGE_PROVIDER=cloudinary with valid Cloudinary credentials for production."
+        "Set BLOB_READ_WRITE_TOKEN (Vercel Blob) for production."
       );
     }
   }
@@ -36,7 +36,7 @@ export class LocalStorageProvider implements IStorageProvider {
     if (!this.writable) {
       throw new Error(
         "Local filesystem is read-only. Configure a cloud storage provider " +
-        "(set STORAGE_PROVIDER=cloudinary) for production deployments."
+        "(set BLOB_READ_WRITE_TOKEN) for production deployments."
       );
     }
 

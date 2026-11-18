@@ -7,12 +7,23 @@ import { PageHeader, Alert } from "@/components/ui";
 const MAX_DIMENSION = 2000;
 const JPEG_QUALITY = 0.85;
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+const CHUNK_MAX_BYTES = 3.5 * 1024 * 1024; // keep each request under Vercel's 4.5MB limit
 
 interface SelectedFile {
   id: string;
   file: File;
   preview: string | null;
   status: "pending" | "uploading" | "done" | "error";
+  error?: string;
+}
+
+interface ProcessedFile {
+  file: File;
+  idx: number;
+}
+
+interface UploadResult {
+  status: "uploaded" | "failed";
   error?: string;
 }
 
@@ -32,15 +43,35 @@ function loadImage(src: string): Promise<HTMLImageElement> {
   });
 }
 
-/**
- * Downscale + re-encode images in the browser before upload (mobile-friendly).
- * HEIC files cannot be decoded by the browser, so they pass through unchanged —
- * the storage provider (Cloudinary) converts them server-side.
- */
-async function compressImage(file: File): Promise<File> {
-  if (isHeic(file)) return file;
+function toErrorMessage(error: unknown): string {
+  if (error instanceof Error) return error.message;
+  if (typeof error === "object" && error !== null) {
+    const obj = error as Record<string, unknown>;
+    if (typeof obj.message === "string") return obj.message;
+  }
+  return String(error);
+}
 
-  const url = URL.createObjectURL(file);
+async function convertHeicToJpeg(file: File): Promise<File> {
+  const heic2any = (await import("heic2any")).default;
+  const result = await heic2any({
+    blob: file,
+    toType: "image/jpeg",
+    quality: JPEG_QUALITY,
+  });
+  const blob = Array.isArray(result) ? result[0] : result;
+  return new File(
+    [blob],
+    file.name.replace(/\.[^.]+$/, "") + ".jpg",
+    { type: "image/jpeg" }
+  );
+}
+
+async function compressImage(file: File): Promise<File> {
+  // HEIC can't be decoded by the browser — convert to JPEG first
+  const source = isHeic(file) ? await convertHeicToJpeg(file) : file;
+
+  const url = URL.createObjectURL(source);
   try {
     const img = await loadImage(url);
     const scale = Math.min(
@@ -48,9 +79,9 @@ async function compressImage(file: File): Promise<File> {
       MAX_DIMENSION / Math.max(img.naturalWidth, img.naturalHeight)
     );
 
-    // Already within limits and a web-friendly format — skip re-encoding
-    if (scale === 1 && file.type !== "image/png") {
-      return file;
+    // Within limits and already JPEG — no re-encode needed
+    if (scale === 1 && source.type === "image/jpeg") {
+      return source;
     }
 
     const width = Math.max(1, Math.round(img.naturalWidth * scale));
@@ -60,19 +91,38 @@ async function compressImage(file: File): Promise<File> {
     canvas.width = width;
     canvas.height = height;
     const ctx = canvas.getContext("2d");
-    if (!ctx) return file;
+    if (!ctx) return source;
 
     ctx.drawImage(img, 0, 0, width, height);
     const blob = await new Promise<Blob | null>((resolve) =>
       canvas.toBlob(resolve, "image/jpeg", JPEG_QUALITY)
     );
-    if (!blob) return file;
+    if (!blob) return source;
 
-    const base = file.name.replace(/\.[^.]+$/, "");
+    const base = source.name.replace(/\.[^.]+$/, "");
     return new File([blob], `${base}.jpg`, { type: "image/jpeg" });
   } finally {
     URL.revokeObjectURL(url);
   }
+}
+
+function chunkFiles(items: ProcessedFile[]): ProcessedFile[][] {
+  const chunks: ProcessedFile[][] = [];
+  let current: ProcessedFile[] = [];
+  let size = 0;
+
+  for (const item of items) {
+    if (current.length > 0 && size + item.file.size > CHUNK_MAX_BYTES) {
+      chunks.push(current);
+      current = [];
+      size = 0;
+    }
+    current.push(item);
+    size += item.file.size;
+  }
+  if (current.length > 0) chunks.push(current);
+
+  return chunks;
 }
 
 export default function PhotosOfUsClient() {
@@ -143,59 +193,85 @@ export default function PhotosOfUsClient() {
     );
 
     try {
-      const formData = new FormData();
-      let compressedCount = 0;
+      // 1. Convert/compress each file (client-side)
+      const processed: ProcessedFile[] = [];
+      const outcomes: (UploadResult | undefined)[] = new Array(pending.length).fill(undefined);
 
-      for (const item of pending) {
-        const processed = await compressImage(item.file);
-        if (processed.size !== item.file.size) compressedCount += 1;
-        formData.append("files", processed, processed.name);
-      }
-      if (uploaderName.trim()) formData.append("uploaderName", uploaderName.trim());
-      if (caption.trim()) formData.append("caption", caption.trim());
-      formData.append("category", "guest-uploads");
-
-      const res = await fetch("/api/v1/photos/upload", { method: "POST", body: formData });
-      const data = await res.json();
-
-      if (!res.ok) {
-        setError(data.error || "Upload failed.");
-        setFiles((prev) =>
-          prev.map((f) =>
-            f.status === "uploading" ? { ...f, status: "error", error: data.error || "Upload failed." } : f
-          )
-        );
-        return;
+      for (let i = 0; i < pending.length; i++) {
+        try {
+          const file = await compressImage(pending[i].file);
+          processed.push({ file, idx: i });
+        } catch (err) {
+          outcomes[i] = { status: "failed", error: toErrorMessage(err) };
+        }
       }
 
-      const results = (data.data?.results ?? []) as Array<{
-        name: string;
-        status: "uploaded" | "failed";
-        error?: string;
-      }>;
+      // 2. Upload in size-bounded chunks
+      for (const chunk of chunkFiles(processed)) {
+        const formData = new FormData();
+        for (const { file } of chunk) formData.append("files", file, file.name);
+        if (uploaderName.trim()) formData.append("uploaderName", uploaderName.trim());
+        if (caption.trim()) formData.append("caption", caption.trim());
+        formData.append("category", "guest-uploads");
 
+        const res = await fetch("/api/v1/photos/upload", {
+          method: "POST",
+          body: formData,
+        });
+        const data = (await res.json()) as {
+          success?: boolean;
+          error?: string;
+          data?: { results?: UploadResult[] };
+        };
+
+        if (!res.ok) {
+          const message = data.error || "Upload failed.";
+          for (const { idx } of chunk) {
+            outcomes[idx] = { status: "failed", error: message };
+          }
+          if (res.status === 503) {
+            setError(message);
+            break;
+          }
+          continue;
+        }
+
+        const results = data.data?.results ?? [];
+        results.forEach((result, j) => {
+          const item = chunk[j];
+          if (!item) return;
+          outcomes[item.idx] =
+            result.status === "failed"
+              ? { status: "failed", error: result.error || "Upload failed." }
+              : { status: "uploaded" };
+        });
+      }
+
+      // 3. Map outcomes back to file tiles
       setFiles((prev) =>
         prev.map((f) => {
           if (f.status !== "uploading") return f;
-          const idx = pending.findIndex((p) => p.id === f.id);
-          const result = results[idx];
-          if (!result) return { ...f, status: "error", error: "No result returned." };
-          if (result.status === "failed") {
-            return { ...f, status: "error", error: result.error || "Upload failed." };
+          const i = pending.findIndex((p) => p.id === f.id);
+          const outcome = outcomes[i];
+          if (!outcome) return { ...f, status: "error", error: "Upload failed." };
+          if (outcome.status === "failed") {
+            return { ...f, status: "error", error: outcome.error || "Upload failed." };
           }
           return { ...f, status: "done" };
         })
       );
 
-      const doneCount = results.filter((r) => r.status === "uploaded").length;
-      const failedCount = results.filter((r) => r.status === "failed").length;
+      const done = outcomes.filter((o) => o?.status === "uploaded").length;
+      const failed = outcomes.filter((o) => o?.status === "failed").length;
 
-      let message = `${doneCount} photo${doneCount === 1 ? "" : "s"} uploaded and pending approval.`;
-      if (failedCount > 0) message += ` ${failedCount} skipped.`;
-      if (compressedCount > 0) message += " Photos were compressed for faster upload.";
-      setSuccess(message);
-
-      if (doneCount > 0) setCaption("");
+      if (done > 0) {
+        let message = `${done} photo${done === 1 ? "" : "s"} uploaded and pending approval.`;
+        if (failed > 0) message += ` ${failed} skipped.`;
+        setSuccess(message);
+        setCaption("");
+      } else if (failed > 0 && !error) {
+        setError("No photos were uploaded. Please try again.");
+      }
     } catch {
       setError("Something went wrong. Please try again.");
       setFiles((prev) =>

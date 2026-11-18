@@ -36,18 +36,12 @@ node -e "const b = require('bcryptjs'); b.hash('your-password', 12).then(h => co
 
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
-| `STORAGE_PROVIDER` | Yes | `cloudinary` | Which storage backend to use. Options: `local`, `cloudinary`, `s3`. |
-| `CLOUDINARY_CLOUD_NAME` | If Cloudinary | — | Your Cloudinary cloud name (visible in the Cloudinary dashboard). |
-| `CLOUDINARY_API_KEY` | If Cloudinary | — | Cloudinary API key. |
-| `CLOUDINARY_API_SECRET` | If Cloudinary | — | Cloudinary API secret. |
-| `S3_BUCKET` | If S3 | — | S3 bucket name. |
-| `S3_REGION` | If S3 | — | AWS region (e.g. `us-east-1`). |
-| `S3_ACCESS_KEY_ID` | If S3 | — | AWS access key ID. |
-| `S3_SECRET_ACCESS_KEY` | If S3 | — | AWS secret access key. |
+| `BLOB_READ_WRITE_TOKEN` | Yes (prod) | — | Vercel Blob read/write token. Generate in Vercel → Storage → Blob → Create Store. When present, Vercel Blob is used automatically. |
+| `STORAGE_PROVIDER` | No | auto | Override the storage backend. Options: `local`, `vercel-blob`. Defaults to Vercel Blob when `BLOB_READ_WRITE_TOKEN` is set, otherwise `local`. |
 
 **Notes:**
-- `local` storage writes to the filesystem. This does **not** work on Vercel (read-only filesystem). Use `cloudinary` in production.
-- `s3` storage is defined in the provider pattern but not fully implemented.
+- `local` storage writes to the filesystem and is only for local dev — it does **not** work on Vercel (read-only filesystem).
+- Production uses **Vercel Blob** — enable the Blob store in Vercel and set `BLOB_READ_WRITE_TOKEN`. Guest photos are stored publicly and served via direct URLs.
 
 ---
 
@@ -74,7 +68,7 @@ STORAGE_PROVIDER="local"
 EMAIL_PROVIDER="noop"
 ```
 
-Guest photo uploads need Cloudinary in production (`STORAGE_PROVIDER=cloudinary`). Local filesystem storage cannot render HEIC (iPhone) photos in the browser — use Cloudinary so HEIC uploads are auto-converted on delivery.
+Guest photo uploads need Vercel Blob in production (set `BLOB_READ_WRITE_TOKEN`). HEIC (iPhone) photos are converted to JPEG in the browser before upload, so no server-side conversion is required.
 
 ---
 

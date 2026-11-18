@@ -69,9 +69,7 @@ export async function POST(req: NextRequest) {
         if (
           message.includes("read-only") ||
           message.includes("not configured") ||
-          message.includes("CLOUDINARY") ||
-          message.includes("Signature") ||
-          message.includes("api_key")
+          message.includes("BLOB_READ_WRITE_TOKEN")
         ) {
           return errorResponse(
             "Photo uploads are not available. Please contact the site administrators.",
