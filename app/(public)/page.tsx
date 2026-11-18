@@ -1,24 +1,21 @@
 import Link from "next/link";
-import { Suspense } from "react";
 import { getSettings } from "@/lib/services/settings.service";
 import { sanitizeHtml } from "@/lib/sanitize";
 import { toEasternISO, formatEasternDate } from "@/lib/timezone";
 import CountdownTimer from "@/components/CountdownTimer";
-import GuestWelcome from "@/components/GuestWelcome";
 import HomeSections from "@/components/HomeSections";
 
 export const metadata = {
   title: "Home",
   description:
-    "Jacob & Ashley are getting married! Join us November 13, 2026 at The Highland Manor in Apopka, Florida. RSVP, event details, travel info, and more.",
+    "Jacob & Ashley are married! Thank you for celebrating with us. Browse our wedding photos, share your own, and relive our story.",
 };
 
 export default async function HomePage() {
   const settings = await getSettings(
     "weddingDate", "weddingTime", "heroTagline", "heroTaglinePostWedding",
     "coupleName", "venueName", "venueAddress",
-    "weddingHashtag", "postWeddingContent", "preWeddingContent",
-    "rsvpDeadline", "rafflePrize", "dressCode"
+    "weddingHashtag", "postWeddingContent", "preWeddingContent"
   );
 
   const weddingDate = settings?.weddingDate;
@@ -60,11 +57,6 @@ export default async function HomePage() {
         </div>
 
         <div className="animate-fade-in-up space-y-8 max-w-3xl">
-          {/* Personalized guest greeting */}
-          <Suspense fallback={null}>
-            <GuestWelcome />
-          </Suspense>
-
           {/* Tagline */}
           <p className="text-ivory/70 text-lg md:text-xl tracking-widest uppercase">
             {isPostWedding
@@ -126,26 +118,6 @@ export default async function HomePage() {
             </p>
           )}
 
-          {/* RSVP Deadline Countdown */}
-          {settings?.rsvpDeadline && !isPostWedding && (() => {
-            const raw = String(settings.rsvpDeadline);
-            const datePart = raw.slice(0, 10);       // "YYYY-MM-DD"
-            const timePart = raw.slice(11, 16) || "23:59"; // "HH:MM"
-            const easternDeadline = toEasternISO(datePart, timePart);
-            if (new Date(easternDeadline) > new Date()) {
-              return (
-                <div className="pt-2">
-                  <CountdownTimer
-                    targetDate={easternDeadline}
-                    postWeddingMessage="RSVP deadline has passed"
-                    label="Days until RSVP deadline"
-                  />
-                </div>
-              );
-            }
-            return null;
-          })()}
-
           {/* Wedding Hashtag */}
           {settings?.weddingHashtag && (
             <p className="text-gold-light text-lg font-medium tracking-wide">
@@ -153,7 +125,7 @@ export default async function HomePage() {
             </p>
           )}
 
-          {/* Pre/Post Wedding Content */}
+          {/* Post Wedding Content */}
           {isPostWedding && settings?.postWeddingContent && (
             <div
               className="text-ivory/70 leading-relaxed max-w-xl mx-auto"
@@ -171,40 +143,20 @@ export default async function HomePage() {
             />
           )}
 
-          {!isPostWedding && settings?.rafflePrize && (
-            <p className="text-gold/70 text-sm italic">
-              {settings.rafflePrize !== "-1"
-                ? `You could win: ${settings.rafflePrize}`
-                : "Raffle details coming soon!"}
-            </p>
-          )}
-          {!isPostWedding && settings?.rafflePrize && settings.rafflePrize !== "-1" && (
-            <details className="text-ivory/60 text-sm max-w-md mx-auto mt-3 group">
-              <summary className="cursor-pointer text-gold/70 hover:text-gold transition-colors text-center">
-                How does the raffle work? ▾
-              </summary>
-              <div className="mt-3 text-left space-y-2 bg-midnight-light/50 rounded-lg p-4 border border-gold/10">
-                <p>Purchase raffle tickets at the reception — each ticket is one entry. Winners will be announced during the reception — you must be present to win!</p>
-                <p>All proceeds go toward our newlywed fund — the more tickets you buy, the better your chances!</p>
-                <p>Two lucky winners will each win a pair of tickets! See the <Link href="/raffle" className="text-gold underline underline-offset-2 hover:text-gold-light">Raffle page</Link> for full details.</p>
-              </div>
-            </details>
-          )}
-
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
-            {!isPostWedding && (
-              <Link href="/rsvp" className="btn-gold text-lg">
-                RSVP Now
-              </Link>
-            )}
             <Link href="/our-story" className="btn-outline text-lg">
               Our Story
             </Link>
             {isPostWedding && (
-              <Link href="/gallery" className="btn-gold text-lg">
-                View Photos
-              </Link>
+              <>
+                <Link href="/gallery" className="btn-gold text-lg">
+                  View Photos
+                </Link>
+                <Link href="/photos-of-us" className="btn-outline text-lg">
+                  Share Photos
+                </Link>
+              </>
             )}
           </div>
         </div>
@@ -227,10 +179,8 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Below-fold content: schedule, quick links, story, FAQ */}
-      <Suspense fallback={null}>
-        <HomeSections isPostWedding={isPostWedding} dressCode={settings?.dressCode ? String(settings.dressCode) : null} />
-      </Suspense>
+      {/* Below-fold content */}
+      <HomeSections />
     </div>
   );
 }

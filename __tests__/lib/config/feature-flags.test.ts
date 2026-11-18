@@ -30,48 +30,46 @@ describe("getFeatureFlags", () => {
   it("returns defaults when DB returns empty array", async () => {
     mockQuery.mockResolvedValue([]);
     const flags = await getFeatureFlags();
-    expect(flags.rsvpEnabled).toBe(true);
-    expect(flags.photoUploadEnabled).toBe(false);
+    expect(flags.galleryPageEnabled).toBe(true);
+    expect(flags.photoUploadEnabled).toBe(true);
   });
 
   it("overrides defaults with DB values", async () => {
     mockQuery.mockResolvedValue([
-      { key: "rsvpEnabled", enabled: 0 },
+      { key: "galleryPageEnabled", enabled: 0 },
       { key: "photoUploadEnabled", enabled: 1 },
     ]);
     const flags = await getFeatureFlags();
-    expect(flags.rsvpEnabled).toBe(false);
+    expect(flags.galleryPageEnabled).toBe(false);
     expect(flags.photoUploadEnabled).toBe(true);
-    // Unmentioned flags keep defaults
-    expect(flags.rsvpEnabled).toBe(false);
   });
 
   it("handles boolean enabled values from DB", async () => {
     mockQuery.mockResolvedValue([
-      { key: "rsvpEnabled", enabled: true },
+      { key: "galleryPageEnabled", enabled: true },
     ]);
     const flags = await getFeatureFlags();
-    expect(flags.rsvpEnabled).toBe(true);
+    expect(flags.galleryPageEnabled).toBe(true);
   });
 
   it("returns defaults on DB error", async () => {
     mockQuery.mockRejectedValue(new Error("connection failed"));
     const flags = await getFeatureFlags();
-    expect(flags.rsvpEnabled).toBe(true);
-    expect(flags.photoUploadEnabled).toBe(false);
+    expect(flags.galleryPageEnabled).toBe(true);
+    expect(flags.photoUploadEnabled).toBe(true);
   });
 });
 
 describe("getFeatureFlag", () => {
   it("returns DB value when flag exists", async () => {
-    mockQueryOne.mockResolvedValue({ key: "rsvpEnabled", enabled: 0 });
-    expect(await getFeatureFlag("rsvpEnabled")).toBe(false);
+    mockQueryOne.mockResolvedValue({ key: "galleryPageEnabled", enabled: 0 });
+    expect(await getFeatureFlag("galleryPageEnabled")).toBe(false);
   });
 
   it("returns default when flag not in DB", async () => {
     mockQueryOne.mockResolvedValue(null);
-    expect(await getFeatureFlag("rsvpEnabled")).toBe(true);
-    expect(await getFeatureFlag("photoUploadEnabled")).toBe(false);
+    expect(await getFeatureFlag("galleryPageEnabled")).toBe(true);
+    expect(await getFeatureFlag("photoUploadEnabled")).toBe(true);
   });
 
   it("returns false for unknown flag not in DB", async () => {
@@ -82,20 +80,20 @@ describe("getFeatureFlag", () => {
 
   it("returns default on DB error", async () => {
     mockQueryOne.mockRejectedValue(new Error("fail"));
-    expect(await getFeatureFlag("rsvpEnabled")).toBe(true);
+    expect(await getFeatureFlag("galleryPageEnabled")).toBe(true);
   });
 });
 
 describe("setFeatureFlag", () => {
   it("updates existing flag", async () => {
-    mockQueryOne.mockResolvedValue({ key: "rsvpEnabled", enabled: 1 });
+    mockQueryOne.mockResolvedValue({ key: "galleryPageEnabled", enabled: 1 });
     mockExecute.mockResolvedValue({ rowsAffected: 1, lastInsertRowid: undefined });
 
-    await setFeatureFlag("rsvpEnabled", false);
+    await setFeatureFlag("galleryPageEnabled", false);
 
     expect(mockExecute).toHaveBeenCalledWith(
       "UPDATE FeatureFlag SET enabled = ?, updatedAt = ? WHERE key = ?",
-      [0, "2026-01-01T00:00:00.000Z", "rsvpEnabled"]
+      [0, "2026-01-01T00:00:00.000Z", "galleryPageEnabled"]
     );
   });
 
@@ -114,7 +112,7 @@ describe("setFeatureFlag", () => {
 
 describe("isFeatureFlagKey", () => {
   it("returns true for known flags", () => {
-    expect(isFeatureFlagKey("rsvpEnabled")).toBe(true);
+    expect(isFeatureFlagKey("galleryPageEnabled")).toBe(true);
     expect(isFeatureFlagKey("photoUploadEnabled")).toBe(true);
   });
 

@@ -67,21 +67,27 @@ middleware.ts          # Auth + site password middleware
 
 ## Key Pages
 
+> The wedding is complete — the site now runs in **post-wedding mode**. Pre-wedding
+> content (RSVP, travel, registry, song requests, etc.) has been removed.
+
 | Route | Description |
 |-------|------------|
-| `/` | Homepage with countdown, hero, navigation |
+| `/` | Homepage — post-wedding thank-you hero and photo CTAs |
 | `/our-story` | Couple's story timeline |
-| `/event-details` | Ceremony & reception details |
-| `/rsvp` | Multi-step RSVP form |
-| `/gallery` | Photo gallery |
-| `/guest-book` | Guest messages |
-| `/wedding-party` | Bridal party members |
-| `/entertainment` | Entertainment lineup |
-| `/registry` | Registry links |
-| `/travel` | Hotels & travel info |
-| `/faq` | Frequently asked questions |
-| `/contact` | Contact form |
-| `/admin` | Admin dashboard (login required) |
+| `/gallery` | Approved wedding photo gallery (with tag filters) |
+| `/photos-of-us` | Guest photo upload — multi-file, HEIC, automatic compression |
+| `/admin` | Admin dashboard (login required) — photo approvals & settings |
+
+### Guest Photo Uploads
+
+Guests can upload photos to `/photos-of-us`:
+
+- **Multiple at once** — tap/select or drag-and-drop many files in a single batch
+- **Mobile-friendly** — works from the browser camera roll (incl. iPhone HEIC)
+- **Automatic compression** — images are resized client-side, then optimized
+  server-side via Cloudinary before delivery
+- **Approval workflow** — uploads land as *pending* in `/admin/photos`; only
+  approved photos appear in the public `/gallery`
 
 ---
 

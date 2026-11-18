@@ -20,7 +20,8 @@ describe("Navigation", () => {
   it("renders nav links", () => {
     render(<Navigation />);
     expect(screen.getAllByText("Our Story").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("RSVP").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Gallery").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Share Photos").length).toBeGreaterThan(0);
   });
 
   it("filters out links when feature flag is disabled", () => {
@@ -29,7 +30,7 @@ describe("Navigation", () => {
     );
     expect(screen.queryByText("Our Story")).not.toBeInTheDocument();
     // Other links should still appear
-    expect(screen.getAllByText("RSVP").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Gallery").length).toBeGreaterThan(0);
   });
 
   it("shows all primary links when their feature flags are true", () => {
@@ -37,18 +38,14 @@ describe("Navigation", () => {
       <Navigation
         featureFlags={{
           ourStoryPageEnabled: true,
-          eventDetailsPageEnabled: true,
-          travelPageEnabled: true,
-          rsvpEnabled: true,
-          faqPageEnabled: true,
+          galleryPageEnabled: true,
+          photosOfUsPageEnabled: true,
         }}
       />
     );
     expect(screen.getAllByText("Our Story").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("Schedule").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("Travel & Stay").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("RSVP").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("FAQ").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Gallery").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Share Photos").length).toBeGreaterThan(0);
   });
 
   it("sets aria-current on active link", () => {

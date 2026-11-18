@@ -40,7 +40,7 @@ describe("Footer", () => {
     expect(screen.getByText("Alex & Jordan")).toBeInTheDocument();
     expect(screen.getByText("#AlexAndJordan")).toBeInTheDocument();
     expect(screen.getByText(/Garden Estate/)).toBeInTheDocument();
-    expect(screen.getByText("Share Your Photos")).toBeInTheDocument();
+    expect(screen.getByText("External Photo Album")).toBeInTheDocument();
     expect(screen.getByLabelText("Instagram")).toBeInTheDocument();
     expect(screen.getByLabelText("Facebook")).toBeInTheDocument();
     expect(screen.getByLabelText("TikTok")).toBeInTheDocument();
@@ -50,10 +50,9 @@ describe("Footer", () => {
     mockQueryOne.mockResolvedValue(null);
     const jsx = await Footer();
     render(<>{jsx}</>);
-    expect(screen.getByText("RSVP")).toBeInTheDocument();
-    expect(screen.getByText("Schedule")).toBeInTheDocument();
-    expect(screen.getByText("Registry")).toBeInTheDocument();
-    expect(screen.getByText("Contact Us")).toBeInTheDocument();
+    expect(screen.getByText("Our Story")).toBeInTheDocument();
+    expect(screen.getByText("Gallery")).toBeInTheDocument();
+    expect(screen.getByText("Share Photos")).toBeInTheDocument();
   });
 
   it("hides social links when not configured", async () => {
@@ -65,6 +64,6 @@ describe("Footer", () => {
     render(<>{jsx}</>);
     expect(screen.queryByLabelText("Instagram")).not.toBeInTheDocument();
     expect(screen.queryByLabelText("Facebook")).not.toBeInTheDocument();
-    expect(screen.queryByText("Share Your Photos")).not.toBeInTheDocument();
+    expect(screen.queryByText("External Photo Album")).not.toBeInTheDocument();
   });
 });

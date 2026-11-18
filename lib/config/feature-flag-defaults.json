@@ -1,23 +1,7 @@
 {
-  "rsvpEnabled": true,
-  "photoUploadEnabled": false,
-  "registrySyncEnabled": false,
-  "songRequestsEnabled": true,
-  "entertainmentPageEnabled": true,
-  "guestPhotoSharingEnabled": false,
-  "liveGuestCountEnabled": false,
-  "massEmailEnabled": true,
   "ourStoryPageEnabled": true,
-  "eventDetailsPageEnabled": true,
-  "travelPageEnabled": true,
-  "weddingPartyPageEnabled": true,
   "galleryPageEnabled": true,
-  "rafflePageEnabled": true,
-  "registryPageEnabled": true,
-  "faqPageEnabled": true,
-  "dressCodePageEnabled": true,
-  "contactPageEnabled": true,
-  "musicPageEnabled": true,
   "photosOfUsPageEnabled": true,
-  "timelineEnabled": true
+  "photoUploadEnabled": true,
+  "guestPhotoSharingEnabled": true
 }

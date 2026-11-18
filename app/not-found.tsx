@@ -42,11 +42,8 @@ export default function NotFound() {
           <Link href="/" className="btn-gold">
             Return Home
           </Link>
-          <Link
-            href="/rsvp"
-            className="btn-outline"
-          >
-            RSVP
+          <Link href="/gallery" className="btn-outline">
+            View Gallery
           </Link>
         </div>
       </div>

@@ -60,37 +60,6 @@ node -e "const b = require('bcryptjs'); b.hash('your-password', 12).then(h => co
 
 ---
 
-## Google Maps
-
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` | No | Google Maps JavaScript API key. Used for the map embed on the Travel page. Without this key, the map widget is not shown. |
-| `NEXT_PUBLIC_VENUE_ADDRESS` | No | Full venue address string passed to the Maps embed (e.g. `"123 Wedding Ln, Apopka, FL 32712"`). |
-
-These are `NEXT_PUBLIC_*` variables — they are embedded in the client-side bundle and visible to users. Do not put secrets in `NEXT_PUBLIC_` variables.
-
----
-
-## Apple Music (optional)
-
-Required only for the Apple Music playlist import feature in the admin Music panel. The iTunes Search API (public song search for guests) does **not** require these.
-
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `APPLE_MUSIC_TEAM_ID` | If Apple Music | Your Apple Developer Team ID. Found at developer.apple.com → Membership. |
-| `APPLE_MUSIC_KEY_ID` | If Apple Music | The Key ID of your MusicKit API key. Generated at developer.apple.com → Certificates → Keys. |
-| `APPLE_MUSIC_PRIVATE_KEY` | If Apple Music | The full content of the `.p8` private key file (including `-----BEGIN PRIVATE KEY-----` header). |
-
-**Getting Apple Music credentials:**
-1. Enroll in the Apple Developer Program ($99/year) if not already enrolled
-2. developer.apple.com → Certificates, Identifiers & Profiles → Keys
-3. Create a new key with "MusicKit" capability enabled
-4. Download the `.p8` file (only downloadable once)
-5. Note the Key ID shown after creation
-6. Your Team ID is in the top-right of the developer portal
-
----
-
 ## Local dev — minimal setup
 
 For local development without external services:
@@ -105,7 +74,7 @@ STORAGE_PROVIDER="local"
 EMAIL_PROVIDER="noop"
 ```
 
-Features that need external services (Google Maps embed, Apple Music import, Cloudinary photos) will be absent or show degraded states locally.
+Guest photo uploads need Cloudinary in production (`STORAGE_PROVIDER=cloudinary`). Local filesystem storage cannot render HEIC (iPhone) photos in the browser — use Cloudinary so HEIC uploads are auto-converted on delivery.
 
 ---
 

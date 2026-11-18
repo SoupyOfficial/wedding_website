@@ -79,10 +79,10 @@ export default async function Footer() {
             </h4>
             <div className="space-y-2">
               <Link
-                href="/contact"
+                href="/photos-of-us"
                 className="block text-ivory/70 hover:text-gold transition-colors text-sm"
               >
-                Contact Us
+                Share Your Photos
               </Link>
               {settings?.photoShareLink && (
                 <a
@@ -91,7 +91,7 @@ export default async function Footer() {
                   rel="noopener noreferrer"
                   className="block text-ivory/70 hover:text-gold transition-colors text-sm"
                 >
-                  Share Your Photos
+                  External Photo Album
                 </a>
               )}
             </div>

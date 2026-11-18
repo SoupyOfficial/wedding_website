@@ -23,9 +23,9 @@
 │                                                         │
 │  app/(public)/          app/admin/         app/api/v1/  │
 │  ┌──────────┐          ┌──────────┐       ┌──────────┐ │
-│  │ 13 pages │          │ 15 pages │       │ public/  │ │
+│  │ 4 pages  │          │ 5 pages  │       │ public/  │ │
 │  │ server + │          │ client   │       │ admin/   │ │
-│  │ client   │          │ CRUD     │       │ 25+route │ │
+│  │ client   │          │ CRUD     │       │ ~15 route│ │
 │  └────┬─────┘          └────┬─────┘       └────┬─────┘ │
 │       │                     │                   │       │
 ├───────┴─────────────────────┴───────────────────┴───────┤
@@ -70,39 +70,35 @@ Browser → middleware.ts
 
 ## Feature Flag System
 
-20 runtime toggles stored in DB, with hardcoded defaults. Every public page calls `checkFeatureFlag()` at the server component level — returns `<PageDisabled />` JSX if disabled, `null` if enabled.
+5 runtime toggles stored in DB, with hardcoded defaults. Every public page calls `checkFeatureFlag()` at the server component level — returns `<PageDisabled />` JSX if disabled, `null` if enabled.
 
 ## File Count Summary
 
 | Directory         | Files | Purpose                    |
 |-------------------|-------|----------------------------|
-| lib/              | ~40   | Core logic, types, utils   |
-| components/       | ~19   | Shared UI                  |
-| app/(public)/     | ~26   | Public pages + clients     |
-| app/admin/        | ~16   | Admin dashboard pages      |
-| app/api/v1/       | ~65   | REST endpoints             |
-| __tests__/        | ~35   | Test suite                 |
+| lib/              | ~30   | Core logic, types, utils   |
+| components/       | ~13   | Shared UI                  |
+| app/(public)/     | ~14   | Public pages + clients     |
+| app/admin/        | ~10   | Admin dashboard pages      |
+| app/api/v1/       | ~16   | REST endpoints             |
+| __tests__/        | ~25   | Test suite                 |
 | prisma/           | ~3    | Schema + migrations        |
-| scripts/          | ~5    | Seed, migrate, generate    |
+| scripts/          | ~7    | Seed, migrate, generate    |
 
 ## Complexity Hotspots
 
 1. **SiteSettings** — 49-field singleton, 30+ fields in PUT handler
-2. **Weather API** — dual-mode (forecast vs historical), WMO code mapping, hour parsing
-3. **Admin CRUD** — 15 nearly-identical route files with same GET/POST/PUT/DELETE pattern
+2. **Photo upload pipeline** — client compression (canvas + HEIC passthrough) → multi-file API → storage provider (Cloudinary) → approval workflow
 
 ## Resolved Simplifications
 
 These hotspots identified in the May 2026 audit have been addressed:
-- ✅ **Apple Music search consolidated** — Public and admin endpoints share `lib/itunes-search.ts`
-- ✅ **Travel content extracted** — Data in `lib/config/travel-content.data.json`, types only in `.ts`
+- ✅ **Pre-wedding content removed** — RSVP, travel, registry, music, and 7 other pages deleted post-wedding (see "Post-Wedding" note)
+- ✅ **Apple Music / travel / admin CRUD** — all removed with their feature pages
 - ✅ **db-types.ts auto-generated** — Run `npm run generate:types` after schema changes
-- ✅ **Travel page decomposed** — 600-line page split into 4 sub-components under 200 lines each
-- ✅ **Admin settings decomposed** — 631-line page split into 8 section components under 150 lines each
-- ✅ **Event bus references removed** — `lib/events/` never existed; decision doc updated to "Deferred"
+- ✅ **Admin settings decomposed** — settings page split into section components under 150 lines each
 
 ## Remaining Complexity Hotspots
 
-- Admin API routes share 80%+ pattern → generic CRUD handler (`lib/api/crud-handler.ts`) partially addresses this
 - SiteSettings 49-field singleton with flat PUT handler
 - toBool/toBoolAll pattern needed because SQLite lacks native booleans

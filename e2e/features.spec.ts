@@ -5,29 +5,15 @@ const STORAGE_STATE = path.resolve(__dirname, "storageState.json");
 
 test.use({ storageState: STORAGE_STATE });
 
-// All 19 feature flags mapped to their UI label (order matches the page)
+// Feature flags mapped to their UI label (order matches the page)
 const FLAGS: { key: string; label: string }[] = [
   // Pages
   { key: "ourStoryPageEnabled", label: "Our Story" },
-  { key: "eventDetailsPageEnabled", label: "Event Details" },
-  { key: "travelPageEnabled", label: "Travel & Stay" },
-  { key: "weddingPartyPageEnabled", label: "Wedding Party" },
-  { key: "entertainmentPageEnabled", label: "Entertainment" },
-  { key: "musicPageEnabled", label: "Song Requests" },
   { key: "galleryPageEnabled", label: "Gallery" },
-  { key: "photosOfUsPageEnabled", label: "Photos of Us" },
-  { key: "registryPageEnabled", label: "Registry" },
-  { key: "faqPageEnabled", label: "FAQ" },
-  { key: "contactPageEnabled", label: "Contact" },
+  { key: "photosOfUsPageEnabled", label: "Share Photos" },
   // Features
-  { key: "rsvpEnabled", label: "RSVP" },
-  { key: "songRequestsEnabled", label: "Song Requests" },
   { key: "photoUploadEnabled", label: "Photo Uploads" },
   { key: "guestPhotoSharingEnabled", label: "Photo Sharing" },
-  { key: "liveGuestCountEnabled", label: "Live Guest Count" },
-  // Integrations
-  { key: "registrySyncEnabled", label: "Registry Sync" },
-  { key: "massEmailEnabled", label: "Mass Email" },
 ];
 
 /** Get the nth toggle with a given aria-label (handles duplicate labels like "Song Requests"). */
@@ -46,7 +32,7 @@ test.describe("Admin Features", () => {
       page.locator("h1, h2").filter({ hasText: "Feature Management" }).first()
     ).toBeVisible();
 
-    for (const title of ["Pages", "Features", "Integrations"]) {
+    for (const title of ["Pages", "Features"]) {
       await expect(page.locator("h2").filter({ hasText: title }).first()).toBeVisible();
     }
   });

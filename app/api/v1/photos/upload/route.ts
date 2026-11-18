@@ -6,7 +6,15 @@ import { uploadPhoto, PhotoValidationError } from "@/lib/services/photo.service"
 
 export const dynamic = "force-dynamic";
 
-const limiter = rateLimit({ windowMs: 60_000, maxRequests: 5 });
+const limiter = rateLimit({ windowMs: 60_000, maxRequests: 10 });
+
+interface PhotoResult {
+  name: string;
+  status: "uploaded" | "failed";
+  id?: string;
+  url?: string;
+  error?: string;
+}
 
 export async function POST(req: NextRequest) {
   const limited = await limiter(req, {});
@@ -14,36 +22,63 @@ export async function POST(req: NextRequest) {
   try {
     const enabled = await getFeatureFlag("photoUploadEnabled");
     if (!enabled) return errorResponse("Photo uploads are currently disabled.", 403);
+
     const formData = await req.formData();
-    const file = formData.get("file") as File | null;
     const caption = formData.get("caption") as string | null;
     const uploaderName = formData.get("uploaderName") as string | null;
     const category = formData.get("category") as string | null;
 
-    if (!file) {
+    // Support batch uploads ("files") and legacy single uploads ("file")
+    const batch = formData.getAll("files") as File[];
+    const single = formData.get("file") as File | null;
+    const files: File[] = batch.length > 0 ? batch : single ? [single] : [];
+
+    if (files.length === 0) {
       return errorResponse("No file provided.", 400);
     }
 
-    const result = await uploadPhoto({ file, caption, uploaderName, category });
-    return successResponse(result, undefined, 201);
-  } catch (error) {
-    if (error instanceof PhotoValidationError) {
-      return errorResponse(error.message, 400);
+    const results: PhotoResult[] = [];
+
+    for (const file of files) {
+      try {
+        const result = await uploadPhoto({ file, caption, uploaderName, category });
+        results.push({ name: file.name, status: "uploaded", id: result.id, url: result.url });
+      } catch (error) {
+        if (error instanceof PhotoValidationError) {
+          results.push({ name: file.name, status: "failed", error: error.message });
+          continue;
+        }
+
+        const message = error instanceof Error ? error.message : String(error);
+        if (
+          message.includes("read-only") ||
+          message.includes("not configured") ||
+          message.includes("CLOUDINARY")
+        ) {
+          return errorResponse(
+            "Photo uploads are not available. Please contact the site administrators.",
+            503
+          );
+        }
+
+        console.error("Failed to upload photo:", message);
+        return errorResponse("Failed to upload photo. Please try again.", 500);
+      }
     }
+
+    const uploadedCount = results.filter((r) => r.status === "uploaded").length;
+    if (uploadedCount === 0) {
+      return errorResponse(results[0]?.error || "No valid photos to upload.", 400);
+    }
+
+    return successResponse(
+      { results, uploadedCount, failedCount: results.length - uploadedCount },
+      undefined,
+      201
+    );
+  } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     console.error("Failed to upload photo:", message);
-
-    if (
-      message.includes("read-only") ||
-      message.includes("not configured") ||
-      message.includes("CLOUDINARY")
-    ) {
-      return errorResponse(
-        "Photo uploads are not available. Please contact the site administrators.",
-        503
-      );
-    }
-
     return errorResponse("Failed to upload photo. Please try again.", 500);
   }
 }

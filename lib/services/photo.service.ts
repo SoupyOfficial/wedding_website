@@ -1,8 +1,9 @@
 import { execute, generateId, now } from "@/lib/db";
 import { getProvider } from "@/lib/providers";
 
-const ALLOWED_EXTENSIONS = new Set(["jpg", "jpeg", "png", "gif", "webp"]);
+const ALLOWED_EXTENSIONS = new Set(["jpg", "jpeg", "png", "gif", "webp", "heic", "heif"]);
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+const MAX_DIMENSION = 2000; // px — larger images are resized by the storage provider
 
 export interface PhotoUploadInput {
   file: File;
@@ -31,7 +32,7 @@ export async function uploadPhoto(input: PhotoUploadInput): Promise<PhotoUploadR
   }
   const ext = (file.name.split(".").pop() || "").toLowerCase();
   if (!ALLOWED_EXTENSIONS.has(ext)) {
-    throw new PhotoValidationError("Only JPG, PNG, GIF, and WebP files are allowed.");
+    throw new PhotoValidationError("Only JPG, PNG, HEIC, GIF, and WebP files are allowed.");
   }
 
   const bytes = await file.arrayBuffer();
@@ -49,6 +50,7 @@ export async function uploadPhoto(input: PhotoUploadInput): Promise<PhotoUploadR
   const result = await storage.upload(buffer, filename, {
     contentType: file.type,
     category: safeCategory,
+    maxWidth: MAX_DIMENSION,
   });
 
   const safeCaption = caption ? caption.trim().slice(0, 200) : "";
@@ -81,6 +83,14 @@ function isValidImageBuffer(buffer: Buffer): boolean {
     buffer[0] === 0x52 && buffer[1] === 0x49 && buffer[2] === 0x46 && buffer[3] === 0x46 &&
     buffer[8] === 0x57 && buffer[9] === 0x45 && buffer[10] === 0x42 && buffer[11] === 0x50
   ) return true;
+  // HEIC/HEIF: "ftyp" box at offset 4 with a known image brand at offset 8
+  if (
+    buffer.length >= 12 &&
+    buffer[4] === 0x66 && buffer[5] === 0x74 && buffer[6] === 0x79 && buffer[7] === 0x70
+  ) {
+    const brand = buffer.slice(8, 12).toString("latin1");
+    if (["heic", "heix", "hevc", "heim", "heis", "mif1", "msf1"].includes(brand)) return true;
+  }
   return false;
 }
 

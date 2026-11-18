@@ -295,61 +295,6 @@ describe("Admin Photo Tags [tagId]", () => {
   });
 });
 
-// ─── DJ List (collection) ──────────────────────────
-import { GET as djListGet, POST as djListPost } from "@/app/api/v1/admin/music/dj-list/route";
-
-describe("Admin DJ List", () => {
-  it("GET returns items", async () => {
-    mockQuery.mockResolvedValue([{ id: "1", songName: "Test" }]);
-    const res = await djListGet();
-    const data = await res.json();
-    expect(res.status).toBe(200);
-    expect(data.data).toHaveLength(1);
-  });
-
-  it("POST creates item", async () => {
-    mockQueryOne.mockResolvedValue({ id: "test-id", songName: "Song" });
-    const res = await djListPost(jsonReq("http://l", { songName: "Song", artist: "Artist" }, "POST"));
-    expect(res.status).toBe(201);
-  });
-
-  it("POST returns 400 for empty song name", async () => {
-    const res = await djListPost(jsonReq("http://l", { songName: "" }, "POST"));
-    expect(res.status).toBe(400);
-  });
-
-  it("GET returns 500 on error", async () => {
-    mockQuery.mockRejectedValueOnce(new Error("db"));
-    const res = await djListGet();
-    expect(res.status).toBe(500);
-  });
-
-  it("POST returns 500 on error", async () => {
-    mockExecute.mockRejectedValueOnce(new Error("db"));
-    const res = await djListPost(jsonReq("http://l", { songName: "X", artist: "Y" }, "POST"));
-    expect(res.status).toBe(500);
-  });
-});
-
-// ─── Music Requests (admin list) ───────────────────
-import { GET as musicReqGet } from "@/app/api/v1/admin/music/requests/route";
-
-describe("Admin Music Requests GET", () => {
-  it("returns all requests", async () => {
-    mockQuery.mockResolvedValue([{ id: "1", songName: "Song" }]);
-    const res = await musicReqGet();
-    const data = await res.json();
-    expect(res.status).toBe(200);
-    expect(data.data).toHaveLength(1);
-  });
-
-  it("returns 500 on error", async () => {
-    mockQuery.mockRejectedValueOnce(new Error("db"));
-    const res = await musicReqGet();
-    expect(res.status).toBe(500);
-  });
-});
-
 // ─── Settings ──────────────────────────────────────
 import { GET as settingsGet, PUT as settingsPut } from "@/app/api/v1/admin/settings/route";
 

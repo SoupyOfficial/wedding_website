@@ -6,7 +6,6 @@ import type { Settings } from "./types";
 import SettingsIdentitySection from "./SettingsIdentitySection";
 import SettingsWeddingSection from "./SettingsWeddingSection";
 import SettingsContactSection from "./SettingsContactSection";
-import SettingsRSVPSection from "./SettingsRSVPSection";
 import SettingsPasswordSection from "./SettingsPasswordSection";
 import SettingsBannerSection from "./SettingsBannerSection";
 import SettingsContentSection from "./SettingsContentSection";
@@ -88,7 +87,6 @@ export default function AdminSettingsPage() {
         <SettingsIdentitySection settings={settings} onChange={updateField} />
         <SettingsWeddingSection settings={settings} onChange={updateField} />
         <SettingsContactSection settings={settings} onChange={updateField} />
-        <SettingsRSVPSection settings={settings} onChange={updateField} />
         <SettingsPasswordSection settings={settings} onChange={updateField} />
         <SettingsBannerSection settings={settings} onChange={updateField} />
         <SettingsContentSection settings={settings} onChange={updateField} />
