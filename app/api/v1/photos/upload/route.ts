@@ -16,6 +16,16 @@ interface PhotoResult {
   error?: string;
 }
 
+function toErrorMessage(error: unknown): string {
+  if (error instanceof Error) return error.message;
+  if (typeof error === "object" && error !== null) {
+    const obj = error as Record<string, unknown>;
+    if (typeof obj.message === "string") return obj.message;
+    if (typeof obj.error === "string") return obj.error;
+  }
+  return String(error);
+}
+
 export async function POST(req: NextRequest) {
   const limited = await limiter(req, {});
   if (limited) return limited;
@@ -49,11 +59,19 @@ export async function POST(req: NextRequest) {
           continue;
         }
 
-        const message = error instanceof Error ? error.message : String(error);
+        const message = toErrorMessage(error);
+        console.error(
+          "Failed to upload photo:",
+          message,
+          "| raw:",
+          typeof error === "object" && error !== null ? JSON.stringify(error) : String(error)
+        );
         if (
           message.includes("read-only") ||
           message.includes("not configured") ||
-          message.includes("CLOUDINARY")
+          message.includes("CLOUDINARY") ||
+          message.includes("Signature") ||
+          message.includes("api_key")
         ) {
           return errorResponse(
             "Photo uploads are not available. Please contact the site administrators.",
@@ -61,7 +79,6 @@ export async function POST(req: NextRequest) {
           );
         }
 
-        console.error("Failed to upload photo:", message);
         return errorResponse("Failed to upload photo. Please try again.", 500);
       }
     }
@@ -77,8 +94,13 @@ export async function POST(req: NextRequest) {
       201
     );
   } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    console.error("Failed to upload photo:", message);
+    const message = toErrorMessage(error);
+    console.error(
+      "Failed to upload photo:",
+      message,
+      "| raw:",
+      typeof error === "object" && error !== null ? JSON.stringify(error) : String(error)
+    );
     return errorResponse("Failed to upload photo. Please try again.", 500);
   }
 }
