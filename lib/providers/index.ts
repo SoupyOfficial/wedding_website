@@ -3,18 +3,23 @@ import { LocalStorageProvider } from "./storage/local.storage";
 import { VercelBlobStorageProvider } from "./storage/vercel-blob.storage";
 
 function createStorageProvider(): IStorageProvider {
-  // Explicit override, or auto-select Vercel Blob when its token is present
-  // (production), otherwise fall back to the local filesystem (dev).
-  const provider =
-    process.env.STORAGE_PROVIDER ||
-    (process.env.BLOB_READ_WRITE_TOKEN ? "vercel-blob" : "local");
+  const explicit = process.env.STORAGE_PROVIDER;
 
-  switch (provider) {
-    case "vercel-blob":
-      return new VercelBlobStorageProvider();
-    default:
-      return new LocalStorageProvider();
+  if (explicit && explicit !== "local" && explicit !== "vercel-blob") {
+    console.warn(
+      `[Storage] Unknown STORAGE_PROVIDER "${explicit}" — ignoring. ` +
+        "Set BLOB_READ_WRITE_TOKEN to use Vercel Blob, or leave STORAGE_PROVIDER unset."
+    );
   }
+
+  // Prefer Vercel Blob whenever its token is present (production), unless the
+  // local filesystem is explicitly forced (dev). This also ignores any legacy
+  // STORAGE_PROVIDER value (e.g. "cloudinary") that may still be set in Vercel.
+  if (process.env.BLOB_READ_WRITE_TOKEN && explicit !== "local") {
+    return new VercelBlobStorageProvider();
+  }
+
+  return new LocalStorageProvider();
 }
 
 interface ProviderRegistry {
