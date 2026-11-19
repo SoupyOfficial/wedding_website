@@ -94,6 +94,64 @@ function isValidImageBuffer(buffer: Buffer): boolean {
   return false;
 }
 
+export interface RegisteredPhotoInput {
+  url: string;
+  name?: string | null;
+  caption?: string | null;
+  uploaderName?: string | null;
+  category?: string | null;
+}
+
+export interface RegisteredPhotoResult {
+  name: string;
+  status: "uploaded" | "failed";
+  id?: string;
+  url?: string;
+  error?: string;
+}
+
+/**
+ * Record already-uploaded blobs (e.g. videos uploaded directly from the browser
+ * to Vercel Blob) as Photo rows. Returns one result per input in order.
+ */
+export async function registerPhotos(
+  inputs: RegisteredPhotoInput[]
+): Promise<RegisteredPhotoResult[]> {
+  const results: RegisteredPhotoResult[] = [];
+
+  for (const input of inputs) {
+    const url = input.url?.trim();
+    const name = input.name?.trim() || "";
+
+    if (!url || !isValidBlobUrl(url)) {
+      results.push({ name, status: "failed", error: "Invalid upload URL." });
+      continue;
+    }
+
+    const safeCategory = input.category
+      ? input.category.trim().slice(0, 50)
+      : "guest-uploads";
+    const safeCaption = input.caption ? input.caption.trim().slice(0, 200) : "";
+    const safeUploader = input.uploaderName
+      ? input.uploaderName.trim().slice(0, 100)
+      : null;
+
+    const id = generateId();
+    await execute(
+      "INSERT INTO Photo (id, url, caption, uploadedBy, category, storageKey, approved, sortOrder, createdAt) VALUES (?, ?, ?, ?, ?, ?, 0, 0, ?)",
+      [id, url, safeCaption, safeUploader, safeCategory, url, now()]
+    );
+
+    results.push({ name, status: "uploaded", id, url });
+  }
+
+  return results;
+}
+
+function isValidBlobUrl(url: string): boolean {
+  return /^https:\/\/.+\.blob\.vercel-storage\.com\/.+/.test(url);
+}
+
 /** Validation error for photo uploads (client error, not server error). */
 export class PhotoValidationError extends Error {
   constructor(message: string) {

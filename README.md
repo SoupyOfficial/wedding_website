@@ -74,20 +74,22 @@ middleware.ts          # Auth + site password middleware
 |-------|------------|
 | `/` | Homepage — post-wedding thank-you hero and photo CTAs |
 | `/our-story` | Couple's story timeline |
-| `/gallery` | Approved wedding photo gallery (with tag filters) |
-| `/photos-of-us` | Guest photo upload — multi-file, HEIC, automatic compression |
+| `/gallery` | Approved wedding photo & video gallery (with tag filters) |
+| `/photos-of-us` | Guest photo & video upload — multi-file, HEIC, compression |
 | `/admin` | Admin dashboard (login required) — photo approvals & settings |
 
-### Guest Photo Uploads
+### Guest Photo & Video Uploads
 
-Guests can upload photos to `/photos-of-us`:
+Guests can upload photos and videos to `/photos-of-us`:
 
 - **Multiple at once** — tap/select or drag-and-drop many files in a single batch
 - **Mobile-friendly** — works from the browser camera roll (incl. iPhone HEIC)
 - **Automatic compression** — images are resized client-side (and HEIC is
   converted to JPEG in the browser), then stored in Vercel Blob
+- **Videos** — MP4/MOV/WEBM (up to 200 MB each) stream directly from the browser
+  to Vercel Blob, bypassing the server upload size limit
 - **Approval workflow** — uploads land as *pending* in `/admin/photos`; only
-  approved photos appear in the public `/gallery`
+  approved photos/videos appear in the public `/gallery`
 
 ---
 

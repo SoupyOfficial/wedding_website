@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { isVideoUrl } from "@/lib/media";
 
 interface Tag {
   id: string;
@@ -88,13 +89,24 @@ export default function GalleryClient({
               key={photo.id}
               className="break-inside-avoid mb-4 group relative overflow-hidden rounded-lg border border-gold/10"
             >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={photo.url}
-                alt={photo.caption || "Wedding photo"}
-                className="w-full object-cover transition-transform duration-500 group-hover:scale-110"
-                loading="lazy"
-              />
+              {isVideoUrl(photo.url) ? (
+                // eslint-disable-next-line jsx-a11y/media-has-caption
+                <video
+                  src={photo.url}
+                  controls
+                  playsInline
+                  preload="metadata"
+                  className="w-full object-cover"
+                />
+              ) : (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={photo.url}
+                  alt={photo.caption || "Wedding photo"}
+                  className="w-full object-cover transition-transform duration-500 group-hover:scale-110"
+                  loading="lazy"
+                />
+              )}
               {/* Caption + tags overlay */}
               <div
                 className={`absolute inset-0 bg-gradient-to-t from-midnight/80 via-transparent to-transparent ${

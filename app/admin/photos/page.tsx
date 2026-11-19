@@ -2,6 +2,7 @@
 
 import { useState, useRef } from "react";
 import { useAdminMultiFetch } from "@/lib/hooks";
+import { isVideoUrl } from "@/lib/media";
 import { AdminPageHeader, FilterBar, Modal, LoadingState, EmptyState, ConfirmButton } from "@/components/ui";
 
 interface PhotoTag {
@@ -322,7 +323,21 @@ export default function AdminPhotosPage() {
                 photo.approved ? "border-gold/10" : "border-yellow-500/30"
               }`}
             >
-              <img src={photo.url} alt={photo.caption || "Photo"} className="w-full h-48 object-cover" />
+              {isVideoUrl(photo.url) ? (
+                // eslint-disable-next-line jsx-a11y/media-has-caption
+                <video src={photo.url} preload="metadata" muted className="w-full h-48 object-cover" />
+              ) : (
+                <img src={photo.url} alt={photo.caption || "Photo"} className="w-full h-48 object-cover" />
+              )}
+
+              {/* Video badge */}
+              {isVideoUrl(photo.url) && (
+                <div className="absolute top-2 right-2">
+                  <span className="text-[10px] px-1.5 py-0.5 bg-blue-600/80 text-white rounded-full font-medium">
+                    Video
+                  </span>
+                </div>
+              )}
 
               {/* Guest upload badge */}
               {photo.category === "guest-uploads" && (
@@ -396,7 +411,12 @@ export default function AdminPhotosPage() {
         <Modal title="Edit Photo" onClose={() => setEditingPhoto(null)}>
 
             <div className="flex justify-center">
-              <img src={editingPhoto.url} alt="" className="h-40 rounded-lg object-cover" />
+              {isVideoUrl(editingPhoto.url) ? (
+                // eslint-disable-next-line jsx-a11y/media-has-caption
+                <video src={editingPhoto.url} controls className="h-40 rounded-lg" />
+              ) : (
+                <img src={editingPhoto.url} alt="" className="h-40 rounded-lg object-cover" />
+              )}
             </div>
 
             <div>

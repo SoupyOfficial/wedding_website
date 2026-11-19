@@ -1,12 +1,15 @@
 "use client";
 
 import { useState, useRef } from "react";
+import { upload } from "@vercel/blob/client";
 import { usePublicSettings } from "@/lib/hooks";
 import { PageHeader, Alert } from "@/components/ui";
+import { VIDEO_EXTENSIONS } from "@/lib/media";
 
 const MAX_DIMENSION = 2000;
 const JPEG_QUALITY = 0.85;
-const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB per photo
+const MAX_VIDEO_SIZE = 200 * 1024 * 1024; // 200MB per video
 const CHUNK_MAX_BYTES = 3.5 * 1024 * 1024; // keep each request under Vercel's 4.5MB limit
 
 interface SelectedFile {
@@ -32,6 +35,12 @@ function isHeic(file: File): boolean {
   if (type === "image/heic" || type === "image/heif") return true;
   const ext = (file.name.split(".").pop() || "").toLowerCase();
   return ext === "heic" || ext === "heif";
+}
+
+function isVideoFile(file: File): boolean {
+  if (file.type.toLowerCase().startsWith("video/")) return true;
+  const ext = file.name.toLowerCase().split(".").pop() || "";
+  return (VIDEO_EXTENSIONS as readonly string[]).includes(ext);
 }
 
 function loadImage(src: string): Promise<HTMLImageElement> {
@@ -68,7 +77,6 @@ async function convertHeicToJpeg(file: File): Promise<File> {
 }
 
 async function compressImage(file: File): Promise<File> {
-  // HEIC can't be decoded by the browser — convert to JPEG first
   const source = isHeic(file) ? await convertHeicToJpeg(file) : file;
 
   const url = URL.createObjectURL(source);
@@ -79,7 +87,6 @@ async function compressImage(file: File): Promise<File> {
       MAX_DIMENSION / Math.max(img.naturalWidth, img.naturalHeight)
     );
 
-    // Within limits and already JPEG — no re-encode needed
     if (scale === 1 && source.type === "image/jpeg") {
       return source;
     }
@@ -144,19 +151,21 @@ export default function PhotosOfUsClient() {
     const next: SelectedFile[] = [];
 
     for (const file of Array.from(list)) {
-      if (!file.type.startsWith("image/") && !isHeic(file)) {
-        setError(`"${file.name}" is not an image file.`);
+      const video = isVideoFile(file);
+      if (!file.type.startsWith("image/") && !file.type.startsWith("video/") && !isHeic(file) && !video) {
+        setError(`"${file.name}" is not a supported photo or video.`);
         continue;
       }
-      if (file.size > MAX_FILE_SIZE) {
-        setError(`"${file.name}" is over 10MB.`);
+      const maxSize = video ? MAX_VIDEO_SIZE : MAX_FILE_SIZE;
+      if (file.size > maxSize) {
+        setError(`"${file.name}" is over ${video ? "200MB" : "10MB"}.`);
         continue;
       }
 
       next.push({
         id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
         file,
-        preview: isHeic(file) ? null : URL.createObjectURL(file),
+        preview: isHeic(file) || video ? null : URL.createObjectURL(file),
         status: "pending",
       });
     }
@@ -176,7 +185,7 @@ export default function PhotosOfUsClient() {
     e.preventDefault();
     const pending = files.filter((f) => f.status === "pending" || f.status === "error");
     if (pending.length === 0) {
-      setError("Please select at least one photo.");
+      setError("Please select at least one photo or video.");
       return;
     }
 
@@ -192,12 +201,15 @@ export default function PhotosOfUsClient() {
       )
     );
 
-    try {
-      // 1. Convert/compress each file (client-side)
-      const processed: ProcessedFile[] = [];
-      const outcomes: (UploadResult | undefined)[] = new Array(pending.length).fill(undefined);
+    const outcomes: (UploadResult | undefined)[] = new Array(pending.length).fill(undefined);
+    const photoIdx: number[] = [];
+    const videoIdx: number[] = [];
+    pending.forEach((p, i) => (isVideoFile(p.file) ? videoIdx.push(i) : photoIdx.push(i)));
 
-      for (let i = 0; i < pending.length; i++) {
+    try {
+      // Photos: convert/compress, then chunked server upload
+      const processed: ProcessedFile[] = [];
+      for (const i of photoIdx) {
         try {
           const file = await compressImage(pending[i].file);
           processed.push({ file, idx: i });
@@ -206,7 +218,6 @@ export default function PhotosOfUsClient() {
         }
       }
 
-      // 2. Upload in size-bounded chunks
       for (const chunk of chunkFiles(processed)) {
         const formData = new FormData();
         for (const { file } of chunk) formData.append("files", file, file.name);
@@ -214,21 +225,15 @@ export default function PhotosOfUsClient() {
         if (caption.trim()) formData.append("caption", caption.trim());
         formData.append("category", "guest-uploads");
 
-        const res = await fetch("/api/v1/photos/upload", {
-          method: "POST",
-          body: formData,
-        });
+        const res = await fetch("/api/v1/photos/upload", { method: "POST", body: formData });
         const data = (await res.json()) as {
-          success?: boolean;
           error?: string;
           data?: { results?: UploadResult[] };
         };
 
         if (!res.ok) {
           const message = data.error || "Upload failed.";
-          for (const { idx } of chunk) {
-            outcomes[idx] = { status: "failed", error: message };
-          }
+          for (const { idx } of chunk) outcomes[idx] = { status: "failed", error: message };
           if (res.status === 503) {
             setError(message);
             break;
@@ -247,7 +252,51 @@ export default function PhotosOfUsClient() {
         });
       }
 
-      // 3. Map outcomes back to file tiles
+      // Videos: direct client upload to Blob, then register metadata
+      const uploadedVideos: { idx: number; url: string; name: string }[] = [];
+      for (const i of videoIdx) {
+        try {
+          const blob = await upload(pending[i].file.name, pending[i].file, {
+            access: "public",
+            handleUploadUrl: "/api/v1/blob/upload",
+          });
+          uploadedVideos.push({ idx: i, url: blob.url, name: pending[i].file.name });
+        } catch (err) {
+          outcomes[i] = { status: "failed", error: toErrorMessage(err) };
+        }
+      }
+
+      if (uploadedVideos.length > 0) {
+        const res = await fetch("/api/v1/photos/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            items: uploadedVideos.map((u) => ({ url: u.url, name: u.name })),
+            uploaderName: uploaderName.trim() || null,
+            caption: caption.trim() || null,
+          }),
+        });
+        const data = (await res.json()) as {
+          error?: string;
+          data?: { results?: UploadResult[] };
+        };
+
+        if (!res.ok) {
+          const message = data.error || "Upload failed.";
+          for (const u of uploadedVideos) outcomes[u.idx] = { status: "failed", error: message };
+        } else {
+          const results = data.data?.results ?? [];
+          uploadedVideos.forEach((u, j) => {
+            const r = results[j];
+            outcomes[u.idx] =
+              r && r.status === "failed"
+                ? { status: "failed", error: r.error || "Upload failed." }
+                : { status: "uploaded" };
+          });
+        }
+      }
+
+      // Map outcomes back to file tiles
       setFiles((prev) =>
         prev.map((f) => {
           if (f.status !== "uploading") return f;
@@ -265,12 +314,12 @@ export default function PhotosOfUsClient() {
       const failed = outcomes.filter((o) => o?.status === "failed").length;
 
       if (done > 0) {
-        let message = `${done} photo${done === 1 ? "" : "s"} uploaded and pending approval.`;
+        let message = `${done} upload${done === 1 ? "" : "s"} succeeded and pending approval.`;
         if (failed > 0) message += ` ${failed} skipped.`;
         setSuccess(message);
         setCaption("");
       } else if (failed > 0 && !error) {
-        setError("No photos were uploaded. Please try again.");
+        setError("No files were uploaded. Please try again.");
       }
     } catch {
       setError("Something went wrong. Please try again.");
@@ -296,7 +345,7 @@ export default function PhotosOfUsClient() {
 
         <div className="max-w-lg mx-auto">
           <div className="card-celestial">
-            <h2 className="text-gold font-serif text-2xl text-center mb-6">Upload Photos</h2>
+            <h2 className="text-gold font-serif text-2xl text-center mb-6">Upload Photos &amp; Videos</h2>
 
             {success && <Alert type="success" message={success} className="mb-4 text-center" />}
             {error && <Alert type="error" message={error} className="mb-4 text-center" />}
@@ -320,21 +369,21 @@ export default function PhotosOfUsClient() {
                 }}
               >
                 <div className="text-4xl mb-3">📸</div>
-                <p className="text-ivory/70 text-sm mb-1">Tap to select or drop photos here</p>
+                <p className="text-ivory/70 text-sm mb-1">Tap to select or drop photos &amp; videos</p>
                 <p className="text-ivory/40 text-xs">
-                  JPG, PNG, HEIC, WEBP · up to 10MB each · multiple at once
+                  JPG, PNG, HEIC, WEBP · MP4, MOV, WEBM · up to 10MB each (200MB for video)
                 </p>
                 <input
                   ref={inputRef}
                   type="file"
-                  accept="image/*,.heic,.heif"
+                  accept="image/*,.heic,.heif,video/*"
                   multiple
                   onChange={(e) => {
                     if (e.target.files) addFiles(e.target.files);
                     e.target.value = "";
                   }}
                   className="hidden"
-                  aria-label="Choose photos to upload"
+                  aria-label="Choose photos or videos to upload"
                 />
               </div>
 
@@ -351,7 +400,7 @@ export default function PhotosOfUsClient() {
                         <img src={f.preview} alt={f.file.name} className="w-full h-full object-cover" />
                       ) : (
                         <div className="w-full h-full flex flex-col items-center justify-center text-ivory/50 text-[10px] p-1 text-center">
-                          <span className="text-xl">🖼️</span>
+                          <span className="text-xl">{isVideoFile(f.file) ? "🎬" : "🖼️"}</span>
                           <span className="break-all">{f.file.name}</span>
                         </div>
                       )}
@@ -418,7 +467,7 @@ export default function PhotosOfUsClient() {
                 disabled={uploading || uploadable === 0}
                 className="btn-gold w-full py-3 disabled:opacity-50"
               >
-                {uploading ? "Uploading…" : uploadable > 1 ? `Upload ${uploadable} Photos` : "Upload Photo"}
+                {uploading ? "Uploading…" : uploadable > 1 ? `Upload ${uploadable} Files` : "Upload"}
               </button>
             </form>
           </div>
