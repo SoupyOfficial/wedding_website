@@ -9,10 +9,12 @@ export class VercelBlobStorageProvider implements IStorageProvider {
   private configured: boolean;
 
   constructor() {
-    this.configured = !!process.env.BLOB_READ_WRITE_TOKEN;
+    this.configured = !!(
+      process.env.BLOB_READ_WRITE_TOKEN || process.env.BLOB_STORE_ID
+    );
     if (!this.configured) {
       console.warn(
-        "[Storage] BLOB_READ_WRITE_TOKEN is missing. Vercel Blob uploads will fail."
+        "[Storage] No Vercel Blob credentials found (BLOB_READ_WRITE_TOKEN or BLOB_STORE_ID). Uploads will fail."
       );
     }
   }
@@ -24,7 +26,7 @@ export class VercelBlobStorageProvider implements IStorageProvider {
   ): Promise<StorageResult> {
     if (!this.configured) {
       throw new Error(
-        "Vercel Blob is not configured. Set BLOB_READ_WRITE_TOKEN."
+        "Vercel Blob is not configured. Connect a Blob store to this project (BLOB_READ_WRITE_TOKEN or BLOB_STORE_ID)."
       );
     }
 

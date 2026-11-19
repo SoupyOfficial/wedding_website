@@ -77,7 +77,7 @@ export async function POST(req: NextRequest) {
           );
         }
 
-        return errorResponse(`Failed to upload photo: ${message}`, 500);
+        return errorResponse("Failed to upload photo. Please try again.", 500);
       }
     }
 
@@ -99,6 +99,6 @@ export async function POST(req: NextRequest) {
       "| raw:",
       typeof error === "object" && error !== null ? JSON.stringify(error) : String(error)
     );
-    return errorResponse(`Failed to upload photo: ${message}`, 500);
+    return errorResponse("Failed to upload photo. Please try again.", 500);
   }
 }

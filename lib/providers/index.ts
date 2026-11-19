@@ -12,10 +12,14 @@ function createStorageProvider(): IStorageProvider {
     );
   }
 
-  // Prefer Vercel Blob whenever its token is present (production), unless the
-  // local filesystem is explicitly forced (dev). This also ignores any legacy
-  // STORAGE_PROVIDER value (e.g. "cloudinary") that may still be set in Vercel.
-  if (process.env.BLOB_READ_WRITE_TOKEN && explicit !== "local") {
+  // Prefer Vercel Blob whenever its credentials are present (production),
+  // unless the local filesystem is explicitly forced (dev). This also ignores
+  // any legacy STORAGE_PROVIDER value (e.g. "cloudinary") that may still be set.
+  const blobConfigured = !!(
+    process.env.BLOB_READ_WRITE_TOKEN || process.env.BLOB_STORE_ID
+  );
+
+  if (blobConfigured && explicit !== "local") {
     return new VercelBlobStorageProvider();
   }
 
