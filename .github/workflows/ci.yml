@@ -45,7 +45,7 @@ jobs:
 
       - name: Create test environment
         run: |
-          echo "DATABASE_URL=file:./prisma/dev.db" >> .env
+          echo "DATABASE_URL=file:$(pwd)/prisma/dev.db" >> .env
           echo "NEXTAUTH_SECRET=test-secret-do-not-use-in-prod" >> .env
           echo "NEXTAUTH_URL=http://localhost:3000" >> .env
           echo "ADMIN_EMAIL=test@example.com" >> .env
@@ -73,7 +73,7 @@ jobs:
 
       - name: Prepare build database
         run: |
-          echo "DATABASE_URL=file:./prisma/build.db" >> .env
+          echo "DATABASE_URL=file:$(pwd)/prisma/build.db" >> .env
           echo "NEXTAUTH_SECRET=test-secret-do-not-use-in-prod" >> .env
           echo "NEXTAUTH_URL=http://localhost:3000" >> .env
           echo "ADMIN_EMAIL=test@example.com" >> .env
